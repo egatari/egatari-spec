@@ -261,6 +261,13 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 [concl] text…
 ```
 
+**Extension lines.** Inside a step's block, a line of the form `@x-<name>-<field> <value>` (after optional indentation; `<name>` as in §9A, `<field>` matching `^[a-z][a-z0-9-]{0,31}$`, `<value>` the rest of the line, single-line UTF-8) carries extension data for that step. Extension lines:
+
+- are not part of any turn: they are excluded from display text, `ttsParts`, boundaries and `inputHash` (§5.4), so editing them never makes audio stale;
+- are never spoken or displayed, and a player that ignores them renders exactly the same;
+- are preserved by editors through tier A, B and C edits;
+- are folded by producers into `extensions.<name>[<stepKey>].<field>`; repeated lines with the same name and field become an array in their order.
+
 ### 8.3 Readings
 
 `{display|reading}` stores the reading in kana (or the lesson language's ordinary spelling). Producers MAY export readings as SSML `<sub alias>`, W3C PLS lexicon entries, or HTML `<ruby>`.
@@ -322,7 +329,7 @@ The first start of audio SHOULD happen through the player's own start control, b
 Platforms may need information that Etoki does not define (e.g. questions to ask the learner at a step, grouping of steps into chapters). Such information is carried as **extensions** without changing Etoki itself.
 
 - **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9-]{0,31}$`) and whose values are objects with at least `v` (integer version of that extension). Data addressed to a step uses step keys.
-- **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements. Producers MAY fold them into `extensions.<name>` at export.
+- **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements, and in `narration.md` as extension lines (§8.2). Producers MAY fold them into `extensions.<name>` at export.
 - Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
 - An extension MUST NOT change how a player that ignores it renders or times the lesson. Information without which the lesson cannot be played correctly is not an extension; it needs a new feature in `requires` and a new version of this specification.
 - Extension data in a portable file is public to anyone holding the file (§3.7).
