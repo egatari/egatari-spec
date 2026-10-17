@@ -41,6 +41,8 @@ A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a f
 
 In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1.5 and 2, keeping the pitch of speech; the timeline clock advances at the same rate, so the screen stays a function of *(i, k, t)*. Presenter-only tools (presenter view, laser) SHOULD be hidden.
 
+When embedded by a host (§9.4, §10), the host MAY hide the player's own controls (`controls=0`) and provide equivalent ones itself (chapter list, playback rate, pause), and MAY restrict forward navigation as a course policy. The requirement to offer controls is then met by the host.
+
 ### 1.3 Narration
 
 Each step MAY have narration: an ordered list of **turns**, each with a **role** (`expert` or `novice`; single-speaker lessons use `expert` only) and text. Text MAY contain **boundaries** — `cue` (a synchronization point for an animated component) and `mark` (an attention mark on a target element) — and **readings** (display text with a separate spoken form, e.g. φ read as ファイ). The authoring syntax is defined in §8.
@@ -60,7 +62,7 @@ All JSON blocks are `<script>` elements with a non-executable `type` and a uniqu
 
 ### 2.1 Readable layer without script
 
-A conforming document MUST also contain, as ordinary DOM outside any `<script>`, for every step: the display text of its narration. It SHOULD contain, for every slide, either a static image of the final state or text equivalent to it. This layer serves archiving, accessibility, search, and recovery when no script runs.
+A conforming document MUST also contain, as ordinary DOM outside any `<script>`, for every step: the display text of its narration. It SHOULD contain, for every slide, either a static image of the final state or text equivalent to it. Producers MAY also include a final-state image per **step**, so that hosts can show stills without running a browser. This layer serves archiving, accessibility, search, and recovery when no script runs.
 
 ## 3. Archive layer
 
@@ -130,6 +132,12 @@ Paths under `audio/` are reserved for narration audio. An archive MUST include t
 ### 3.6 Metadata
 
 `metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `creators` (display names the author chose to publish), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), and `completion` (§9.2). Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
+
+### 3.7 Play-only derivative
+
+A **play-only derivative** is made from a portable file by removing the index and every blob whose chunks are not referenced by the runtime layer, keeping the chunks of audio referenced as `etoki:<blobId>`. In `deck-meta`, `portable` becomes `false` and `sourceSha256` is removed; `docId` is kept. Players resolve `etoki:<blobId>` by decoding the chunks `etoki-b-<blobId>-0`, `-1`, … in order until the next one is absent.
+
+The archive layer — including `extensions` — is readable by anyone who holds a portable file. A host that must keep information from learners (e.g. quiz answers in an extension) MUST serve learners a play-only derivative and keep the portable original for authorized editors.
 
 ## 4. Runtime layer
 
@@ -281,23 +289,33 @@ A player SHOULD offer to save the archive layer as a ZIP of `files` plus `audio/
 
 ### 9.4 Embedding
 
-A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Etoki file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept these messages from `window.parent` via `postMessage` (objects with a string member `etoki`) and ignore messages from any other source:
+A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Etoki file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept messages from `window.parent` via `postMessage` (objects with a string member `etoki`) and ignore messages from any other source. Query parameters `mode`, `controls=0` and `preview=1` set the initial state. Every command MAY carry an `id`; the player echoes it in the reply or acknowledgement. Times are seconds as floating-point numbers.
 
-| Message | Effect |
+Commands (host → player):
+
+| Message | Effect / reply |
 |---|---|
-| `{etoki:"seek", slide, step, t}` | `DECK.seek` to that position; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞ |
-| `{etoki:"play"}` / `{etoki:"pause"}` | start / pause timeline playback with audio (a user gesture inside the frame may still be required by the browser) |
-| `{etoki:"mode", mode}` | switch display mode |
+| `{etoki:"seek", id?, slide, step, t}` | go to *(slide, step, t)*; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞. Reply `seeked` |
+| `{etoki:"play", id?}` / `{etoki:"pause", id?}` | start / pause timeline playback with audio. If the browser refuses to start audio, reply `playBlocked` |
+| `{etoki:"rate", id?, value}` | playback rate (§1.2) |
+| `{etoki:"mode", id?, mode}` / `{etoki:"preview", id?, on}` / `{etoki:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
+| `{etoki:"snapshot", id, slide, step, t, maxWidth?}` | reply `{etoki:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position |
 
-and post to `window.parent` (target origin `*`; the payload contains no private data):
+Events (player → host; target origin `*`; payloads contain no private data):
 
 | Message | When |
 |---|---|
-| `{etoki:"ready", version, timeline:[{slideKey, stepKey, title, dur}]}` | after loading |
-| `{etoki:"position", slideKey, stepKey, t}` | on every step change, and at most 4 times per second during playback |
+| `{etoki:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | after loading |
+| `{etoki:"seeked", id?, slideKey, stepKey, t}` | after a seek has been applied |
+| `{etoki:"position", slideKey, stepKey, t, cause}` | on every step change (`cause`: `play`, `seek`, `control`), and at most 4 times per second during playback |
+| `{etoki:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped) |
+| `{etoki:"state", playing, rate}` | whenever playing state or rate changes, including by the player's own controls |
+| `{etoki:"playBlocked", id?}` | audio could not start for lack of a user gesture |
+| `{etoki:"turn", slideKey, stepKey, index}` | OPTIONAL: when narration turn `index` starts |
 | `{etoki:"ended"}` | after the last step of the timeline |
+| `{etoki:"error", id?, code, message}` | a command failed or the file cannot be played |
 
-The same messages serve the `postMessage` tracking adapter (§9.2). Embedding commands are unprivileged: they can only do what a viewer could do with the controls.
+The first start of audio SHOULD happen through the player's own start control, because browsers (notably Safari on iPad) may not pass a user gesture in the host page into the frame; hosts SHOULD allow `autoplay` on the frame and MUST handle `playBlocked`. Since a sandboxed frame has the origin `null`, hosts MUST identify the player by `event.source === iframe.contentWindow`. The same messages serve the `postMessage` tracking adapter (§9.2). Embedding commands are unprivileged: they can only do what a viewer could do with the controls. Narration text is not sent at run time; hosts read `deck-narration` from the file.
 
 ## 9A. Extensions
 
@@ -307,6 +325,7 @@ Platforms may need information that Etoki does not define (e.g. questions to ask
 - **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements. Producers MAY fold them into `extensions.<name>` at export.
 - Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
 - An extension MUST NOT change how a player that ignores it renders or times the lesson. Information without which the lesson cannot be played correctly is not an extension; it needs a new feature in `requires` and a new version of this specification.
+- Extension data in a portable file is public to anyone holding the file (§3.7).
 - Extension names are registered first-come in [`extensions.md`](extensions.md) with a link to their definition.
 
 ## 10. Conformance classes
@@ -318,8 +337,22 @@ Platforms may need information that Etoki does not define (e.g. questions to ask
 | **Editor** | safe import (§11), tier A at least, §7, preserves unknown members and `docId` |
 | **Producer** | writes conforming documents; §3.3 exclusions; §5 audio rules |
 | **LMS Binding** | packages a document for a learning platform per a binding document (SCORM 1.2 in 1.0) |
+| **Host** | a platform that accepts and plays Etoki files: §10.1 |
 
 Conformance is tested with the fixtures in [`fixtures/`](fixtures/).
+
+### 10.1 Host
+
+A conforming host MUST:
+
+1. Validate uploaded files on the server per §11 without executing them (limits, hashes, `requires`), and reject unsupported `requires` with a clear message. Hosts whose platform limits are lower than §11's recommendations MUST stream uploads rather than buffer them.
+2. Play files through §9.4 in an iframe with `sandbox="allow-scripts"` and without `allow-same-origin`, and serve the file itself with a `Content-Security-Policy` that sandboxes it and forbids network access even when its URL is opened directly, e.g. `sandbox allow-scripts; default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline' data:; script-src 'unsafe-inline' blob:; font-src data:`.
+3. Store the original bytes unmodified and return them unchanged to users authorized to edit. It MAY serve learners a play-only derivative (§3.7), and MUST do so when extensions carry information to be withheld from learners.
+4. Play files that carry no extensions for that host.
+5. Record progress from §9.2/§9.4 events, keeping Etoki completion (`deck-meta.completion`) distinct from the host's own grading.
+6. Never write learner data into files (§9.1A).
+
+A host MAY supply its own controls and restrict navigation (§1.2). Conformance covers Etoki content only; other kinds of material a platform offers are out of scope.
 
 ## 11. Security considerations
 
