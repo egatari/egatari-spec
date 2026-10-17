@@ -165,19 +165,20 @@
     },
     "blobId": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+      "pattern": "^[A-Za-z0-9_]{1,32}$"
     },
     "stepKey": {
       "type": "string",
-      "description": "<slideKey>:<stepKey>, split at the last colon",
-      "pattern": "^.+:(0|[1-9][0-9]*|concl)$"
+      "description": "<slideKey>:<stepKey>, split at the last colon; step in canonical decimal 0-999 or concl",
+      "pattern": "^.+:(0|[1-9][0-9]{0,2}|concl)$",
+      "maxLength": 200
     },
     "archivePath": {
       "type": "string",
-      "description": "Relative /-separated path. Structural checks beyond this pattern (reserved names, case collisions, prototype keys) are normative in spec §3.3 and enforced by validators.",
+      "description": "Relative /-separated path. Further checks (reserved device names, case-folded collisions, file/directory prefix collisions, prototype keys, 10 segments, 1024 bytes) are normative in spec §3.3 and MUST be enforced by readers beyond schema validation.",
       "minLength": 1,
       "maxLength": 1024,
-      "pattern": "^(?![/])(?!.*\\\\)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//)(?!.*[\\u0000-\\u001f])(?![A-Za-z]:).+$"
+      "pattern": "^(?![/])(?!.*\\\\)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//)(?!.*/$)(?!.*[\\u0000-\\u001f\\u007f<>:\"|?*]).+$"
     },
     "blob": {
       "type": "object",
@@ -204,7 +205,7 @@
           "minItems": 1,
           "items": {
             "type": "string",
-            "pattern": "^etoki-b-[A-Za-z0-9_-]{1,64}-[0-9]+$"
+            "pattern": "^etoki-b-[A-Za-z0-9_]{1,32}-(0|[1-9][0-9]{0,3})$"
           }
         }
       }

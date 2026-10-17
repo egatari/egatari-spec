@@ -26,7 +26,7 @@ JSON structures are normatively defined by the JSON Schemas in [`schema/`](schem
 
 A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a final `concl` step. The **position** is the triple *(i, k, t)*: slide index, step, and seconds since the step began.
 
-- **Determinism.** The rendered screen MUST be a function of *(i, k, t)* alone (plus the display mode and viewport). Content MUST NOT depend on wall-clock time, timers, animation-frame callbacks, call order, or unseeded randomness.
+- **Determinism.** The rendered screen MUST be a function of *(i, k, t)* alone (plus the display mode and viewport). Content MUST NOT depend on wall-clock time, timers, animation-frame callbacks, call order, or unseeded randomness. The only additional input is the **transition source**: at step 0, a slide transition (cross-fade or morph) depends on an explicit source slide parameter. Without that parameter, a player renders without a transition. Final states never depend on transition history.
 - *t = ∞* denotes the final state of the step. A player MUST be able to render any *(i, k, ∞)* directly (jumping, going back, printing, reduced motion).
 
 ### 1.2 Display modes
@@ -52,7 +52,7 @@ An Etoki file is an HTML document (`text/html; charset=utf-8`). The RECOMMENDED 
 
 A file with only the runtime layer is a **play-only** Etoki file. A file with both is a **portable** Etoki file.
 
-All JSON blocks are `<script>` elements with a non-executable `type` and a unique `id`. In every JSON block, every `<` MUST be written as `<`.
+All JSON blocks are `<script>` elements with a non-executable `type` and a unique `id`. Before embedding (and before hashing), every U+003C `<` in serialized JSON MUST be written as the six ASCII characters `\u003c`. Serialized JSON uses LF line endings only. (A non-executable `type` does not stop the HTML parser from ending the element at a literal `</script`.)
 
 ### 2.1 Readable layer without script
 
@@ -67,7 +67,7 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 ```
 
 - `data-sha256` is the lowercase hex SHA-256 of the exact UTF-8 text content of the element. Readers MUST verify it before use.
-- The content is a JSON object valid against [`schema/etoki-index.schema.json`](schema/etoki-index.schema.json). Its main members:
+- The content is a JSON object without duplicate member names, valid against [`schema/etoki-index.schema.json`](schema/etoki-index.schema.json). Its main members:
 
 | Member | Req. | Meaning |
 |---|---|---|
@@ -96,7 +96,7 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 - Every blob — including UTF-8 text — is stored base64-encoded (RFC 4648 §4, no line breaks) in one or more chunk blocks listed in order in `blobs[id].chunks`.
 - Each chunk MUST decode to at most 196 608 bytes (192 KiB). A reader concatenates the **decoded** bytes of the chunks, never the base64 strings.
 - The decoded length MUST equal `bytes` and its SHA-256 MUST equal `sha256`; otherwise the blob is corrupt.
-- Blob and chunk ids match `^[A-Za-z0-9_-]{1,64}$`. Duplicate ids make the file invalid.
+- Blob ids match `^[A-Za-z0-9_]{1,32}$`. Chunk ids are `etoki-b-<blobId>-<n>` with `<n>` the zero-based chunk number in canonical decimal (at most 9999). Duplicate ids make the file invalid.
 - Version 1.0 blobs are uncompressed. A future feature (e.g. `gzip-v1`) may add compression; it will be listed in `requires`.
 
 ### 3.3 Archive paths
@@ -106,9 +106,14 @@ Keys of `files` are archive paths: `/`-separated, relative, UTF-8, NFC. A reader
 - is absolute, starts with `/`, contains a drive letter (`C:`), a UNC prefix, a backslash, a NUL or other control character;
 - has a segment that is empty, `.` or `..`, ends in a dot or space, or is a Windows reserved device name (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`, with or without extension);
 - collides case-insensitively with another path;
-- is `__proto__`, `constructor` or `prototype` in any segment.
+- is `__proto__`, `constructor` or `prototype` in any segment;
+- contains any of `< > : " | ? *` or U+007F, or ends with `/`;
+- has a segment that is a Windows device name with a superscript digit (`COM¹`–`COM³`, `LPT¹`–`LPT³`);
+- equals another path followed by `/…` (a path cannot be both a file and a directory).
 
-Paths under `audio/` are reserved for narration audio. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
+Case-insensitive comparison uses NFC followed by Unicode default case folding. A path is at most 1024 bytes and 10 segments. Readers MUST build every key-indexed structure from untrusted input with maps that have no inherited keys.
+
+Paths under `audio/` are reserved for narration audio. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
 
 ### 3.4 Source hash
 
@@ -128,10 +133,10 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 
 | id | Content |
 |---|---|
-| `deck-meta` | `{format:"etoki", version:{major,minor}, contracts:{source,runtime}, generator:{name,version}, sourceSha256?, portable:boolean}` |
+| `deck-meta` | `{format:"etoki", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
 | `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
-| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `etoki:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3) |
+| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `etoki:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 
 Every slide MUST carry a `data-key`: the slide's `id` attribute if present, otherwise its normalized heading text (legacy). Producers SHOULD give every slide an explicit, stable id (§8.1), so that editing a title does not break narration and audio associations.
@@ -168,7 +173,7 @@ Editors MUST NOT replace `recorded` audio unless the user explicitly selects tha
 
 ### 5.3 Boundaries and cues
 
-The boundaries of a step, listed in order across its turns, correspond one-to-one with `cues`. Players align component `cues(k)` with the `cue` boundaries only, and start marks at `cue + lead`. When counts do not match, players MUST fall back to unsynchronized deterministic timing (marks every 0.9 s after the step's motion ends). Producers of recorded audio MUST NOT reuse cue times from a previous take; until the user places them, the record MUST have `cues` of the correct length marked unsynchronized (`"sync":"none"`), or be omitted.
+The boundaries of a step, listed in order across its turns, correspond one-to-one with `cues`. Players align component `cues(k)` with the `cue` boundaries only, and start marks at `cue + lead`. When counts do not match, **or `sync` is `none`**, players MUST fall back to unsynchronized deterministic timing (no component stretching; marks every 0.9 s after the step's motion ends). Producers of recorded audio MUST NOT reuse cue times from a previous take; until the user places them, the record (and its `deck-audio` entry) MUST have `"sync":"none"` and `cues: []`.
 
 ### 5.4 Staleness and identity
 
@@ -197,7 +202,7 @@ Animated figures are custom elements (Web Components) following the component co
 | **Core** | Only `registry` components: identified by name, version and the SHA-256 of their code in a public component registry. The archive contains no component code. | The editor supplies its own trusted copy and verifies the hash. A component it does not have is shown as its final-state image or text equivalent. |
 | **Extended** | `embedded` components: code is in the archive (pinned at export). | The editor MUST run component code only in a sandbox with an opaque origin and a policy that forbids network access, and MUST tell the user before opening that the lesson contains its own interactive parts. |
 
-The runtime layer of either profile contains the component code needed to play offline.
+The runtime layer of either profile contains the component code needed to play offline. An Extended document MAY mix registry and embedded components. If an editor cannot obtain a trusted copy of a registry component with the recorded hash, it MUST disable tier B and C edits for that document and MAY still perform tier A edits.
 
 ## 7. Versioning and editing
 
@@ -214,7 +219,7 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 
 | Tier | Change | Required behavior |
 |---|---|---|
-| **A** (default) | narration text, audio, timing overrides only | Do not rebuild. Replace only the affected JSON entries, audio records and blobs; all other bytes of the runtime layer stay identical. Update `sourceSha256` in both places. |
+| **A** (default) | narration text, audio, timing overrides only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records and blobs; and **append-only font supplements** — new `<style id="etoki-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. Every byte outside these regions, including existing font data, MUST stay identical. |
 | **B** | slide content (text, math, figures) | Rebuild with the editor's runtime of the same `contracts.runtime`, using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
 | **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
 
@@ -230,6 +235,9 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 - Generated ids SHOULD be `s-` followed by 6 random base32 characters (`[a-z2-7]`). They MUST NOT be derived from the heading, so that renaming a heading never changes the id.
 - In `narration.md`, a slide is addressed as `## <heading> {#<id>}` (RECOMMENDED), `## <id>`, or `## <heading>` (legacy, only for slides without id). When an `{#id}` is present it wins over the heading text.
 - A deck MAY mix slides with and without ids; each slide is keyed independently.
+- **Key derivation.** A heading line is `## ` followed by the heading text, optionally followed by whitespace and `{#<id>}` at the end of the line. If `{#<id>}` is present, the slide key is the id. Otherwise, if the heading text equals an id of a slide, the key is that id. Otherwise the key is the **normalized heading**: HTML tags removed, `&nbsp;` treated as a space, and **all** whitespace removed. In `deck.html`, a slide without id is keyed by the normalized text of its first heading element.
+- Two slides with the same key make the document invalid; producers MUST assign ids to resolve collisions.
+- Step numbers are written in canonical decimal (`0`, `1`, … without leading zeros), at most 999.
 
 ### 8.2 Narration syntax (summary)
 
@@ -257,7 +265,7 @@ A conforming player MUST: render any *(i, k, t)* deterministically; implement th
 
 ### 9.2 Tracking
 
-A player SHOULD expose progress through a tracking adapter, detected in this order: SCORM 1.2 API (`window.API` in a parent frame), then `postMessage` to the parent, then local storage. Events: `started`, `step` (`{slideKey, stepKey, index, total}`), `completed`, `suspend` (`{location, data}`). The SCORM 1.2 binding is defined in [`bindings/scorm12.md`](bindings/scorm12.md). Completion defaults to "every step visited"; `metadata.completion` MAY set `{"visitedFraction": number}` or `{"reachedEnd": true}`.
+A player SHOULD expose progress through a tracking adapter, detected in this order: SCORM 1.2 API (`window.API` in a parent frame), then `postMessage` to the parent, then local storage. Events: `started`, `step` (`{slideKey, stepKey, index, total}`), `completed`, `suspend` (`{location, data}`). The SCORM 1.2 binding is defined in [`bindings/scorm12.md`](bindings/scorm12.md). A player lists the adapters it implements in `deck-meta.tracking`; completion rules are read from `deck-meta.completion` so that play-only files can be tracked. Completion defaults to "every step visited"; `metadata.completion` MAY set `{"visitedFraction": number}` or `{"reachedEnd": true}`.
 
 ### 9.3 Source extraction
 
@@ -309,7 +317,8 @@ Conformance is tested with the fixtures in [`fixtures/`](fixtures/).
 
 - **Opening an Etoki file as a web page runs its scripts**, as with any HTML file. Being importable safely by an editor does not make arbitrary HTML trustworthy.
 - An editor MUST read an imported file as bytes and extract the index and blobs with a parser that neither executes scripts nor loads resources. It MUST NOT navigate to, `srcdoc`, or insert the file into a document. It MUST validate the index hash, blob hashes, MIME types, and archive paths (§3.3) before constructing any workspace.
-- An editor MUST enforce limits before allocation. Recommended minimums an editor may refuse beyond: 100 MiB file, 128 MiB decoded archive, 3000 files, path depth 10, 4 MiB index, 32 MiB per file.
+- An editor MUST enforce limits before allocation and account for them in this order: file size before parsing; index size and member count before `JSON.parse`; each chunk's encoded length (at most 262 144 characters) before decoding; cumulative decoded bytes while decoding. Recommended limits an editor may refuse beyond: 100 MiB file, 128 MiB decoded archive, 3000 files, path depth 10, 4 MiB index, 32 MiB per file.
+- Messages from a preview MUST NOT authorize mutations. A write happens only as an operation initiated and scoped by the editor's own UI; preview code cannot create that authorization (it may only send hints such as the selected slide, step or element).
 - Previews MUST run in a sandboxed frame with an opaque origin and a content security policy forbidding network connections, forms and external resources. File handles, microphone access, model workers and write operations MUST stay in the editor's own context; messages from the preview MUST be treated as untrusted hints.
 - Hashes in this format detect corruption; they do not authenticate authorship.
 
@@ -327,8 +336,9 @@ Conformance is tested with the fixtures in [`fixtures/`](fixtures/).
 
 ## Appendix A. Open issues
 
-1. Normative text of §8 (import from `docs/contract.md`).
+1. **Blocker for 1.0:** normative text of §8 (import and freeze `docs/contract.md`), component/theme dependency manifests and hash scope, schemas for every runtime block, archive↔runtime consistency rules.
 2. Public component registry: location, naming, hash publication.
 3. Whether a lesson may embed a custom reference voice (size, privacy).
 4. Tolerances for loudness and cue timing across browsers.
 5. File-picker availability on `file://`; download as the baseline save path.
+6. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.

@@ -44,29 +44,41 @@ The package MUST NOT add other launch files or modify the Etoki file: extracting
 
 ## 2. Run-time
 
-The bridge is part of the Etoki player's tracking adapter (no separate script in the package). The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to 7 levels and then `window.opener`, as in the ADL reference algorithm. If none is found, the player falls back to the next adapter (Etoki 1.0 §9.2).
+The bridge is part of the Etoki player's tracking adapter (no separate script in the package). A packager MUST refuse an Etoki file whose `deck-meta.tracking` does not contain `"scorm12"`.
+
+The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to 7 levels and then `window.opener`, as in the ADL reference algorithm. If none is found, it falls back to the next adapter (Etoki 1.0 §9.2). API functions return the strings `"true"` / `"false"`; the player compares them literally and calls `LMSGetLastError()` immediately after any failed call and after every `LMSGetValue`.
+
+### 2.1 Lifecycle
 
 | Player event | SCORM 1.2 calls |
 |---|---|
-| start | `LMSInitialize("")`. If `cmi.core.lesson_status` is `not attempted`, set it to `incomplete`. If `cmi.core.entry` is `resume`, restore position from `cmi.core.lesson_location` and visited steps from `cmi.suspend_data` |
-| step reached | set `cmi.core.lesson_location` to the step key; update `cmi.suspend_data`; `LMSCommit("")` at most once every 30 s and on every change of slide |
+| load | `LMSInitialize("")` once. Read `cmi.core.lesson_mode`, `cmi.core.lesson_status`, `cmi.core.entry`, `cmi.core.lesson_location`, `cmi.suspend_data` |
+| start (first user gesture) | if `lesson_mode` is `review`: write nothing except at termination. Otherwise, if `lesson_status` is `not attempted`, set `incomplete` |
+| step reached | update `cmi.core.lesson_location` and `cmi.suspend_data` (§2.2); `LMSCommit("")` at most once every 30 s and on every change of slide |
 | completed (§3) | set `cmi.core.lesson_status` to `completed`; `LMSCommit("")` |
-| page hidden / unload (`pagehide`) | set `cmi.core.session_time`; set `cmi.core.exit` to `suspend` unless completed (then `""`); `LMSCommit("")`; `LMSFinish("")` |
+| `visibilitychange` to hidden | pause playback; `LMSCommit("")`. Do **not** finish |
+| `pagehide` | set `cmi.core.session_time`; set `cmi.core.exit` to `suspend` unless completed (then `""`); `LMSCommit("")`; `LMSFinish("")`. Called at most once per page lifetime |
+| `pageshow` with `persisted` after finishing (back/forward cache) | tracking is over for this page: the player keeps playing and shows a notice that progress is no longer recorded until the lesson is reopened from the LMS |
 
-- `cmi.core.lesson_location` is at most 255 characters. If a step key is longer, the player stores the step's ordinal number instead, prefixed with `#` (e.g. `#42`).
 - `cmi.core.session_time` uses the SCORM 1.2 format `HHHH:MM:SS.SS`.
 - Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Etoki lesson has no assessment in 1.0.
-- Every API call's return value is checked; on error the player keeps playing and logs `LMSGetLastError()`.
+- On any error the player keeps playing.
 
-### 2.1 Suspend data
+### 2.2 Location and suspend data
 
-`cmi.suspend_data` (at most 4096 characters) holds
+Steps are numbered by zero-based **ordinal** in timeline order (Etoki 1.0 §5.5).
+
+- `cmi.core.lesson_location` (CMIString255, ASCII) is always `#<ordinal>` in canonical decimal, e.g. `#42`.
+- `cmi.suspend_data` (at most 4096 characters) is the ASCII JSON
 
 ```json
-{"v":1,"n":<number of steps>,"seen":"<base64url bitset>"}
+{"v":1,"n":<number of steps>,"h":"<8 hex>","seen":"<base64url bitset>"}
 ```
 
-where bit *j* of `seen` (least significant bit of the first byte first) is set when the *j*-th step in document order was reached. With 4096 characters this covers about 20 000 steps. A player that reads `v` it does not know, or `n` different from the current lesson, ignores the stored data (the lesson changed) and starts fresh, keeping only `lesson_location` if that step still exists.
+- `h` is the first 8 hex digits of SHA-256 over the UTF-8 step keys in timeline order, each followed by LF.
+- Bit *j* of `seen` corresponds to ordinal *j*: byte ⌊*j*/8⌋, bit *j* mod 8, least significant bit first; the bitset has ⌈*n*/8⌉ bytes, unused high bits are 0; base64url without padding.
+- On resume (`entry` is `resume`), if `v`, `n` and `h` all match the current lesson, the player restores the visited steps and the position. Otherwise the lesson changed: it ignores both and starts at the beginning.
+- A packager MUST refuse a lesson whose suspend data could exceed 4096 characters (more than about 3000 steps).
 
 ## 3. Completion
 
@@ -74,4 +86,9 @@ Completion follows Etoki 1.0 §9.2: by default every step has been reached at le
 
 ## 4. Conformance
 
-An LMS Binding (SCORM 1.2) packager MUST produce packages as in §1. A player claiming this binding MUST implement §2 and §3. Conformance is checked with the fixtures in [`../fixtures/`](../fixtures/) and by importing a package into Moodle (activity type SCORM package) and confirming: launch, status `incomplete` after start, `completed` after the last step, and resume at the last step after reopening.
+An LMS Binding (SCORM 1.2) packager MUST produce packages as in §1. A player claiming this binding MUST implement §2 and §3. Conformance is checked with the fixtures in [`../fixtures/`](../fixtures/) and by importing a package into Moodle (activity type *SCORM package*) with these cases, recording the Moodle settings used (*Force new attempt*, *Force completed*, *standards mode*, *grading method*):
+
+1. **Suspend/resume (incomplete):** start, visit some steps (skipping some), close; status is `incomplete`; reopen resumes at the last position with the visited set restored.
+2. **Completion:** visit every step in order; status becomes `completed`.
+3. **Review after completion:** reopen a completed attempt; status stays `completed` and nothing is overwritten.
+4. **Changed lesson:** replace the package with a reordered lesson of the same length; resume data is ignored (`h` differs).
