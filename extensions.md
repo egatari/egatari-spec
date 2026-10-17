@@ -4,3 +4,4 @@ Extensions carry platform-specific information without changing Etoki (spec §9A
 
 | Name | Owner | Purpose | Definition |
 |---|---|---|---|
+| `tutor` | Etoki editors | comprehension checkpoints, AI answer scope, branch lessons generated in answer to questions | [extensions/tutor.md](extensions/tutor.md) |

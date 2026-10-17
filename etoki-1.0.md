@@ -131,7 +131,15 @@ Paths under `audio/` are reserved for narration audio. An archive MUST include t
 
 ### 3.6 Metadata
 
-`metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `creators` (display names the author chose to publish), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), and `completion` (§9.2). Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
+`metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `creators` (display names the author chose to publish), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), `completion` (§9.2), and the members of §3.6.1. Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
+
+#### 3.6.1 Derivation, authorship and audience
+
+These OPTIONAL members support lessons made for one learner, by learners, or by software agents.
+
+- `derivedFrom`: `{docId, sourceSha256, anchor?}` — the lesson this one was derived from (e.g. a version adapted for one learner, or a short branch answering a question, where `anchor` is the step key it branches from). An editor that changes the original can then find derived lessons and offer to carry a fix over, step by step, using slide ids.
+- `authorship`: `{<stepKey or slideKey>: {by, reviewed}}` with `by` one of `human`, `ai`, `mixed` and `reviewed` a boolean (a person responsible for the lesson has checked it). Keys without an entry are unknown. Names of reviewers are not recorded (§3.6).
+- `audience`: `"public"` (default) or `"individual"`. An individual lesson is made for a specific learner or group and SHOULD NOT be redistributed; hosts MUST NOT show it to other learners. It still MUST NOT contain learner records (§9.1A): it may be tailored to a learner, but grades, answers or personal data are not part of it.
 
 ### 3.7 Play-only derivative
 

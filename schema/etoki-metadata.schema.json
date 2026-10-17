@@ -83,6 +83,55 @@
         }
       },
       "description": "Exactly one rule. Unknown future rules are preserved by editors; players that do not know the rule fall back to every-step-visited."
+    },
+    "derivedFrom": {
+      "type": "object",
+      "required": [
+        "docId",
+        "sourceSha256"
+      ],
+      "properties": {
+        "docId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "anchor": {
+          "type": "string",
+          "pattern": "^.+:(0|[1-9][0-9]{0,2}|concl)$"
+        }
+      }
+    },
+    "authorship": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "by"
+        ],
+        "properties": {
+          "by": {
+            "enum": [
+              "human",
+              "ai",
+              "mixed"
+            ]
+          },
+          "reviewed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "audience": {
+      "enum": [
+        "public",
+        "individual"
+      ],
+      "default": "public"
     }
   },
   "not": {
