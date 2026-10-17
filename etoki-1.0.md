@@ -406,6 +406,8 @@ Tier A edits by the signer SHOULD be followed by a new signature with `supersede
 | L1 | the key fingerprint is published by the signer on a site they control (`did:web`), ORCID or researchmap; checked when online | "<name>, key confirmed at <site>" |
 | L2 | an attestation by an organization (university, or an Etoki key registry) binding the key to the person and affiliation, embedded and verifiable offline | "<name>, <affiliation>, confirmed by <organization>" |
 
+Any organization MAY issue L2 attestations; this specification names none. Which attesting organizations a player or host trusts is its own configuration (e.g. a host for one university trusts that university), and a player MUST show the attesting organization's name rather than a generic "verified".
+
 Signing certificates that contain personal data beyond name and affiliation (e.g. national ID card certificates) MUST NOT be embedded. Authors SHOULD also publish each lesson's `docId` and their key fingerprint on an official distribution page, so that copies can be checked against it.
 
 ## 10. Conformance classes
