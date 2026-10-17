@@ -359,6 +359,55 @@ Platforms may need information that Etoki does not define (e.g. questions to ask
 - Extension data in a portable file is public to anyone holding the file (§3.7).
 - Extension names are registered first-come in [`extensions.md`](extensions.md) with a link to their definition.
 
+## 9B. Signatures (feature `signatures-v1`, draft)
+
+> Draft. Not part of the 1.0 conformance requirements until this note is removed. Interoperability with C2PA Content Credentials is planned for a later version (statement → claim and hard binding, `derivedFrom` → ingredient, affiliation → identity assertion).
+
+A rights holder MAY sign a lesson so that players can show who signed it and whether it has changed since. Signatures make genuine copies verifiable; they cannot prevent modification, and an attacker can remove the signature block entirely. `signatures-v1` is ignorable and MUST NOT be listed in `requires`.
+
+### 9B.1 Block
+
+```html
+<script type="application/vnd.etoki+json" id="etoki-signatures">{"signatures":[…]}</script>
+```
+
+Each entry is a JWS in JSON Serialization (RFC 7515 §7.2.2 flattened form) whose payload is the UTF-8 bytes of a **statement** (carried as is, so no canonicalization is needed):
+
+| Statement member | Meaning |
+|---|---|
+| `type` | `"etoki-signature/1"` |
+| `docId` | the lesson's `docId` |
+| `signedAt` | RFC 3339 time claimed by the signer |
+| `signer` | `{name, affiliation?, orcid?, keyId}` — claims, verified only through §9B.3 |
+| `fileSha256` | SHA-256 of the whole file with the `etoki-signatures` element (from `<script` to `</script>` inclusive) removed |
+| `indexSha256` | the index's `data-sha256`, if portable |
+| `sourceSha256` | as §3.4, if portable |
+| `derivedFrom` | copy of `metadata.derivedFrom`, plus `signatureDigest` of the original's signature when known |
+| `supersedes` | digest of an earlier signature by the same signer on a previous revision |
+
+Algorithms: `EdDSA` with Ed25519 (RECOMMENDED) and `ES256` (P-256). Verifiers MUST support both. The protected header carries `alg` and `kid`; the JWK of the public key MAY be included as `jwk`.
+
+### 9B.2 Verification and display
+
+A player that implements this feature computes `fileSha256` and verifies each signature, then shows exactly one of:
+
+- **Signed, unmodified** — signature valid and `fileSha256` matches; with the identity level (§9B.3).
+- **Modified since signing** — signature valid for an earlier state but `fileSha256` differs.
+- **Signature invalid** — the signature does not verify.
+- No indication when there is no signature block. Players MUST NOT present the absence of a signature as evidence of forgery, nor any unsigned lesson as verified (§11).
+
+Tier A edits by the signer SHOULD be followed by a new signature with `supersedes`. Edits by anyone else leave the old signature in place, which then shows *modified since signing*. (A later revision may sign a frame hash excluding tier A regions plus per-step narration and audio hashes, so that players can say which steps changed.)
+
+### 9B.3 Identity levels
+
+| Level | Evidence | Shown as |
+|---|---|---|
+| L0 | key only (`did:key`), name self-declared | "signed with key <fingerprint>, name as declared" |
+| L1 | the key fingerprint is published by the signer on a site they control (`did:web`), ORCID or researchmap; checked when online | "<name>, key confirmed at <site>" |
+| L2 | an attestation by an organization (university, or an Etoki key registry) binding the key to the person and affiliation, embedded and verifiable offline | "<name>, <affiliation>, confirmed by <organization>" |
+
+Signing certificates that contain personal data beyond name and affiliation (e.g. national ID card certificates) MUST NOT be embedded. Authors SHOULD also publish each lesson's `docId` and their key fingerprint on an official distribution page, so that copies can be checked against it.
+
 ## 10. Conformance classes
 
 | Class | Requirement summary |
@@ -393,7 +442,7 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 - Messages from a preview MUST NOT authorize mutations. A write happens only as an operation initiated and scoped by the editor's own UI; preview code cannot create that authorization (it may only send hints such as the selected slide, step or element).
 - Previews MUST run in a sandboxed frame with an opaque origin and a content security policy forbidding network connections, forms and external resources. File handles, microphone access, model workers and write operations MUST stay in the editor's own context; messages from the preview MUST be treated as untrusted hints.
 - Hashes in this format detect corruption; they do not authenticate authorship.
-- **Modification cannot be prevented, and authenticity is not guaranteed by Etoki 1.0.** Anyone can alter a lesson and present it as someone else's original (e.g. to misrepresent what a teacher teaches). A future optional feature, `signatures-v1`, will let a rights holder sign a lesson so that players can show whether a copy is unmodified since signing and who signed it; signatures make genuine copies verifiable, they do not make forgery impossible. Until then, players and hosts MUST NOT present any lesson as verified or authentic, and metadata such as `creators` MUST be described as claims.
+- **Modification cannot be prevented, and authenticity is not guaranteed by Etoki 1.0.** Anyone can alter a lesson and present it as someone else's original (e.g. to misrepresent what a teacher teaches). The optional feature `signatures-v1` (§9B, draft) lets a rights holder sign a lesson so that players can show whether a copy is unmodified since signing and who signed it; signatures make genuine copies verifiable, they do not make forgery impossible. Until then, players and hosts MUST NOT present any lesson as verified or authentic, and metadata such as `creators` MUST be described as claims.
 
 ## 12. Media type and identification
 
