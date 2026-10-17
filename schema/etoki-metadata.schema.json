@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/moiku/motion-academic-slides/spec/schema/etoki-metadata.schema.json",
+  "title": "Etoki 1.0 metadata (index.metadata)",
+  "type": "object",
+  "required": ["title", "lang"],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "lang": { "type": "string", "pattern": "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$" },
+    "description": { "type": "string" },
+    "license": { "type": "string" },
+    "creators": { "type": "array", "items": { "type": "string" } },
+    "accessibility": {
+      "type": "object",
+      "properties": {
+        "accessMode": { "type": "array", "items": { "type": "string" } },
+        "accessModeSufficient": { "type": "array", "items": { "type": "string" } },
+        "accessibilityFeature": { "type": "array", "items": { "type": "string" } },
+        "accessibilityHazard": { "type": "array", "items": { "type": "string" } },
+        "accessibilitySummary": { "type": "string" }
+      }
+    },
+    "curriculum": { "type": "array", "items": { "type": "string" } },
+    "completion": {
+      "oneOf": [
+        { "type": "object", "required": ["visitedFraction"], "properties": { "visitedFraction": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 } }, "additionalProperties": false },
+        { "type": "object", "required": ["reachedEnd"], "properties": { "reachedEnd": { "const": true } }, "additionalProperties": false }
+      ]
+    }
+  },
+  "not": { "anyOf": [ { "required": ["created"] }, { "required": ["modified"] }, { "required": ["email"] } ] }
+}

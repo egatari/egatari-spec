@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/moiku/motion-academic-slides/spec/schema/deck-meta.schema.json",
+  "title": "Etoki 1.0 runtime metadata (#deck-meta)",
+  "type": "object",
+  "required": ["format", "version", "contracts", "generator", "portable"],
+  "properties": {
+    "format": { "const": "etoki" },
+    "version": { "$ref": "etoki-index.schema.json#/properties/version" },
+    "contracts": { "$ref": "etoki-index.schema.json#/properties/contracts" },
+    "generator": { "$ref": "etoki-index.schema.json#/properties/generator" },
+    "sourceSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "portable": { "type": "boolean" }
+  },
+  "if": { "properties": { "portable": { "const": true } } },
+  "then": { "required": ["sourceSha256"] }
+}
