@@ -125,7 +125,7 @@ Keys of `files` are archive paths: `/`-separated, relative, UTF-8, NFC. A reader
 
 Case-insensitive comparison uses the key `NFC(lower(upper(NFC(path))))`, where `upper` and `lower` are the locale-independent Unicode case mappings (as ECMAScript `toUpperCase`/`toLowerCase`). A path is at most 1024 bytes and 10 segments. Readers MUST build every key-indexed structure from untrusted input with maps that have no inherited keys.
 
-Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?}`) so that an unpacked folder keeps its `docId`; when present, its `docId` MUST equal the index's. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
+Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?}`) so that an unpacked folder keeps its `docId`; when present, its `docId` MUST equal the index's. Editors MAY add it to a document that lacks it (this changes `sourceSha256`, which the edit updates anyway). An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
 
 ### 3.4 Source hash
 
@@ -133,7 +133,7 @@ Paths under `audio/` are reserved for narration audio; their blobs MUST have an 
 
 ### 3.5 Features
 
-`requires` lists feature identifiers (`^[a-z0-9-]+$`). Version 1.0 defines `sources-v1` (archive layer present) and `audio-v1` (§5.2 records). A reader MUST refuse to edit or re-export a file whose `requires` contains an identifier it does not implement; it MAY still play the file. Optional information that a reader may ignore MUST NOT be listed in `requires`.
+`requires` lists feature identifiers (`^[a-z0-9-]+$`). Version 1.0 defines `sources-v1` (archive layer present) and `audio-v1` (§5.2 records). A reader MUST refuse to edit or re-export a file whose `requires` contains an identifier it does not implement; it MAY still play the file and extract its source (§9.3) when the index and blobs validate. Source extraction is not re-export. Optional information that a reader may ignore MUST NOT be listed in `requires`.
 
 ### 3.6 Metadata
 
@@ -226,7 +226,7 @@ Animated figures are custom elements (Web Components) following the component co
 | Profile | Components | Editor behavior |
 |---|---|---|
 | **Core** | Only `registry` components: identified by name, version and the SHA-256 of their code in a public component registry. The archive contains no component code. | The editor supplies its own trusted copy and verifies the hash. A component it does not have is shown as its final-state image or text equivalent. |
-| **Extended** | `embedded` components: code is in the archive (pinned at export). | The editor MUST run component code only in a sandbox with an opaque origin and a policy that forbids network access, and MUST tell the user before opening that the lesson contains its own interactive parts. |
+| **Extended** | `embedded` components: code is in the archive (pinned at export). | The editor MUST run component code only in a sandbox with an opaque origin and a policy that forbids network access, and MUST tell the user that the lesson contains its own interactive parts before any of that code runs. "Forbids network access" means at least `connect-src 'none'`, with every other resource type limited to `data:` and `blob:`. |
 
 The runtime layer of either profile contains the component code needed to play offline. An Extended document MAY mix registry and embedded components. A document is Extended if any archived file other than registry components contains executable script (a `<script>` element without a data `type`, or a JavaScript file); otherwise it is Core. If an editor cannot obtain a trusted copy of a registry component with the recorded hash, it MUST disable tier B and C edits for that document and MAY still perform tier A edits.
 
@@ -234,7 +234,7 @@ The runtime layer of either profile contains the component code needed to play o
 
 ### 7.1 Versions
 
-- `version` (this specification): minor versions only add optional members; readers MUST preserve unknown members through edits. A reader MUST refuse to edit a file with an unknown **major** version, and SHOULD still play it and offer to extract the source (§9.3).
+- `version` (this specification): minor versions only add optional members; editors MUST preserve unknown members through edits, at every level of the index — including inside `metadata`, audio records and component entries. A reader MUST refuse to edit a file with an unknown **major** version, and SHOULD still play it. It MAY extract the source using the rules of the highest major version it implements, if the index validates against them; otherwise it refuses extraction too.
 - `contracts.source`: the authoring syntax (§8). Editors migrate older source contracts with deterministic migrators, and refuse newer ones.
 - `contracts.runtime`: the runtime behavior. See §7.2.
 - `generator.version` is informative.
@@ -257,8 +257,8 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 - Producers SHOULD copy `license`, `copyright` and `attribution` from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
 - Players SHOULD show title, creators, copyright, license and attribution in an information panel.
-- Before the first edit of a document, an editor MUST show its license. If the license does not permit derivatives (e.g. any Creative Commons `-ND` license, or no license with a copyright notice), the editor MUST warn that modifying or redistributing the lesson may infringe the rights holder's copyright and MUST require explicit confirmation.
-- When an editor saves a modified document under a new `docId` or for redistribution, it MUST keep the original `copyright`, `attribution` and `creators`, MUST set `derivedFrom` (§3.6.1), and MAY add the new editor's name to `creators`.
+- Each time a document is opened for editing, before the first change, an editor MUST show its license. If the license does not permit derivatives (e.g. any Creative Commons `-ND` license, or no license with a copyright notice), the editor MUST warn that modifying or redistributing the lesson may infringe the rights holder's copyright and MUST require explicit confirmation.
+- An editor that saves a document under a new `docId` (e.g. "save as a new lesson") MUST keep the original `copyright`, `attribution` and `creators`, MUST set `derivedFrom` (§3.6.1), and MAY add the new editor's name to `creators`. An editor that keeps the `docId` MUST NOT set or change `derivedFrom`.
 - Editors MUST NOT remove or alter `copyright` and `attribution` without the user's explicit action.
 
 ## 8. Authoring source (contract version 1)
