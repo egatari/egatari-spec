@@ -31,11 +31,15 @@ A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a f
 
 ### 1.2 Display modes
 
-| Mode | Later steps | Current step | Time |
+| Mode | Who drives | Time | Typical use |
 |---|---|---|---|
-| `talk` (default) | hidden | revealed | driven by the presenter |
-| `lecture` | shown faintly | highlighted | final states |
-| `video` | as `talk` | as `talk` | advances along the timeline (§5) with narration audio |
+| `talk` (default for a bare file) | the presenter, step by step | real time of each step | live presentation, class |
+| `learn` | the learner: start, pause, previous/next, jump, playback rate | advances along the timeline (§5.5) with narration audio | self-study, LMS (default in LMS bindings and hosted players) |
+| `video` | nobody (no controls) | advances along the timeline | recording and video export |
+
+**Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step. `?mode=lecture` is a legacy alias for `talk` with preview on.
+
+In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1.5 and 2, keeping the pitch of speech; the timeline clock advances at the same rate, so the screen stays a function of *(i, k, t)*. Presenter-only tools (presenter view, laser) SHOULD be hidden.
 
 ### 1.3 Narration
 
@@ -261,7 +265,11 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 
 ### 9.1 Playback
 
-A conforming player MUST: render any *(i, k, t)* deterministically; implement the three modes; play the formats in §5.1; start audio only after a user gesture (a visible start/resume control); pause when the page is hidden; honor `prefers-reduced-motion` by rendering final states; and work from `file://` with no network access.
+A conforming player MUST: render any *(i, k, t)* deterministically; implement the `talk`, `learn` and `video` modes and the preview option (§1.2); play the formats in §5.1; start audio only after a user gesture (a visible start/resume control); pause when the page is hidden; honor `prefers-reduced-motion` by rendering final states; and work from `file://` with no network access.
+
+### 9.1A Learner data
+
+Notes, ink, bookmarks and other data a learner creates MUST NOT be written into the Etoki file. Players MAY keep them in local storage keyed by `docId`, and SHOULD let the learner export them (e.g. the final state of each slide with the learner's notes, as PDF or Markdown).
 
 ### 9.2 Tracking
 
