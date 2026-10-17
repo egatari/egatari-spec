@@ -63,9 +63,9 @@ All JSON blocks are `<script>` elements with a non-executable `type` and a uniqu
 
 ### 2.1 Readable layer without script
 
-A conforming document MUST also contain, as ordinary DOM outside any `<script>`, for every step: the display text of its narration. It SHOULD contain, for every slide, either a static image of the final state or text equivalent to it. Producers MAY also include a final-state image per **step**, so that hosts can show stills without running a browser. This layer serves archiving, accessibility, search, and recovery when no script runs.
+A conforming document MUST also contain, as ordinary DOM outside any `<script>`, for every step of every slide: the display text of its narration. It SHOULD contain, for every slide, either a static image of the final state or text equivalent to it. Producers MAY also include a final-state image per **step**, so that hosts can show stills without running a browser. This layer serves archiving, accessibility, search, and recovery when no script runs.
 
-Structure: one `<section id="egatari-readable">` containing, per slide, `<article data-slide-key="…">` with the slide title, and per step `<div data-step-key="…">` with one `<p data-role="expert|novice">` per turn (display text). Images, if any, are `<img alt="…">` inside the article or step. The runtime hides this section when it starts; without script it stays visible. Tier A edits update the affected `div` elements (§7.2).
+Structure: one `<section id="egatari-readable">` containing, per slide, `<article data-slide-key="…">` with the slide title, and per step `<div data-step-key="…">` with one `<p data-role="expert|novice">` per turn (display text). Images, if any, are `<img alt="…">` inside the article or step. The runtime hides this section when it starts; without script it stays visible. Within an article, step `div`s are in step order (numbers ascending, `concl` last). Narration addressed to a slide key that matches no slide has no article: such steps are omitted from the readable layer and reported. Tier A edits update the affected `div` elements (§7.2).
 
 ## 3. Archive layer
 
@@ -205,7 +205,7 @@ The boundaries of a step, listed in order across its turns, correspond one-to-on
 
 Three hashes serve three purposes and MUST NOT be substituted for one another:
 
-1. **`inputHash`** — lowercase hex SHA-256 of the UTF-8 bytes of the canonical string `JSON.stringify(turns.map(t => [t.role, t.ttsParts, t.bounds.map(token)]))` (ECMAScript `JSON.stringify`, no whitespace), where `role` is `"expert"` or `"novice"`, `ttsParts` are the spoken text pieces between boundaries (readings substituted, trimmed, empty pieces kept), and `token` is `"cue"`, `"mark:clear"`, or `"mark:<id>|<effect>"` followed by `"|hold=<n>"` when a hold is given (`<n>` formatted by ECMAScript `Number.prototype.toString`). The slide key is not part of the hash. Test vectors: [`fixtures/input-hash/`](fixtures/input-hash/). Audio is **stale** when the current narration's `inputHash` differs from the record's. Editors MUST show stale steps and MUST NOT silently delete or regenerate their audio.
+1. **`inputHash`** — lowercase hex SHA-256 of the UTF-8 bytes of the canonical string `JSON.stringify(turns.map(t => [t.role, t.ttsParts, t.bounds.map(token)]))` (ECMAScript `JSON.stringify`, no whitespace), where `role` is `"expert"` or `"novice"`, `ttsParts` are the spoken text pieces between boundaries (readings substituted, trimmed, empty pieces kept), and `token` is `"cue"`, `"mark:clear"`, or `"mark:<id>|<effect>"` followed by `"|hold=<n>"` when a hold is given (`<n>` formatted by ECMAScript `Number.prototype.toString`). The slide key is not part of the hash. Test vectors: [`fixtures/input-hash/`](fixtures/input-hash/). Audio is **stale** when the current narration's `inputHash` differs from the record's. Editors MUST show stale steps and MUST NOT silently delete or regenerate their audio. When a step's narration is removed altogether, its audio is removed with it, with a warning.
 2. **`recipe` / `recipeDigest`** — records how the audio was generated. Identical recipes do **not** imply identical bytes: GPU-based synthesis is not bit-reproducible across hardware. Readers MUST NOT use audio bytes to decide whether a step needs regeneration.
 3. **`sha256`** of the blob — integrity only.
 
@@ -245,11 +245,13 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 
 | Tier | Change | Required behavior |
 |---|---|---|
-| **A** (default) | narration text, audio, timing overrides only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. Every byte outside these regions, including existing font data, MUST stay identical. |
+| **A** (default) | narration text, audio, timing overrides (`timeline.json` / `deck-timing`; durations themselves are computed, §5.5) only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. When saving under a new `docId` (§7.3), `deck-meta.docId`, the index `docId`, `metadata.derivedFrom` and `egatari.json` are also tier A regions. Every byte outside these regions, including existing font data, MUST stay identical. |
 | **B** | slide content (text, math, figures) | Rebuild with the editor's runtime of the same `contracts.runtime`, using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
 | **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
 
-Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
+Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId` (unless saving as a new lesson, §7.3).
+
+**Font supplements.** `<n>` in `egatari-font-supplement-<n>` is canonical decimal, one greater than the largest existing supplement (starting at 0); a supplement follows the last existing font style element. It contains `@font-face` rules with the same family, weight and style as each embedded face that needs the new characters. Producers SHOULD declare `unicode-range` on every embedded `@font-face`; editors MAY add a supplement for any character whose coverage they cannot establish from those ranges.
 
 ### 7.3 Rights
 
@@ -359,7 +361,7 @@ Platforms may need information that Egatari does not define (e.g. questions to a
 
 - **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9]{0,31}$` — no hyphen, so that `x-<name>-<field>` is unambiguous) and whose values are objects with at least `v` (integer version of that extension; producers write `1` unless the extension's definition says otherwise). Data addressed to a step uses step keys.
 - **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements, and in `narration.md` as extension lines (§8.2). Producers MAY fold them into `extensions.<name>` at export.
-- Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
+- Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits — except entries derived from extension lines (§8.2) that the edit changed — and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
 - An extension MUST NOT change how a player that ignores it renders or times the lesson. Information without which the lesson cannot be played correctly is not an extension; it needs a new feature in `requires` and a new version of this specification.
 - Extension data in a portable file is public to anyone holding the file (§3.7).
 - Extension names are registered first-come in [`extensions.md`](extensions.md) with a link to their definition.
