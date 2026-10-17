@@ -221,7 +221,7 @@ with defaults `lead = 0.25`, `pad_after = 0.6`, `hold = 1.2` seconds; `anim` is 
 
 ## 6. Components and profiles
 
-Animated figures are custom elements (Web Components) following the component contract (§8.4). Each entry of `index.components` is `{tag, name, version, sha256, source}` where `source` is `registry` or `embedded`. A component's `sha256` covers its code file (`index.js`) only. Each entry of `index.themes` is `{name, version, sha256, source}`; a theme's `sha256` is SHA-256 over the lines `"<relative path>\t<sha256>\n"` of its files, sorted by path. `version` is the registry release for registry entries; embedded entries without a version use `"local"`.
+Animated figures are custom elements (Web Components) following the component contract (§8.4). Each entry of `index.components` is `{tag, name, version, sha256, source}` where `source` is `registry` or `embedded`. For registry entries, `name` MUST match `^[a-z][a-z0-9-]{0,63}$` (a single identifier, never a path). A component's `sha256` covers its code file (`index.js`) only. Each entry of `index.themes` is `{name, version, sha256, source}`; a theme's `sha256` is SHA-256 over the lines `"<relative path>\t<sha256>\n"` of its files, sorted by path. `version` is the registry release for registry entries; embedded entries without a version use `"local"`.
 
 | Profile | Components | Editor behavior |
 |---|---|---|
