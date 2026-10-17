@@ -4,7 +4,7 @@
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Reference implementation:** [motion-academic-slides](https://github.com/moiku/motion-academic-slides) (producer, player, editor).
 **License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
-**Repository:** https://github.com/etoki-org/etoki-spec
+**Repository:** https://github.com/etoki-org/etoki-spec · **Site:** https://etoki.dev/
 
 Etoki (絵解き, "explaining pictures") is a file format for **narrated, animated lessons**. One Etoki file is a single HTML document that
 
