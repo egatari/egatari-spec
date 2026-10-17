@@ -3,7 +3,8 @@
 **Status:** Editor's Draft, 2026-10-17. Not stable. Anything may change before 1.0 is frozen.
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Reference implementation:** [motion-academic-slides](https://github.com/moiku/motion-academic-slides) (producer, player, editor).
-**License of this document:** [CC BY 4.0](LICENSE.md). Schemas and fixtures in `spec/` are MIT, like the rest of the repository.
+**License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
+**Repository:** https://github.com/etoki-org/etoki-spec
 
 Etoki (絵解き, "explaining pictures") is a file format for **narrated, animated lessons**. One Etoki file is a single HTML document that
 
@@ -247,7 +248,7 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 
 ## 8. Authoring source (contract version 1)
 
-> This section will incorporate, normatively, the current repository contract: `docs/contract.md` §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1` and `contracts.runtime = 1`.
+> This section will incorporate, normatively, the contract of the reference implementation: [`docs/contract.md`](https://github.com/moiku/motion-academic-slides/blob/main/docs/contract.md) §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1` and `contracts.runtime = 1`.
 
 ### 8.1 Slide identifiers
 

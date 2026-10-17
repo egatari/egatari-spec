@@ -1,0 +1,9 @@
+{
+  "name": "etoki-spec",
+  "private": true,
+  "type": "module",
+  "description": "Etoki specification: schemas and conformance fixtures",
+  "license": "MIT",
+  "scripts": { "test": "node tools/test-fixtures.mjs" },
+  "devDependencies": { "ajv": "8.17.1" }
+}
