@@ -65,6 +65,8 @@ All JSON blocks are `<script>` elements with a non-executable `type` and a uniqu
 
 A conforming document MUST also contain, as ordinary DOM outside any `<script>`, for every step: the display text of its narration. It SHOULD contain, for every slide, either a static image of the final state or text equivalent to it. Producers MAY also include a final-state image per **step**, so that hosts can show stills without running a browser. This layer serves archiving, accessibility, search, and recovery when no script runs.
 
+Structure: one `<section id="egatari-readable">` containing, per slide, `<article data-slide-key="…">` with the slide title, and per step `<div data-step-key="…">` with one `<p data-role="expert|novice">` per turn (display text). Images, if any, are `<img alt="…">` inside the article or step. The runtime hides this section when it starts; without script it stays visible. Tier A edits update the affected `div` elements (§7.2).
+
 ## 3. Archive layer
 
 ### 3.1 Index
@@ -74,6 +76,8 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 ```
 
 - `data-sha256` is the lowercase hex SHA-256 of the exact UTF-8 text content of the element. Readers MUST verify it before use.
+- Readers extract the index and blob blocks with an HTML parser with scripting disabled. A reserved id (`egatari-index`, `egatari-signatures`, or any `egatari-b-*`) occurring more than once anywhere in the document — including inside `<template>` or foreign (SVG/MathML) content — makes the file invalid.
+- Blob blocks referenced by the runtime layer SHOULD precede the runtime scripts, so that a player can resolve `egatari:` references while parsing; otherwise players resolve them after parsing completes.
 - The content is a JSON object without duplicate member names, valid against [`schema/egatari-index.schema.json`](schema/egatari-index.schema.json). Its main members:
 
 | Member | Req. | Meaning |
@@ -91,6 +95,7 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 | `blobs` | MUST | blob id → `{mime, bytes, sha256, chunks}` |
 | `audio` | MAY | step key → audio record (§5.2) |
 | `components` | MAY | components used (§6) |
+| `themes` | MAY | themes used, same shape as `components` (§6) |
 | `metadata` | MUST | descriptive metadata (§3.6) |
 | `excluded` | MAY | informative list of categories the producer deliberately left out |
 
@@ -103,7 +108,7 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 - Every blob — including UTF-8 text — is stored base64-encoded (RFC 4648 §4, no line breaks) in one or more chunk blocks listed in order in `blobs[id].chunks`.
 - Each chunk MUST decode to at most 196 608 bytes (192 KiB). A reader concatenates the **decoded** bytes of the chunks, never the base64 strings.
 - The decoded length MUST equal `bytes` and its SHA-256 MUST equal `sha256`; otherwise the blob is corrupt.
-- Blob ids match `^[A-Za-z0-9_]{1,32}$`. Chunk ids are `egatari-b-<blobId>-<n>` with `<n>` the zero-based chunk number in canonical decimal (at most 9999). Duplicate ids make the file invalid.
+- Blob ids match `^[A-Za-z0-9_]{1,32}$`. Chunk ids are `egatari-b-<blobId>-<n>` with `<n>` the zero-based chunk number in canonical decimal (at most 9999); `chunks[i]` MUST be `egatari-b-<blobId>-<i>`. Duplicate ids make the file invalid.
 - Version 1.0 blobs are uncompressed. A future feature (e.g. `gzip-v1`) may add compression; it will be listed in `requires`.
 
 ### 3.3 Archive paths
@@ -114,17 +119,17 @@ Keys of `files` are archive paths: `/`-separated, relative, UTF-8, NFC. A reader
 - has a segment that is empty, `.` or `..`, ends in a dot or space, or is a Windows reserved device name (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`, with or without extension);
 - collides case-insensitively with another path;
 - is `__proto__`, `constructor` or `prototype` in any segment;
-- contains any of `< > : " | ? *` or U+007F, or ends with `/`;
+- contains any of `< > : " | ? *` or a C0/C1 control character (U+0000–U+001F, U+007F–U+009F), ends with `/`, or is not in Unicode Normalization Form C;
 - has a segment that is a Windows device name with a superscript digit (`COM¹`–`COM³`, `LPT¹`–`LPT³`);
 - equals another path followed by `/…` (a path cannot be both a file and a directory).
 
-Case-insensitive comparison uses NFC followed by Unicode default case folding. A path is at most 1024 bytes and 10 segments. Readers MUST build every key-indexed structure from untrusted input with maps that have no inherited keys.
+Case-insensitive comparison uses the key `NFC(lower(upper(NFC(path))))`, where `upper` and `lower` are the locale-independent Unicode case mappings (as ECMAScript `toUpperCase`/`toLowerCase`). A path is at most 1024 bytes and 10 segments. Readers MUST build every key-indexed structure from untrusted input with maps that have no inherited keys.
 
-Paths under `audio/` are reserved for narration audio. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
+Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?}`) so that an unpacked folder keeps its `docId`; when present, its `docId` MUST equal the index's. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
 
 ### 3.4 Source hash
 
-`sourceSha256` is computed as SHA-256 over the UTF-8 bytes of the lines `"<path>\t<sha256>\n"`, one per entry of `files` excluding paths under `audio/`, sorted by path in code-point order. Producers MUST also write the same value into the runtime layer's `deck-meta.sourceSha256` (§4). An editor that finds the two different MUST warn that the compiled lesson and its source disagree and MUST NOT perform a tier A edit (§7.2).
+`sourceSha256` is computed as SHA-256 over the UTF-8 bytes of the lines `"<path>\t<sha256>\n"`, one per entry of `files` excluding paths under `audio/`, sorted by path in code-point order. Producers MUST also write the same value into the runtime layer's `deck-meta.sourceSha256` (§4). Readers MUST recompute it from `files` and the blob hashes; a mismatch with the index value is treated like a mismatch with `deck-meta`. An editor that finds any two of these values different MUST warn that the compiled lesson and its source disagree and MUST NOT perform a tier A edit (§7.2).
 
 ### 3.5 Features
 
@@ -157,7 +162,7 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 | `deck-meta` | `{format:"egatari", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
 | `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
-| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
+| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 
 Every slide MUST carry a `data-key`: the slide's `id` attribute if present, otherwise its normalized heading text (legacy). Producers SHOULD give every slide an explicit, stable id (§8.1), so that editing a title does not break narration and audio associations.
@@ -185,8 +190,8 @@ Producers SHOULD normalize speech to −20 LUFS integrated, −1.5 dBTP, and tri
 | `file` | MUST | archive path under `audio/` |
 | `dur`, `cues` | MUST | as in `deck-audio` |
 | `kind` | MUST | `tts`, `recorded`, or `imported` |
-| `inputHash` | MUST | §5.4 |
-| `recipe` | MUST for `tts` | `{engine, model, voice, seed, dictionary, processing}`; `voice` is a public identifier, never a path |
+| `inputHash` | MUST | §5.4; `null` when unknown (e.g. audio imported from an older build), which players and editors treat as stale |
+| `recipe` | MUST for `tts` | `{engine, model, voice, seed, dictionary, processing}`; `voice` is a public identifier, never a path; `dictionary` an identifier of the effective reading dictionary and rules (SHA-256 RECOMMENDED); `processing` a free-form profile string, RECOMMENDED as `key=value` pairs separated by `;` |
 | `recipeDigest` | MAY | the producer's content-address of input + recipe (e.g. the reference implementation's 12-hex `segDigest`) |
 | `alternatives` | MAY | `[{file, mime, startOffset}]` other encodings of the same take |
 
@@ -216,14 +221,14 @@ with defaults `lead = 0.25`, `pad_after = 0.6`, `hold = 1.2` seconds; `anim` is 
 
 ## 6. Components and profiles
 
-Animated figures are custom elements (Web Components) following the component contract (§8.4). Each entry of `index.components` is `{tag, name, version, sha256, source}` where `source` is `registry` or `embedded`.
+Animated figures are custom elements (Web Components) following the component contract (§8.4). Each entry of `index.components` is `{tag, name, version, sha256, source}` where `source` is `registry` or `embedded`. A component's `sha256` covers its code file (`index.js`) only. Each entry of `index.themes` is `{name, version, sha256, source}`; a theme's `sha256` is SHA-256 over the lines `"<relative path>\t<sha256>\n"` of its files, sorted by path. `version` is the registry release for registry entries; embedded entries without a version use `"local"`.
 
 | Profile | Components | Editor behavior |
 |---|---|---|
 | **Core** | Only `registry` components: identified by name, version and the SHA-256 of their code in a public component registry. The archive contains no component code. | The editor supplies its own trusted copy and verifies the hash. A component it does not have is shown as its final-state image or text equivalent. |
 | **Extended** | `embedded` components: code is in the archive (pinned at export). | The editor MUST run component code only in a sandbox with an opaque origin and a policy that forbids network access, and MUST tell the user before opening that the lesson contains its own interactive parts. |
 
-The runtime layer of either profile contains the component code needed to play offline. An Extended document MAY mix registry and embedded components. If an editor cannot obtain a trusted copy of a registry component with the recorded hash, it MUST disable tier B and C edits for that document and MAY still perform tier A edits.
+The runtime layer of either profile contains the component code needed to play offline. An Extended document MAY mix registry and embedded components. A document is Extended if any archived file other than registry components contains executable script (a `<script>` element without a data `type`, or a JavaScript file); otherwise it is Core. If an editor cannot obtain a trusted copy of a registry component with the recorded hash, it MUST disable tier B and C edits for that document and MAY still perform tier A edits.
 
 ## 7. Versioning and editing
 
@@ -352,7 +357,7 @@ The first start of audio SHOULD happen through the player's own start control, b
 
 Platforms may need information that Egatari does not define (e.g. questions to ask the learner at a step, grouping of steps into chapters). Such information is carried as **extensions** without changing Egatari itself.
 
-- **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9]{0,31}$` — no hyphen, so that `x-<name>-<field>` is unambiguous) and whose values are objects with at least `v` (integer version of that extension). Data addressed to a step uses step keys.
+- **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9]{0,31}$` — no hyphen, so that `x-<name>-<field>` is unambiguous) and whose values are objects with at least `v` (integer version of that extension; producers write `1` unless the extension's definition says otherwise). Data addressed to a step uses step keys.
 - **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements, and in `narration.md` as extension lines (§8.2). Producers MAY fold them into `extensions.<name>` at export.
 - Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
 - An extension MUST NOT change how a player that ignores it renders or times the lesson. Information without which the lesson cannot be played correctly is not an extension; it needs a new feature in `requires` and a new version of this specification.
@@ -440,7 +445,7 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 
 - **Opening an Egatari file as a web page runs its scripts**, as with any HTML file. Being importable safely by an editor does not make arbitrary HTML trustworthy.
 - An editor MUST read an imported file as bytes and extract the index and blobs with a parser that neither executes scripts nor loads resources. It MUST NOT navigate to, `srcdoc`, or insert the file into a document. It MUST validate the index hash, blob hashes, MIME types, and archive paths (§3.3) before constructing any workspace.
-- An editor MUST enforce limits before allocation and account for them in this order: file size before parsing; index size and member count before `JSON.parse`; each chunk's encoded length (at most 262 144 characters) before decoding; cumulative decoded bytes while decoding. Recommended limits an editor may refuse beyond: 100 MiB file, 128 MiB decoded archive, 3000 files, path depth 10, 4 MiB index, 32 MiB per file.
+- An editor MUST enforce limits before allocation and account for them in this order: file size before parsing; index size before parsing and member count while parsing, before allocating beyond the limit; each chunk's encoded length (at most 262 144 characters) before decoding; cumulative decoded bytes while decoding. Recommended limits an editor may refuse beyond: 100 MiB file, 128 MiB decoded archive, 3000 files, path depth 10, 4 MiB index, 32 MiB per file.
 - Messages from a preview MUST NOT authorize mutations. A write happens only as an operation initiated and scoped by the editor's own UI; preview code cannot create that authorization (it may only send hints such as the selected slide, step or element).
 - Previews MUST run in a sandboxed frame with an opaque origin and a content security policy forbidding network connections, forms and external resources. File handles, microphone access, model workers and write operations MUST stay in the editor's own context; messages from the preview MUST be treated as untrusted hints.
 - Hashes in this format detect corruption; they do not authenticate authorship.
