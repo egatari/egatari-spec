@@ -7,6 +7,7 @@ Etoki (絵解き) is a file format for narrated, animated lessons: one HTML file
 | [etoki-1.0.md](etoki-1.0.md) | The specification (Editor's Draft) |
 | [schema/](schema/) | JSON Schemas (draft 2020-12) for the index, audio records, metadata and `deck-meta` |
 | [bindings/scorm12.md](bindings/scorm12.md) | Packaging an Etoki lesson as a SCORM 1.2 package |
+| [extensions.md](extensions.md) | Registry of extension names (platform-specific data, §9A) |
 | [fixtures/](fixtures/) | Conformance fixtures and test vectors |
 
 The format is named separately from its reference implementation, motion-academic-slides. The name is always written *Etoki*, never abbreviated.

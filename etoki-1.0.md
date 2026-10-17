@@ -263,6 +263,36 @@ A player SHOULD expose progress through a tracking adapter, detected in this ord
 
 A player SHOULD offer to save the archive layer as a ZIP of `files` plus `audio/manifest.json`, so the source remains recoverable without any editor.
 
+### 9.4 Embedding
+
+A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Etoki file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept these messages from `window.parent` via `postMessage` (objects with a string member `etoki`) and ignore messages from any other source:
+
+| Message | Effect |
+|---|---|
+| `{etoki:"seek", slide, step, t}` | `DECK.seek` to that position; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞ |
+| `{etoki:"play"}` / `{etoki:"pause"}` | start / pause timeline playback with audio (a user gesture inside the frame may still be required by the browser) |
+| `{etoki:"mode", mode}` | switch display mode |
+
+and post to `window.parent` (target origin `*`; the payload contains no private data):
+
+| Message | When |
+|---|---|
+| `{etoki:"ready", version, timeline:[{slideKey, stepKey, title, dur}]}` | after loading |
+| `{etoki:"position", slideKey, stepKey, t}` | on every step change, and at most 4 times per second during playback |
+| `{etoki:"ended"}` | after the last step of the timeline |
+
+The same messages serve the `postMessage` tracking adapter (§9.2). Embedding commands are unprivileged: they can only do what a viewer could do with the controls.
+
+## 9A. Extensions
+
+Platforms may need information that Etoki does not define (e.g. questions to ask the learner at a step, grouping of steps into chapters). Such information is carried as **extensions** without changing Etoki itself.
+
+- **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9-]{0,31}$`) and whose values are objects with at least `v` (integer version of that extension). Data addressed to a step uses step keys.
+- **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements. Producers MAY fold them into `extensions.<name>` at export.
+- Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
+- An extension MUST NOT change how a player that ignores it renders or times the lesson. Information without which the lesson cannot be played correctly is not an extension; it needs a new feature in `requires` and a new version of this specification.
+- Extension names are registered first-come in [`extensions.md`](extensions.md) with a link to their definition.
+
 ## 10. Conformance classes
 
 | Class | Requirement summary |
