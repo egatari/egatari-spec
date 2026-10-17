@@ -256,9 +256,11 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 - Generated ids SHOULD be `s-` followed by 6 random base32 characters (`[a-z2-7]`). They MUST NOT be derived from the heading, so that renaming a heading never changes the id.
 - In `narration.md`, a slide is addressed as `## <heading> {#<id>}` (RECOMMENDED), `## <id>`, or `## <heading>` (legacy, only for slides without id). When an `{#id}` is present it wins over the heading text.
 - A deck MAY mix slides with and without ids; each slide is keyed independently.
-- **Key derivation.** A heading line is `## ` followed by the heading text, optionally followed by whitespace and `{#<id>}` at the end of the line. If `{#<id>}` is present, the slide key is the id. Otherwise, if the heading text equals an id of a slide, the key is that id. Otherwise the key is the **normalized heading**: HTML tags removed, `&nbsp;` treated as a space, and **all** whitespace removed. In `deck.html`, a slide without id is keyed by the normalized text of its first heading element.
-- Two slides with the same key make the document invalid; producers MUST assign ids to resolve collisions.
-- Step numbers are written in canonical decimal (`0`, `1`, … without leading zeros), at most 999.
+- **Key derivation in `deck.html`.** A slide's key is, in order of precedence: its `id`; a hand-written `data-key` attribute (legacy); the normalized text of its first heading element; `s<n>` with *n* the 1-based position of the slide (legacy). Producers SHOULD warn when a slide is keyed by a legacy rule.
+- **Key derivation in `narration.md`.** A heading line is `## ` followed by the heading text, optionally followed — with or without whitespace before it — by `{#<id>}` at the end of the line (`## {#<id>}` alone is allowed). If `{#…}` is present, its content is the key; if that content is not a valid id (§8.1 pattern), readers MUST report an error and still use the content as the key. Otherwise the key is the **normalized heading**: HTML tags removed, `&nbsp;` treated as a space, and **all** whitespace removed. (A heading consisting of an id normalizes to that id.)
+- **Normalized keys.** The same normalization applies to heading text in `deck.html`.
+- Two slides with the same key make the document invalid. Producers MUST NOT write such documents; a producer MAY refuse to proceed until the author resolves the collision (e.g. by adding an id by hand) rather than guess.
+- **Step markers.** Step numbers are written in canonical decimal (`0`, `1`, … without leading zeros), at most 999, or `concl`. Readers MUST NOT treat a non-canonical marker such as `[01]` or `[1000]` as a step and SHOULD report it; lines up to the next marker or heading then belong to no step.
 
 ### 8.2 Narration syntax (summary)
 
@@ -275,7 +277,10 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 - are not part of any turn: they are excluded from display text, `ttsParts`, boundaries and `inputHash` (§5.4), so editing them never makes audio stale;
 - are never spoken or displayed, and a player that ignores them renders exactly the same;
 - are preserved by editors through tier A, B and C edits;
-- are folded by producers into `extensions.<name>[<stepKey>].<field>`; repeated lines with the same name and field become an array in their order.
+- are folded by producers into `extensions.<name>[<stepKey>].<field>`; repeated lines with the same name and field become an array in their order;
+- have as value the rest of the line after the first run of whitespace following the field name, with trailing whitespace kept;
+- outside any step block (before the first marker of a slide, or after an invalid marker) are ignored with a warning;
+- keep their position when an editor rewrites a step: lines that stood before the first turn stay directly after the `[k]` marker line, others stay after the turn they followed.
 
 ### 8.3 Readings
 
