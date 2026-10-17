@@ -4,4 +4,3 @@ Extensions carry platform-specific information without changing Etoki (spec §9A
 
 | Name | Owner | Purpose | Definition |
 |---|---|---|---|
-| `canon` (provisional — will be renamed with the platform before first use) | Kumoi Lab (interactive-lecture-spec) | learner prompts/hints per step, proposed core questions (v1 draft: asks, coreQuestions) | to be written in the platform repository |
