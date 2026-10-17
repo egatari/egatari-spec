@@ -132,6 +132,12 @@
         "individual"
       ],
       "default": "public"
+    },
+    "copyright": {
+      "type": "string"
+    },
+    "attribution": {
+      "type": "string"
     }
   },
   "not": {

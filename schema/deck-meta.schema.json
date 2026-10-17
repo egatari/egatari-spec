@@ -54,6 +54,15 @@
         "type": "string",
         "pattern": "^[a-z0-9-]+$"
       }
+    },
+    "license": {
+      "type": "string"
+    },
+    "copyright": {
+      "type": "string"
+    },
+    "attribution": {
+      "type": "string"
     }
   },
   "if": {

@@ -132,7 +132,7 @@ Paths under `audio/` are reserved for narration audio. An archive MUST include t
 
 ### 3.6 Metadata
 
-`metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `creators` (display names the author chose to publish), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), `completion` (§9.2), and the members of §3.6.1. Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
+`metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `copyright` (e.g. `© 2026 Gendo Kumoi`), `attribution` (the credit line the rights holder asks reusers to show), `creators` (display names the author chose to publish), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), `completion` (§9.2), and the members of §3.6.1. Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
 
 #### 3.6.1 Derivation, authorship and audience
 
@@ -154,7 +154,7 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 
 | id | Content |
 |---|---|
-| `deck-meta` | `{format:"etoki", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
+| `deck-meta` | `{format:"etoki", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
 | `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
 | `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `etoki:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
@@ -245,6 +245,16 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 | **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
 
 Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
+
+### 7.3 Rights
+
+Etoki cannot prevent anyone from modifying a file (§11). It carries the rights holder's terms so that conforming software states them and keeps credit intact:
+
+- Producers SHOULD copy `license`, `copyright` and `attribution` from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
+- Players SHOULD show title, creators, copyright, license and attribution in an information panel.
+- Before the first edit of a document, an editor MUST show its license. If the license does not permit derivatives (e.g. any Creative Commons `-ND` license, or no license with a copyright notice), the editor MUST warn that modifying or redistributing the lesson may infringe the rights holder's copyright and MUST require explicit confirmation.
+- When an editor saves a modified document under a new `docId` or for redistribution, it MUST keep the original `copyright`, `attribution` and `creators`, MUST set `derivedFrom` (§3.6.1), and MAY add the new editor's name to `creators`.
+- Editors MUST NOT remove or alter `copyright` and `attribution` without the user's explicit action.
 
 ## 8. Authoring source (contract version 1)
 
@@ -383,6 +393,7 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 - Messages from a preview MUST NOT authorize mutations. A write happens only as an operation initiated and scoped by the editor's own UI; preview code cannot create that authorization (it may only send hints such as the selected slide, step or element).
 - Previews MUST run in a sandboxed frame with an opaque origin and a content security policy forbidding network connections, forms and external resources. File handles, microphone access, model workers and write operations MUST stay in the editor's own context; messages from the preview MUST be treated as untrusted hints.
 - Hashes in this format detect corruption; they do not authenticate authorship.
+- **Modification cannot be prevented, and authenticity is not guaranteed by Etoki 1.0.** Anyone can alter a lesson and present it as someone else's original (e.g. to misrepresent what a teacher teaches). A future optional feature, `signatures-v1`, will let a rights holder sign a lesson so that players can show whether a copy is unmodified since signing and who signed it; signatures make genuine copies verifiable, they do not make forgery impossible. Until then, players and hosts MUST NOT present any lesson as verified or authentic, and metadata such as `creators` MUST be described as claims.
 
 ## 12. Media type and identification
 
@@ -403,4 +414,5 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 3. Whether a lesson may embed a custom reference voice (size, privacy).
 4. Tolerances for loudness and cue timing across browsers.
 5. File-picker availability on `file://`; download as the baseline save path.
-6. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
+6. `signatures-v1`: what is signed (index and runtime layer), interaction with tier A edits and derived lessons, key identity (e.g. did:web, GitHub keys, Sigstore, C2PA certificates), timestamps and long-term verification.
+7. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
