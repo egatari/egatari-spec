@@ -328,7 +328,7 @@ The first start of audio SHOULD happen through the player's own start control, b
 
 Platforms may need information that Etoki does not define (e.g. questions to ask the learner at a step, grouping of steps into chapters). Such information is carried as **extensions** without changing Etoki itself.
 
-- **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9-]{0,31}$`) and whose values are objects with at least `v` (integer version of that extension). Data addressed to a step uses step keys.
+- **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9]{0,31}$` — no hyphen, so that `x-<name>-<field>` is unambiguous) and whose values are objects with at least `v` (integer version of that extension). Data addressed to a step uses step keys.
 - **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements, and in `narration.md` as extension lines (§8.2). Producers MAY fold them into `extensions.<name>` at export.
 - Readers MUST ignore extensions they do not implement. Editors MUST preserve them byte-for-byte through tier A edits and preserve their content through tier B and C edits, except entries whose step or slide no longer exists, which they MAY drop with a warning.
 - An extension MUST NOT change how a player that ignores it renders or times the lesson. Information without which the lesson cannot be played correctly is not an extension; it needs a new feature in `requires` and a new version of this specification.

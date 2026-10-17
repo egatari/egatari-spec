@@ -142,7 +142,7 @@
     "extensions": {
       "type": "object",
       "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]{0,31}$"
+        "pattern": "^[a-z][a-z0-9]{0,31}$"
       },
       "additionalProperties": {
         "type": "object",
