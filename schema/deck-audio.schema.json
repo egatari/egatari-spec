@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://etoki.dev/schema/deck-audio.schema.json",
-  "title": "Etoki 1.0 runtime audio (#deck-audio)",
+  "$id": "https://egatari.org/schema/deck-audio.schema.json",
+  "title": "Egatari 1.0 runtime audio (#deck-audio)",
   "type": "object",
   "propertyNames": {
-    "$ref": "etoki-index.schema.json#/$defs/stepKey"
+    "$ref": "egatari-index.schema.json#/$defs/stepKey"
   },
   "additionalProperties": {
     "type": "object",
@@ -16,7 +16,7 @@
     "properties": {
       "src": {
         "type": "string",
-        "pattern": "^(data:audio/[a-z0-9.+-]+;base64,|etoki:[A-Za-z0-9_]{1,32}$)"
+        "pattern": "^(data:audio/[a-z0-9.+-]+;base64,|egatari:[A-Za-z0-9_]{1,32}$)"
       },
       "dur": {
         "type": "number",

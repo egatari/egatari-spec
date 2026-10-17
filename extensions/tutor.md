@@ -1,6 +1,6 @@
-# Etoki extension `tutor` — Draft v1
+# Egatari extension `tutor` — Draft v1
 
-**Status:** draft, 2026-10-17. Registered in [../extensions.md](../extensions.md). Consumed by hosts (Etoki spec §10.1) that hold a dialogue with the learner; players that ignore it render and time the lesson exactly the same.
+**Status:** draft, 2026-10-17. Registered in [../extensions.md](../extensions.md). Consumed by hosts (Egatari spec §10.1) that hold a dialogue with the learner; players that ignore it render and time the lesson exactly the same.
 
 `tutor` describes *where and how a host may talk with the learner* about a lesson: comprehension checkpoints, the scope an AI may draw on when answering, and lessons generated on the spot in answer to a question. Pausing, asking and branching are done by the host through the embedding interface (§9.4); the lesson itself is never modified.
 
@@ -35,7 +35,7 @@ Authoring in `narration.md` (spec §8.2): `@x-tutor-invite <prompt>` and `@x-tut
 
 ## 2. Generated answers (branch lessons)
 
-When a host answers a question with slides, it produces a **branch lesson**: a separate, small Etoki document with
+When a host answers a question with slides, it produces a **branch lesson**: a separate, small Egatari document with
 
 - `metadata.derivedFrom = {docId, sourceSha256, anchor}` of the lesson and step it answers from;
 - `metadata.authorship` marking its steps `by: "ai"`, `reviewed: false` until a teacher checks it;

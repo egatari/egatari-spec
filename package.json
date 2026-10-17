@@ -1,8 +1,8 @@
 {
-  "name": "etoki-spec",
+  "name": "egatari-spec",
   "private": true,
   "type": "module",
-  "description": "Etoki specification: schemas and conformance fixtures",
+  "description": "Egatari specification: schemas and conformance fixtures",
   "license": "MIT",
   "scripts": { "test": "node tools/test-fixtures.mjs" },
   "devDependencies": { "ajv": "8.17.1" }

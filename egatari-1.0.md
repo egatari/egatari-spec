@@ -1,17 +1,17 @@
-# Etoki 1.0 — Editor's Draft
+# Egatari 1.0 — Editor's Draft
 
 **Status:** Editor's Draft, 2026-10-17. Not stable. Anything may change before 1.0 is frozen.
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Reference implementation:** [motion-academic-slides](https://github.com/moiku/motion-academic-slides) (producer, player, editor).
 **License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
-**Repository:** https://github.com/etoki-org/etoki-spec · **Site:** https://etoki.dev/
+**Repository:** https://github.com/egatari/egatari-spec · **Site:** https://egatari.org/
 
-Etoki (絵解き, "explaining pictures") is a file format for **narrated, animated lessons**. One Etoki file is a single HTML document that
+Egatari (絵語り, "narrating with pictures") is a file format for **narrated, animated lessons**. One Egatari file is a single HTML document that
 
 1. plays offline in a current web browser as a self-narrating lesson, a live presentation, or a lecture handout, and
-2. carries its own authoring source, so that an Etoki editor can reopen the file *without the original folder*, change one sentence or one step's narration, replace that step's audio, and save the same kind of file again.
+2. carries its own authoring source, so that an Egatari editor can reopen the file *without the original folder*, change one sentence or one step's narration, replace that step's audio, and save the same kind of file again.
 
-The name is always written *Etoki* (or 絵解き). It has no abbreviation.
+The name is written *Egatari* (or 絵語り). The file extension is `.ega.html`.
 
 ## 0. Conventions
 
@@ -50,14 +50,14 @@ Each step MAY have narration: an ordered list of **turns**, each with a **role**
 
 ## 2. File structure
 
-An Etoki file is an HTML document (`text/html; charset=utf-8`). The RECOMMENDED file name extension is `.etoki.html`. A file has two layers:
+An Egatari file is an HTML document (`text/html; charset=utf-8`). The RECOMMENDED file name extension is `.ega.html`. A file has two layers:
 
 | Layer | Purpose | Required for |
 |---|---|---|
 | **Runtime layer** | compiled slides, runtime script, styles, fonts, and the runtime JSON blocks (§4) | playing |
 | **Archive layer** | the index (§3) and blob blocks: authoring source and media | editing |
 
-A file with only the runtime layer is a **play-only** Etoki file. A file with both is a **portable** Etoki file.
+A file with only the runtime layer is a **play-only** Egatari file. A file with both is a **portable** Egatari file.
 
 All JSON blocks are `<script>` elements with a non-executable `type` and a unique `id`. Before embedding (and before hashing), every U+003C `<` in serialized JSON MUST be written as the six ASCII characters `\u003c`. Serialized JSON uses LF line endings only. (A non-executable `type` does not stop the HTML parser from ending the element at a literal `</script`.)
 
@@ -70,15 +70,15 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 ### 3.1 Index
 
 ```html
-<script type="application/vnd.etoki+json" id="etoki-index" data-sha256="…">{…}</script>
+<script type="application/vnd.egatari+json" id="egatari-index" data-sha256="…">{…}</script>
 ```
 
 - `data-sha256` is the lowercase hex SHA-256 of the exact UTF-8 text content of the element. Readers MUST verify it before use.
-- The content is a JSON object without duplicate member names, valid against [`schema/etoki-index.schema.json`](schema/etoki-index.schema.json). Its main members:
+- The content is a JSON object without duplicate member names, valid against [`schema/egatari-index.schema.json`](schema/egatari-index.schema.json). Its main members:
 
 | Member | Req. | Meaning |
 |---|---|---|
-| `format` | MUST | the string `"etoki"` |
+| `format` | MUST | the string `"egatari"` |
 | `version` | MUST | `{major, minor}` of this specification the index follows (1.0 → `{"major":1,"minor":0}`) |
 | `profile` | MUST | `"core"` or `"extended"` (§6) |
 | `requires` | MUST | feature identifiers a reader must understand to edit (§3.5). May be empty |
@@ -97,13 +97,13 @@ A conforming document MUST also contain, as ordinary DOM outside any `<script>`,
 ### 3.2 Blob blocks
 
 ```html
-<script type="application/octet-stream" id="etoki-b-s0-0">PCFkb2N0eXBlIGh0bWw+…</script>
+<script type="application/octet-stream" id="egatari-b-s0-0">PCFkb2N0eXBlIGh0bWw+…</script>
 ```
 
 - Every blob — including UTF-8 text — is stored base64-encoded (RFC 4648 §4, no line breaks) in one or more chunk blocks listed in order in `blobs[id].chunks`.
 - Each chunk MUST decode to at most 196 608 bytes (192 KiB). A reader concatenates the **decoded** bytes of the chunks, never the base64 strings.
 - The decoded length MUST equal `bytes` and its SHA-256 MUST equal `sha256`; otherwise the blob is corrupt.
-- Blob ids match `^[A-Za-z0-9_]{1,32}$`. Chunk ids are `etoki-b-<blobId>-<n>` with `<n>` the zero-based chunk number in canonical decimal (at most 9999). Duplicate ids make the file invalid.
+- Blob ids match `^[A-Za-z0-9_]{1,32}$`. Chunk ids are `egatari-b-<blobId>-<n>` with `<n>` the zero-based chunk number in canonical decimal (at most 9999). Duplicate ids make the file invalid.
 - Version 1.0 blobs are uncompressed. A future feature (e.g. `gzip-v1`) may add compression; it will be listed in `requires`.
 
 ### 3.3 Archive paths
@@ -144,7 +144,7 @@ These OPTIONAL members support lessons made for one learner, by learners, or by 
 
 ### 3.7 Play-only derivative
 
-A **play-only derivative** is made from a portable file by removing the index and every blob whose chunks are not referenced by the runtime layer, keeping the chunks of audio referenced as `etoki:<blobId>`. In `deck-meta`, `portable` becomes `false` and `sourceSha256` is removed; `docId` is kept. Players resolve `etoki:<blobId>` by decoding the chunks `etoki-b-<blobId>-0`, `-1`, … in order until the next one is absent.
+A **play-only derivative** is made from a portable file by removing the index and every blob whose chunks are not referenced by the runtime layer, keeping the chunks of audio referenced as `egatari:<blobId>`. In `deck-meta`, `portable` becomes `false` and `sourceSha256` is removed; `docId` is kept. Players resolve `egatari:<blobId>` by decoding the chunks `egatari-b-<blobId>-0`, `-1`, … in order until the next one is absent.
 
 The archive layer — including `extensions` — is readable by anyone who holds a portable file. A host that must keep information from learners (e.g. quiz answers in an extension) MUST serve learners a play-only derivative and keep the portable original for authorized editors.
 
@@ -154,15 +154,15 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 
 | id | Content |
 |---|---|
-| `deck-meta` | `{format:"etoki", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
+| `deck-meta` | `{format:"egatari", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
 | `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
-| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `etoki:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
+| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 
 Every slide MUST carry a `data-key`: the slide's `id` attribute if present, otherwise its normalized heading text (legacy). Producers SHOULD give every slide an explicit, stable id (§8.1), so that editing a title does not break narration and audio associations.
 
-A portable file SHOULD reference audio as `etoki:<blobId>` so that audio bytes are stored once, in the archive layer. A player resolves `etoki:<blobId>` by decoding that blob.
+A portable file SHOULD reference audio as `egatari:<blobId>` so that audio bytes are stored once, in the archive layer. A player resolves `egatari:<blobId>` by decoding that blob.
 
 ## 5. Audio and timing
 
@@ -178,7 +178,7 @@ Producers SHOULD normalize speech to −20 LUFS integrated, −1.5 dBTP, and tri
 
 ### 5.2 Audio records
 
-`index.audio[stepKey]` describes the step's audio (schema: [`schema/etoki-audio.schema.json`](schema/etoki-audio.schema.json)):
+`index.audio[stepKey]` describes the step's audio (schema: [`schema/egatari-audio.schema.json`](schema/egatari-audio.schema.json)):
 
 | Member | Req. | Meaning |
 |---|---|---|
@@ -240,7 +240,7 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 
 | Tier | Change | Required behavior |
 |---|---|---|
-| **A** (default) | narration text, audio, timing overrides only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records and blobs; and **append-only font supplements** — new `<style id="etoki-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. Every byte outside these regions, including existing font data, MUST stay identical. |
+| **A** (default) | narration text, audio, timing overrides only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. Every byte outside these regions, including existing font data, MUST stay identical. |
 | **B** | slide content (text, math, figures) | Rebuild with the editor's runtime of the same `contracts.runtime`, using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
 | **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
 
@@ -248,7 +248,7 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId`.
 
 ### 7.3 Rights
 
-Etoki cannot prevent anyone from modifying a file (§11). It carries the rights holder's terms so that conforming software states them and keeps credit intact:
+Egatari cannot prevent anyone from modifying a file (§11). It carries the rights holder's terms so that conforming software states them and keeps credit intact:
 
 - Producers SHOULD copy `license`, `copyright` and `attribution` from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
 - Players SHOULD show title, creators, copyright, license and attribution in an information panel.
@@ -308,7 +308,7 @@ A conforming player MUST: render any *(i, k, t)* deterministically; implement th
 
 ### 9.1A Learner data
 
-Notes, ink, bookmarks and other data a learner creates MUST NOT be written into the Etoki file. Players MAY keep them in local storage keyed by `docId`, and SHOULD let the learner export them (e.g. the final state of each slide with the learner's notes, as PDF or Markdown).
+Notes, ink, bookmarks and other data a learner creates MUST NOT be written into the Egatari file. Players MAY keep them in local storage keyed by `docId`, and SHOULD let the learner export them (e.g. the final state of each slide with the learner's notes, as PDF or Markdown).
 
 ### 9.2 Tracking
 
@@ -320,37 +320,37 @@ A player SHOULD offer to save the archive layer as a ZIP of `files` plus `audio/
 
 ### 9.4 Embedding
 
-A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Etoki file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept messages from `window.parent` via `postMessage` (objects with a string member `etoki`) and ignore messages from any other source. Query parameters `mode`, `controls=0` and `preview=1` set the initial state. Every command MAY carry an `id`; the player echoes it in the reply or acknowledgement. Times are seconds as floating-point numbers.
+A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Egatari file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept messages from `window.parent` via `postMessage` (objects with a string member `egatari`) and ignore messages from any other source. Query parameters `mode`, `controls=0` and `preview=1` set the initial state. Every command MAY carry an `id`; the player echoes it in the reply or acknowledgement. Times are seconds as floating-point numbers.
 
 Commands (host → player):
 
 | Message | Effect / reply |
 |---|---|
-| `{etoki:"seek", id?, slide, step, t}` | go to *(slide, step, t)*; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞. Reply `seeked` |
-| `{etoki:"play", id?}` / `{etoki:"pause", id?}` | start / pause timeline playback with audio. If the browser refuses to start audio, reply `playBlocked` |
-| `{etoki:"rate", id?, value}` | playback rate (§1.2) |
-| `{etoki:"mode", id?, mode}` / `{etoki:"preview", id?, on}` / `{etoki:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
-| `{etoki:"snapshot", id, slide, step, t, maxWidth?}` | reply `{etoki:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position |
+| `{egatari:"seek", id?, slide, step, t}` | go to *(slide, step, t)*; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞. Reply `seeked` |
+| `{egatari:"play", id?}` / `{egatari:"pause", id?}` | start / pause timeline playback with audio. If the browser refuses to start audio, reply `playBlocked` |
+| `{egatari:"rate", id?, value}` | playback rate (§1.2) |
+| `{egatari:"mode", id?, mode}` / `{egatari:"preview", id?, on}` / `{egatari:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
+| `{egatari:"snapshot", id, slide, step, t, maxWidth?}` | reply `{egatari:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position |
 
 Events (player → host; target origin `*`; payloads contain no private data):
 
 | Message | When |
 |---|---|
-| `{etoki:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | after loading |
-| `{etoki:"seeked", id?, slideKey, stepKey, t}` | after a seek has been applied |
-| `{etoki:"position", slideKey, stepKey, t, cause}` | on every step change (`cause`: `play`, `seek`, `control`), and at most 4 times per second during playback |
-| `{etoki:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped) |
-| `{etoki:"state", playing, rate}` | whenever playing state or rate changes, including by the player's own controls |
-| `{etoki:"playBlocked", id?}` | audio could not start for lack of a user gesture |
-| `{etoki:"turn", slideKey, stepKey, index}` | OPTIONAL: when narration turn `index` starts |
-| `{etoki:"ended"}` | after the last step of the timeline |
-| `{etoki:"error", id?, code, message}` | a command failed or the file cannot be played |
+| `{egatari:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | after loading |
+| `{egatari:"seeked", id?, slideKey, stepKey, t}` | after a seek has been applied |
+| `{egatari:"position", slideKey, stepKey, t, cause}` | on every step change (`cause`: `play`, `seek`, `control`), and at most 4 times per second during playback |
+| `{egatari:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped) |
+| `{egatari:"state", playing, rate}` | whenever playing state or rate changes, including by the player's own controls |
+| `{egatari:"playBlocked", id?}` | audio could not start for lack of a user gesture |
+| `{egatari:"turn", slideKey, stepKey, index}` | OPTIONAL: when narration turn `index` starts |
+| `{egatari:"ended"}` | after the last step of the timeline |
+| `{egatari:"error", id?, code, message}` | a command failed or the file cannot be played |
 
 The first start of audio SHOULD happen through the player's own start control, because browsers (notably Safari on iPad) may not pass a user gesture in the host page into the frame; hosts SHOULD allow `autoplay` on the frame and MUST handle `playBlocked`. Since a sandboxed frame has the origin `null`, hosts MUST identify the player by `event.source === iframe.contentWindow`. The same messages serve the `postMessage` tracking adapter (§9.2). Embedding commands are unprivileged: they can only do what a viewer could do with the controls. Narration text is not sent at run time; hosts read `deck-narration` from the file.
 
 ## 9A. Extensions
 
-Platforms may need information that Etoki does not define (e.g. questions to ask the learner at a step, grouping of steps into chapters). Such information is carried as **extensions** without changing Etoki itself.
+Platforms may need information that Egatari does not define (e.g. questions to ask the learner at a step, grouping of steps into chapters). Such information is carried as **extensions** without changing Egatari itself.
 
 - **Index:** `extensions` is an object whose keys are extension names (`^[a-z][a-z0-9]{0,31}$` — no hyphen, so that `x-<name>-<field>` is unambiguous) and whose values are objects with at least `v` (integer version of that extension). Data addressed to a step uses step keys.
 - **Source:** in the slide source, extension data MAY be written as attributes `data-x-<name>-<field>` on slides and elements, and in `narration.md` as extension lines (§8.2). Producers MAY fold them into `extensions.<name>` at export.
@@ -368,18 +368,18 @@ A rights holder MAY sign a lesson so that players can show who signed it and whe
 ### 9B.1 Block
 
 ```html
-<script type="application/vnd.etoki+json" id="etoki-signatures">{"signatures":[…]}</script>
+<script type="application/vnd.egatari+json" id="egatari-signatures">{"signatures":[…]}</script>
 ```
 
 Each entry is a JWS in JSON Serialization (RFC 7515 §7.2.2 flattened form) whose payload is the UTF-8 bytes of a **statement** (carried as is, so no canonicalization is needed):
 
 | Statement member | Meaning |
 |---|---|
-| `type` | `"etoki-signature/1"` |
+| `type` | `"egatari-signature/1"` |
 | `docId` | the lesson's `docId` |
 | `signedAt` | RFC 3339 time claimed by the signer |
 | `signer` | `{name, affiliation?, orcid?, keyId}` — claims, verified only through §9B.3 |
-| `fileSha256` | SHA-256 of the whole file with the `etoki-signatures` element (from `<script` to `</script>` inclusive) removed |
+| `fileSha256` | SHA-256 of the whole file with the `egatari-signatures` element (from `<script` to `</script>` inclusive) removed |
 | `indexSha256` | the index's `data-sha256`, if portable |
 | `sourceSha256` | as §3.4, if portable |
 | `derivedFrom` | copy of `metadata.derivedFrom`, plus `signatureDigest` of the original's signature when known |
@@ -404,7 +404,7 @@ Tier A edits by the signer SHOULD be followed by a new signature with `supersede
 |---|---|---|
 | L0 | key only (`did:key`), name self-declared | "signed with key <fingerprint>, name as declared" |
 | L1 | the key fingerprint is published by the signer on a site they control (`did:web`), ORCID or researchmap; checked when online | "<name>, key confirmed at <site>" |
-| L2 | an attestation by an organization (university, or an Etoki key registry) binding the key to the person and affiliation, embedded and verifiable offline | "<name>, <affiliation>, confirmed by <organization>" |
+| L2 | an attestation by an organization (university, or an Egatari key registry) binding the key to the person and affiliation, embedded and verifiable offline | "<name>, <affiliation>, confirmed by <organization>" |
 
 Any organization MAY issue L2 attestations; this specification names none. Which attesting organizations a player or host trusts is its own configuration (e.g. a host for one university trusts that university), and a player MUST show the attesting organization's name rather than a generic "verified".
 
@@ -415,11 +415,11 @@ Signing certificates that contain personal data beyond name and affiliation (e.g
 | Class | Requirement summary |
 |---|---|
 | **Document — Core / Extended** | valid runtime layer; if portable, valid archive layer of that profile; readable layer (§2.1) |
-| **Player — Core / Extended** | §9.1; resolves `etoki:` audio; Extended players run embedded component code |
+| **Player — Core / Extended** | §9.1; resolves `egatari:` audio; Extended players run embedded component code |
 | **Editor** | safe import (§11), tier A at least, §7, preserves unknown members and `docId` |
 | **Producer** | writes conforming documents; §3.3 exclusions; §5 audio rules |
 | **LMS Binding** | packages a document for a learning platform per a binding document (SCORM 1.2 in 1.0) |
-| **Host** | a platform that accepts and plays Etoki files: §10.1 |
+| **Host** | a platform that accepts and plays Egatari files: §10.1 |
 
 Conformance is tested with the fixtures in [`fixtures/`](fixtures/).
 
@@ -431,26 +431,26 @@ A conforming host MUST:
 2. Play files through §9.4 in an iframe with `sandbox="allow-scripts"` and without `allow-same-origin`, and serve the file itself with a `Content-Security-Policy` that sandboxes it and forbids network access even when its URL is opened directly, e.g. `sandbox allow-scripts; default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline' data:; script-src 'unsafe-inline' blob:; font-src data:`.
 3. Store the original bytes unmodified and return them unchanged to users authorized to edit. It MAY serve learners a play-only derivative (§3.7), and MUST do so when extensions carry information to be withheld from learners.
 4. Play files that carry no extensions for that host.
-5. Record progress from §9.2/§9.4 events, keeping Etoki completion (`deck-meta.completion`) distinct from the host's own grading.
+5. Record progress from §9.2/§9.4 events, keeping Egatari completion (`deck-meta.completion`) distinct from the host's own grading.
 6. Never write learner data into files (§9.1A).
 
-A host MAY supply its own controls and restrict navigation (§1.2). Conformance covers Etoki content only; other kinds of material a platform offers are out of scope.
+A host MAY supply its own controls and restrict navigation (§1.2). Conformance covers Egatari content only; other kinds of material a platform offers are out of scope.
 
 ## 11. Security considerations
 
-- **Opening an Etoki file as a web page runs its scripts**, as with any HTML file. Being importable safely by an editor does not make arbitrary HTML trustworthy.
+- **Opening an Egatari file as a web page runs its scripts**, as with any HTML file. Being importable safely by an editor does not make arbitrary HTML trustworthy.
 - An editor MUST read an imported file as bytes and extract the index and blobs with a parser that neither executes scripts nor loads resources. It MUST NOT navigate to, `srcdoc`, or insert the file into a document. It MUST validate the index hash, blob hashes, MIME types, and archive paths (§3.3) before constructing any workspace.
 - An editor MUST enforce limits before allocation and account for them in this order: file size before parsing; index size and member count before `JSON.parse`; each chunk's encoded length (at most 262 144 characters) before decoding; cumulative decoded bytes while decoding. Recommended limits an editor may refuse beyond: 100 MiB file, 128 MiB decoded archive, 3000 files, path depth 10, 4 MiB index, 32 MiB per file.
 - Messages from a preview MUST NOT authorize mutations. A write happens only as an operation initiated and scoped by the editor's own UI; preview code cannot create that authorization (it may only send hints such as the selected slide, step or element).
 - Previews MUST run in a sandboxed frame with an opaque origin and a content security policy forbidding network connections, forms and external resources. File handles, microphone access, model workers and write operations MUST stay in the editor's own context; messages from the preview MUST be treated as untrusted hints.
 - Hashes in this format detect corruption; they do not authenticate authorship.
-- **Modification cannot be prevented, and authenticity is not guaranteed by Etoki 1.0.** Anyone can alter a lesson and present it as someone else's original (e.g. to misrepresent what a teacher teaches). The optional feature `signatures-v1` (§9B, draft) lets a rights holder sign a lesson so that players can show whether a copy is unmodified since signing and who signed it; signatures make genuine copies verifiable, they do not make forgery impossible. Until then, players and hosts MUST NOT present any lesson as verified or authentic, and metadata such as `creators` MUST be described as claims.
+- **Modification cannot be prevented, and authenticity is not guaranteed by Egatari 1.0.** Anyone can alter a lesson and present it as someone else's original (e.g. to misrepresent what a teacher teaches). The optional feature `signatures-v1` (§9B, draft) lets a rights holder sign a lesson so that players can show whether a copy is unmodified since signing and who signed it; signatures make genuine copies verifiable, they do not make forgery impossible. Until then, players and hosts MUST NOT present any lesson as verified or authentic, and metadata such as `creators` MUST be described as claims.
 
 ## 12. Media type and identification
 
-- Distribution: `text/html`. Extension `.etoki.html`.
-- Index block: `application/vnd.etoki+json` (to be registered with IANA when 1.0 is frozen).
-- Detection: a reader identifies an Etoki file by `deck-meta.format == "etoki"` or an `etoki-index` block.
+- Distribution: `text/html`. Extension `.ega.html`.
+- Index block: `application/vnd.egatari+json` (to be registered with IANA when 1.0 is frozen).
+- Detection: a reader identifies an Egatari file by `deck-meta.format == "egatari"` or an `egatari-index` block.
 
 ## References
 

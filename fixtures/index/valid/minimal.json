@@ -1,5 +1,5 @@
 {
- "format": "etoki",
+ "format": "egatari",
  "version": {
   "major": 1,
   "minor": 0
@@ -31,7 +31,7 @@
    "bytes": 10,
    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
    "chunks": [
-    "etoki-b-s0-0"
+    "egatari-b-s0-0"
    ]
   },
   "s1": {
@@ -39,7 +39,7 @@
    "bytes": 10,
    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
    "chunks": [
-    "etoki-b-s1-0"
+    "egatari-b-s1-0"
    ]
   },
   "a0": {
@@ -47,7 +47,7 @@
    "bytes": 10,
    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
    "chunks": [
-    "etoki-b-a0-0"
+    "egatari-b-a0-0"
    ]
   }
  },

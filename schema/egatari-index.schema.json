@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://etoki.dev/schema/etoki-index.schema.json",
-  "title": "Etoki 1.0 archive index (#etoki-index)",
+  "$id": "https://egatari.org/schema/egatari-index.schema.json",
+  "title": "Egatari 1.0 archive index (#egatari-index)",
   "type": "object",
   "required": [
     "format",
@@ -19,7 +19,7 @@
   ],
   "properties": {
     "format": {
-      "const": "etoki"
+      "const": "egatari"
     },
     "version": {
       "type": "object",
@@ -121,7 +121,7 @@
         "$ref": "#/$defs/stepKey"
       },
       "additionalProperties": {
-        "$ref": "etoki-audio.schema.json"
+        "$ref": "egatari-audio.schema.json"
       }
     },
     "components": {
@@ -131,7 +131,7 @@
       }
     },
     "metadata": {
-      "$ref": "etoki-metadata.schema.json"
+      "$ref": "egatari-metadata.schema.json"
     },
     "excluded": {
       "type": "array",
@@ -205,7 +205,7 @@
           "minItems": 1,
           "items": {
             "type": "string",
-            "pattern": "^etoki-b-[A-Za-z0-9_]{1,32}-(0|[1-9][0-9]{0,3})$"
+            "pattern": "^egatari-b-[A-Za-z0-9_]{1,32}-(0|[1-9][0-9]{0,3})$"
           }
         }
       }

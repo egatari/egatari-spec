@@ -1,8 +1,8 @@
-# Etoki LMS Binding: SCORM 1.2
+# Egatari LMS Binding: SCORM 1.2
 
-**Status:** Editor's Draft, 2026-10-17. Part of [Etoki 1.0](../etoki-1.0.md) §9.2, §10 (LMS Binding).
+**Status:** Editor's Draft, 2026-10-17. Part of [Egatari 1.0](../egatari-1.0.md) §9.2, §10 (LMS Binding).
 
-SCORM 1.2 is the only packaging format that Moodle core tracks without plugins, and it is also supported by most other LMSs. This binding packages one Etoki file as a single-SCO SCORM 1.2 package and maps the player's tracking events to the SCORM 1.2 run-time API.
+SCORM 1.2 is the only packaging format that Moodle core tracks without plugins, and it is also supported by most other LMSs. This binding packages one Egatari file as a single-SCO SCORM 1.2 package and maps the player's tracking events to the SCORM 1.2 run-time API.
 
 ## 1. Package
 
@@ -11,13 +11,13 @@ A ZIP file containing, at its root:
 | Path | Content |
 |---|---|
 | `imsmanifest.xml` | the manifest below |
-| `index.html` | the Etoki file, **byte-for-byte unchanged** |
+| `index.html` | the Egatari file, **byte-for-byte unchanged** |
 
-The package MUST NOT add other launch files or modify the Etoki file: extracting `index.html` from the package gives back the original lesson, still playable and editable. Packagers MAY add the SCORM 1.2 XSD files; LMSs do not require them.
+The package MUST NOT add other launch files or modify the Egatari file: extracting `index.html` from the package gives back the original lesson, still playable and editable. Packagers MAY add the SCORM 1.2 XSD files; LMSs do not require them.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<manifest identifier="etoki-{docId}" version="1"
+<manifest identifier="egatari-{docId}" version="1"
   xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
   xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2">
   <metadata>
@@ -40,13 +40,13 @@ The package MUST NOT add other launch files or modify the Etoki file: extracting
 </manifest>
 ```
 
-`{docId}` and `{metadata.title}` come from the Etoki index (XML-escaped). For a play-only file without an index, the packager uses a fresh UUID and the document `<title>`.
+`{docId}` and `{metadata.title}` come from the Egatari index (XML-escaped). For a play-only file without an index, the packager uses a fresh UUID and the document `<title>`.
 
 ## 2. Run-time
 
-The bridge is part of the Etoki player's tracking adapter (no separate script in the package). A packager MUST refuse an Etoki file whose `deck-meta.tracking` does not contain `"scorm12"`.
+The bridge is part of the Egatari player's tracking adapter (no separate script in the package). A packager MUST refuse an Egatari file whose `deck-meta.tracking` does not contain `"scorm12"`.
 
-The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to 7 levels and then `window.opener`, as in the ADL reference algorithm. If none is found, it falls back to the next adapter (Etoki 1.0 §9.2). API functions return the strings `"true"` / `"false"`; the player compares them literally and calls `LMSGetLastError()` immediately after any failed call and after every `LMSGetValue`.
+The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to 7 levels and then `window.opener`, as in the ADL reference algorithm. If none is found, it falls back to the next adapter (Egatari 1.0 §9.2). API functions return the strings `"true"` / `"false"`; the player compares them literally and calls `LMSGetLastError()` immediately after any failed call and after every `LMSGetValue`.
 
 ### 2.1 Lifecycle
 
@@ -61,12 +61,12 @@ The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to
 | `pageshow` with `persisted` after finishing (back/forward cache) | tracking is over for this page: the player keeps playing and shows a notice that progress is no longer recorded until the lesson is reopened from the LMS |
 
 - `cmi.core.session_time` uses the SCORM 1.2 format `HHHH:MM:SS.SS`.
-- Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Etoki lesson has no assessment in 1.0.
+- Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Egatari lesson has no assessment in 1.0.
 - On any error the player keeps playing.
 
 ### 2.2 Location and suspend data
 
-Steps are numbered by zero-based **ordinal** in timeline order (Etoki 1.0 §5.5).
+Steps are numbered by zero-based **ordinal** in timeline order (Egatari 1.0 §5.5).
 
 - `cmi.core.lesson_location` (CMIString255, ASCII) is always `#<ordinal>` in canonical decimal, e.g. `#42`.
 - `cmi.suspend_data` (at most 4096 characters) is the ASCII JSON
@@ -82,7 +82,7 @@ Steps are numbered by zero-based **ordinal** in timeline order (Etoki 1.0 §5.5)
 
 ## 3. Completion
 
-Completion follows Etoki 1.0 §9.2: by default every step has been reached at least once in any mode; `metadata.completion.visitedFraction` lowers the threshold; `metadata.completion.reachedEnd` requires only reaching the final step of the last slide. Once completed, the status is never set back to `incomplete`.
+Completion follows Egatari 1.0 §9.2: by default every step has been reached at least once in any mode; `metadata.completion.visitedFraction` lowers the threshold; `metadata.completion.reachedEnd` requires only reaching the final step of the last slide. Once completed, the status is never set back to `incomplete`.
 
 ## 4. Conformance
 

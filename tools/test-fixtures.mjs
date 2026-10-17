@@ -7,7 +7,7 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const ajv = new Ajv({ allErrors: true, strict: false });
 for (const f of fs.readdirSync(path.join(root, 'schema'))) ajv.addSchema(JSON.parse(fs.readFileSync(path.join(root, 'schema', f), 'utf8')));
-const validate = ajv.getSchema('https://etoki.dev/schema/etoki-index.schema.json');
+const validate = ajv.getSchema('https://egatari.org/schema/egatari-index.schema.json');
 
 let failed = 0;
 for (const kind of ['valid', 'invalid']) {

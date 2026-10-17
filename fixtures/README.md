@@ -1,14 +1,14 @@
-# Etoki conformance fixtures
+# Egatari conformance fixtures
 
 | Directory | Content | Status |
 |---|---|---|
 | `index/valid/`, `index/invalid/` | index JSON documents; every `invalid/` file must be rejected by the schemas | present |
 | `input-hash/` | `narration.md` and `expected.json` with the canonical string and `inputHash` per step (§5.4) | present |
-| `documents/` | complete `.etoki.html` files (see below) | to be produced with the reference implementation (slice 2) |
+| `documents/` | complete `.ega.html` files (see below) | to be produced with the reference implementation (slice 2) |
 
 ## Planned document fixtures
 
-Each fixture is a small `.etoki.html` file and a `expect.json` describing what a conforming reader must do.
+Each fixture is a small `.ega.html` file and a `expect.json` describing what a conforming reader must do.
 
 | Name | Purpose | Expected reader behavior |
 |---|---|---|
