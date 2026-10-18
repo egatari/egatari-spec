@@ -116,6 +116,7 @@ Structure: one `<section id="egatari-readable">` containing, per slide, `<articl
 | `themes` | MAY | themes used, same shape as `components` (§6) |
 | `metadata` | MUST | descriptive metadata (§3.6) |
 | `excluded` | MAY | informative list of categories the producer deliberately left out |
+| `attachments` | MAY | files carried for readers rather than for rendering (§3.8) |
 
 ### 3.2 Blob blocks
 
@@ -143,7 +144,7 @@ Keys of `files` are archive paths: `/`-separated, relative, UTF-8, NFC. A reader
 
 Case-insensitive comparison uses the key `NFC(lower(upper(NFC(path))))`, where `upper` and `lower` are the locale-independent Unicode case mappings (as ECMAScript `toUpperCase`/`toLowerCase`). A path is at most 1024 bytes and 10 segments. Readers MUST build every key-indexed structure from untrusted input with maps that have no inherited keys.
 
-Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?}`) so that an unpacked folder keeps its `docId`; when present, its `docId` MUST equal the index's. Editors MAY add it to a document that lacks it (this changes `sourceSha256`, which the edit updates anyway). An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
+Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?, "attachments"?}`) so that an unpacked folder keeps its `docId` and attachment records (§3.8); when present, its `docId` MUST equal the index's, and its `attachments`, when present, MUST equal `index.attachments`. Editors MAY add it to a document that lacks it (this changes `sourceSha256`, which the edit updates anyway). An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
 
 ### 3.4 Source hash
 
@@ -171,6 +172,22 @@ These OPTIONAL members support lessons made for one learner, by learners, or by 
 A **play-only derivative** is made from a portable file by removing the index and every blob whose chunks are not referenced by the runtime layer, keeping the chunks of audio referenced as `egatari:<blobId>`. In `deck-meta`, `portable` becomes `false` and `sourceSha256` is removed; `docId` is kept. Players resolve `egatari:<blobId>` by decoding the chunks `egatari-b-<blobId>-0`, `-1`, … in order until the next one is absent.
 
 The archive layer — including `extensions` — is readable by anyone who holds a portable file. A host that must keep information from learners (e.g. quiz answers in an extension) MUST serve learners a play-only derivative and keep the portable original for authorized editors.
+
+### 3.8 Attachments
+
+> Draft. Usable without the article layer (§9C); not part of 1.0 conformance until this note is removed.
+
+`index.attachments` lists files carried for readers rather than for rendering — the original TeX or Word source, the typeset PDF, a notebook, a data set: `[{path, role, title?, description?}]`.
+
+- `path` is an archive path under `attachments/` (§3.3) present in `files`; each path appears at most once.
+- `role` is one of `source` (original TeX/Word), `pdf` (the typeset or official version), `code`, `data`, `supplement`.
+- `title` (a short name) and `description` (one or two plain-text sentences, e.g. "Run in Colab; needs Python 3.11") are for the download list. Producers SHOULD give every attachment a title.
+- Players offer attachments for download; they never execute or render them. (Running code in the reader, e.g. Python compiled to WebAssembly, is a separate future feature limited to the Extended profile.)
+- A file under `attachments/` without a record is an ordinary archive file: producers SHOULD warn, and players MUST NOT offer it.
+- Attachments are ignorable information (§3.5): `requires` MUST NOT list them. Readers that do not implement them preserve `index.attachments` as an unknown member (§7.1).
+- Unpacking an archive into a folder MUST write `index.attachments` into `egatari.json`, so that a rebuild from the folder keeps the records; packing a folder takes `index.attachments` from `egatari.json`.
+- Adding, removing or changing attachments is a tier A edit (§7.2).
+- A play-only derivative (§3.7) carries no attachments in 1.0 (open issue 10).
 
 ## 4. Runtime layer
 
@@ -266,7 +283,7 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 
 | Tier | Change | Required behavior |
 |---|---|---|
-| **A** (default) | narration text, audio, timing overrides (`timeline.json` / `deck-timing`; durations themselves are computed, §5.5) only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. When saving under a new `docId` (§7.3), `deck-meta.docId`, the index `docId`, `metadata.derivedFrom` and `egatari.json` are also tier A regions. Every byte outside these regions, including existing font data, MUST stay identical. |
+| **A** (default) | narration text, audio, timing overrides (`timeline.json` / `deck-timing`; durations themselves are computed, §5.5) only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records, attachment records (`index.attachments` and `egatari.json`, §3.8) and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. When saving under a new `docId` (§7.3), `deck-meta.docId`, the index `docId`, `metadata.derivedFrom` and `egatari.json` are also tier A regions. Every byte outside these regions, including existing font data, MUST stay identical. |
 | **B** | slide content (text, math, figures) | Rebuild with the editor's runtime of the same `contracts.runtime`, using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
 | **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
 
@@ -466,7 +483,7 @@ A lesson MAY carry an **article**: long-form text (a paper, a textbook chapter) 
 
 ### 9C.3 Attachments
 
-`index.attachments` lists files carried for readers rather than for rendering: `[{path, role, title?}]` with `role` one of `source` (original TeX/Word), `pdf` (the typeset or official version), `code`, `data`, `supplement`. Paths are under `attachments/` and follow §3.3. Players offer them for download; they never execute them. (Running code in the reader, e.g. Python compiled to WebAssembly, is a separate future feature limited to the Extended profile.)
+See §3.8. An article commonly carries its typeset PDF (`pdf`), its TeX or Word source (`source`), and its code and data.
 
 ### 9C.4 Modes
 
@@ -534,3 +551,4 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 7. `article-v1` (§9C): section-to-slide link granularity, citation format, TeX/Word conversion profiles, and an optional Python-in-browser feature for simulations.
 8. Scholarly use (submission and open review): (a) review comments as separate documents anchored into a lesson with the W3C Web Annotation Data Model (targets by `docId` + `sourceSha256`, selectors by step key, article section id or text quote), never written into the author's file; (b) revision history of one paper (same `docId`, successive `sourceSha256`) and per-step diffs; (c) an anonymized derivative for double-blind review (creators, copyright, attribution, signatures and personal metadata removed).
 9. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
+10. Attachments for learners (§3.8): whether a play-only derivative may carry chosen attachments (e.g. as `egatari:` blobs listed in a runtime block), which roles by default (`source` probably not), and how this interacts with keeping information from learners (§3.7).
