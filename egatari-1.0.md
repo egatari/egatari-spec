@@ -52,7 +52,7 @@ Independently of the mode, a player arranges the same content in a **layout**. L
 |---|---|---|
 | `slides` | one 16:9 stage at a time | keys, controls, time |
 | `flow` | a vertical document: each slide's stage (scaled, not re-flowed) followed by the narration of its steps as body text | scrolling: a step plays as its text enters the viewport and is at its final state once passed |
-| `pages` | paginated for printing; page breaks never split a step's block, and can be switched off (then equal to `flow`) | pages |
+| `pages` | paginated, as a single page or a two-page **spread** (`pages=single|spread`); page breaks never split a step's block (talk face) or a figure (read face), and can be switched off (then equal to `flow`) | pages |
 | `split` | `slides` and `flow` side by side, kept in sync | either side |
 
 - Switching layout MUST preserve the position (slide and step).
@@ -60,6 +60,7 @@ Independently of the mode, a player arranges the same content in a **layout**. L
 - In `flow`, scroll position maps to *(i, k, t)*; with `prefers-reduced-motion` only final states are shown.
 - Players SHOULD choose a default by context: `slides` for `talk` and `video`; for `learn`, `split` on wide screens and `flow` on narrow (portrait phone) screens; `flow` for `read`; `pages` when printing. A viewer's choice MAY be remembered per viewer (§9.1B), never in the file. Hosts MAY set `layout=` when embedding (§9.4).
 - When the article layer (§9C) links a section to a slide, `flow` and `split` show that section in place of the narration.
+- **Faces and layouts.** The talk face (slides and narration) and the read face (the article, §9C) can both be laid out in `flow` or `pages`. Laying out the talk face as pages gives *slides in a book*; a book proper is the **read face in `pages`** (single or spread), with figures as live components in the text. A lesson declares which face is primary in `metadata.primary` (`"talk"` or `"read"`, default `"talk"`); players open on that face. A file may carry both faces, but typically one is primary: slides for a talk, a book for a textbook.
 
 ### 1.3 Narration
 
