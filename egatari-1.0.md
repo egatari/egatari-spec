@@ -180,7 +180,7 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 | `deck-meta` | `{format:"egatari", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
 | `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
-| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
+| `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff) and `startOffset` (§5.2) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 
 Every slide MUST carry a `data-key`: the slide's `id` attribute if present, otherwise its normalized heading text (legacy). Producers SHOULD give every slide an explicit, stable id (§8.1), so that editing a title does not break narration and audio associations.
@@ -197,7 +197,7 @@ A portable file SHOULD reference audio as `egatari:<blobId>` so that audio bytes
 | AAC-LC in MP4 (`audio/mp4`) | MAY (existing audio SHOULD be kept as is) | SHOULD play |
 | WAV PCM 16-bit (`audio/wav`) | MAY, emergency only | MUST play |
 
-Producers SHOULD normalize speech to −20 LUFS integrated, −1.5 dBTP, and trim silence at the ends (−45 dB, keeping 0.05 s), and SHOULD insert 0.35 s of silence between turns, but not at boundaries inside a turn nor at the end of the step. Encoder delay (priming) MUST be compensated so that time 0 of `dur` and `cues` is the first audible sample a player presents.
+Producers SHOULD normalize speech to −20 LUFS integrated, −1.5 dBTP, and trim silence at the ends (−45 dB, keeping 0.05 s), and SHOULD insert 0.35 s of silence between turns, but not at boundaries inside a turn nor at the end of the step. Encoder delay (priming) MUST be compensated so that time 0 of `dur` and `cues` is the first audible sample a player presents: either by trimming, by container metadata that players honor, or by `startOffset` (§5.2). `dur` is the duration of the audible content (the processed PCM), not of the encoded file.
 
 ### 5.2 Audio records
 
@@ -209,11 +209,13 @@ Producers SHOULD normalize speech to −20 LUFS integrated, −1.5 dBTP, and tri
 | `dur`, `cues` | MUST | as in `deck-audio` |
 | `kind` | MUST | `tts`, `recorded`, or `imported` |
 | `inputHash` | MUST | §5.4; `null` when unknown (e.g. audio imported from an older build), which players and editors treat as stale |
-| `recipe` | MUST for `tts` | `{engine, model, voice, seed, dictionary, processing}`; `voice` is a public identifier, never a path; `dictionary` an identifier of the effective reading dictionary and rules (SHA-256 RECOMMENDED); `processing` a free-form profile string, RECOMMENDED as `key=value` pairs separated by `;` |
+| `recipe` | MUST for `tts` | `{engine, model, voice, seed, dictionary, processing}`; `voice` is a public identifier, never a path; `dictionary` an identifier of the effective reading dictionary and rules (SHA-256 RECOMMENDED); `processing` a free-form profile string, RECOMMENDED as `key=value` pairs separated by `;`. `engine`, `model` and `processing` identifiers are producer-defined and SHOULD be stable and versioned |
+| `processing` | MAY | for every kind: identifier of the post-processing applied (as `recipe.processing`). Producer-defined; SHOULD be stable and versioned |
+| `startOffset` | MAY | seconds of encoder delay at the start of the file not removed by container metadata; players MUST start playback at this media time and treat it as time 0 of `dur` and `cues` |
 | `recipeDigest` | MAY | the producer's content-address of input + recipe (e.g. the reference implementation's 12-hex `segDigest`) |
 | `alternatives` | MAY | `[{file, mime, startOffset}]` other encodings of the same take |
 
-Editors MUST NOT replace `recorded` audio unless the user explicitly selects that step.
+Editors MUST NOT replace `recorded` audio unless the user explicitly selects that step. For `recorded` and `imported` audio, `inputHash` is that of the narration the person read (or the audio was matched to) when it was recorded or imported. Records MUST NOT carry device names, original file names or other capture metadata that may identify a person (§3.6).
 
 ### 5.3 Boundaries and cues
 
