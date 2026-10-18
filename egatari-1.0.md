@@ -493,6 +493,7 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 ## 12. Media type and identification
 
 - Distribution: `text/html`. Extension `.ega.html`.
+- The extension `.ega` (without `.html`) is reserved for a future in which browsers and operating systems recognize Egatari files natively; a `.ega` file will have exactly the same content as the corresponding `.ega.html`. Until then, producers MUST use `.ega.html`, so that current browsers open the file.
 - Index block: `application/vnd.egatari+json` (to be registered with IANA when 1.0 is frozen).
 - Detection: a reader identifies an Egatari file by `deck-meta.format == "egatari"` or an `egatari-index` block.
 
