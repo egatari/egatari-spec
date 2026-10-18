@@ -145,7 +145,7 @@ These OPTIONAL members support lessons made for one learner, by learners, or by 
 
 - `derivedFrom`: `{docId, sourceSha256, anchor?}` — the lesson this one was derived from (e.g. a version adapted for one learner, or a short branch answering a question, where `anchor` is the step key it branches from). An editor that changes the original can then find derived lessons and offer to carry a fix over, step by step, using slide ids.
 - `authorship`: `{<stepKey or slideKey>: {by, reviewed}}` with `by` one of `human`, `ai`, `mixed` and `reviewed` a boolean (a person responsible for the lesson has checked it). Keys without an entry are unknown. Names of reviewers are not recorded (§3.6).
-- `audience`: `"public"` (default) or `"individual"`. An individual lesson is made for a specific learner or group and SHOULD NOT be redistributed; hosts MUST NOT show it to other learners. It still MUST NOT contain learner records (§9.1C): it may be tailored to a learner, but grades, answers or personal data are not part of it.
+- `audience`: `"public"` (default) or `"individual"`. An individual lesson is made for a specific learner or group and SHOULD NOT be redistributed; hosts MUST NOT show it to other learners. It still MUST NOT contain learner records (§9.1B): it may be tailored to a learner, but grades, answers or personal data are not part of it.
 
 ### 3.7 Play-only derivative
 
@@ -319,7 +319,7 @@ A conforming player MUST: render any *(i, k, t)* deterministically; implement th
 - Following a link moves to step 0 of that slide (or the given step) at its final state in `talk` mode; in `learn` and `video` mode it seeks there and keeps the current playing state. Players SHOULD offer "back" to the position before the most recent link.
 - Players MUST keep link navigation inside the document (no top-level navigation). When embedded (§9.4), a link produces a `position` event with `cause: "link"`, and a host that restricts navigation (§1.2) MAY veto it; players then stay where they are.
 
-### 9.1C Learner data
+### 9.1B Learner data
 
 Notes, ink, bookmarks and other data a learner creates MUST NOT be written into the Egatari file. Players MAY keep them in local storage keyed by `docId`, and SHOULD let the learner export them (e.g. the final state of each slide with the learner's notes, as PDF or Markdown).
 
@@ -473,7 +473,7 @@ A conforming host MUST:
 3. Store the original bytes unmodified and return them unchanged to users authorized to edit. It MAY serve learners a play-only derivative (§3.7), and MUST do so when extensions carry information to be withheld from learners.
 4. Play files that carry no extensions for that host.
 5. Record progress from §9.2/§9.4 events, keeping Egatari completion (`deck-meta.completion`) distinct from the host's own grading.
-6. Never write learner data into files (§9.1C).
+6. Never write learner data into files (§9.1B).
 
 A host MAY supply its own controls and restrict navigation (§1.2). Conformance covers Egatari content only; other kinds of material a platform offers are out of scope.
 
