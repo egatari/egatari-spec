@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo/mark-dark.svg">
+    <img src="logo/mark-light.svg" width="128" height="128" alt="Egatari logo: the hiragana え (e, picture) in Japanese corner brackets, its first stroke drawn as a sun">
+  </picture>
+</p>
+
 # Egatari specification
 
 Egatari (絵語り, "narrating with pictures") is a file format for narrated, animated lessons: one HTML file that plays offline as a self-narrating lesson and carries its own source so it can be reopened, edited one step at a time, and saved again.
@@ -10,10 +17,12 @@ Egatari (絵語り, "narrating with pictures") is a file format for narrated, an
 | [extensions.md](extensions.md) | Registry of extension names (platform-specific data, §9A) |
 | [fixtures/](fixtures/) | Conformance fixtures and test vectors |
 
-The format is named separately from its reference implementation, [motion-academic-slides](https://github.com/moiku/motion-academic-slides) (producer, editor, player). The name is written *Egatari* (絵語り). Files use the extension `.ega.html`.
+The format is named separately from its reference implementation, [Egatari Studio](https://github.com/egatari/egatari-studio) (producer, editor, player). The name is written *Egatari* (絵語り). Files use the extension `.ega.html`.
 
 Status: **Editor's Draft** — anything may change before 1.0. Feedback is welcome in Issues.
 
 Check the schemas against the fixtures with `npm ci && npm test`.
 
  The specification text is licensed under [CC BY 4.0](LICENSE.md); schemas and fixtures under the repository's MIT license.
+
+The logo files are in [logo/](logo/). They are not covered by the CC BY or MIT licenses: you may use them unmodified to refer to Egatari or to software that reads or writes Egatari files.
