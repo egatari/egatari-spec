@@ -529,4 +529,5 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 5. File-picker availability on `file://`; download as the baseline save path.
 6. `signatures-v1`: what is signed (index and runtime layer), interaction with tier A edits and derived lessons, key identity (e.g. did:web, GitHub keys, Sigstore, C2PA certificates), timestamps and long-term verification.
 7. `article-v1` (§9C): section-to-slide link granularity, citation format, TeX/Word conversion profiles, and an optional Python-in-browser feature for simulations.
-8. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
+8. Scholarly use (submission and open review): (a) review comments as separate documents anchored into a lesson with the W3C Web Annotation Data Model (targets by `docId` + `sourceSha256`, selectors by step key, article section id or text quote), never written into the author's file; (b) revision history of one paper (same `docId`, successive `sourceSha256`) and per-step diffs; (c) an anonymized derivative for double-blind review (creators, copyright, attribution, signatures and personal metadata removed).
+9. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
