@@ -417,6 +417,34 @@ Any organization MAY issue L2 attestations; this specification names none. Which
 
 Signing certificates that contain personal data beyond name and affiliation (e.g. national ID card certificates) MUST NOT be embedded. Authors SHOULD also publish each lesson's `docId` and their key fingerprint on an official distribution page, so that copies can be checked against it.
 
+## 9C. Article layer (feature `article-v1`, draft)
+
+> Draft. Motivation: one file as *paper + code + talk* ("arXiv + GitHub + conference"). Not part of 1.0 conformance until this note is removed.
+
+A lesson MAY carry an **article**: long-form text (a paper, a textbook chapter) that is the *reading face* of the same content whose *talking face* is the slides and narration. Neither face is the master; they are linked both ways.
+
+### 9C.1 Article
+
+- The runtime layer contains the article as HTML in `<article id="egatari-article">`: headings with ids, paragraphs, figures, tables, equations (rendered like slide math), citations and a reference list. HTML is the canonical reading form, as on arXiv's HTML pages.
+- The archive layer contains the article's authoring source (e.g. `article.md`, or HTML converted from TeX or Word). Producers convert TeX (e.g. with LaTeXML or pandoc), Markdown and Word to this HTML; conversion fidelity is the producer's responsibility.
+- A figure in the article MAY be a component (`<m-…>`), rendered at its final state when read and interactive in `read` mode; the same Core/Extended rules apply (§6).
+- The article satisfies the readable layer (§2.1) for the content it covers.
+
+### 9C.2 Links between the faces
+
+- A slide MAY name the article sections it presents: `<section class="slide" data-article="sec-method sec-results">`.
+- The article MAY link to positions in the talk: `<a data-egatari-step="<stepKey>">` (and to a slide with a slide key).
+- Players offer "watch this part" from an article section and "read more" from a slide.
+- **Staleness:** when a link is made or confirmed, the producer records the SHA-256 of the section's text in `index.articleLinks[slideKey][sectionId]`. If the section changes, editors show the linked slides as possibly out of date, as for narration audio (§5.4).
+
+### 9C.3 Attachments
+
+`index.attachments` lists files carried for readers rather than for rendering: `[{path, role, title?}]` with `role` one of `source` (original TeX/Word), `pdf` (the typeset or official version), `code`, `data`, `supplement`. Paths are under `attachments/` and follow §3.3. Players offer them for download; they never execute them. (Running code in the reader, e.g. Python compiled to WebAssembly, is a separate future feature limited to the Extended profile.)
+
+### 9C.4 Modes
+
+A `read` mode shows the article face. `learn` mode MAY show the linked article section beside the slides. `talk` and `video` are unchanged.
+
 ## 10. Conformance classes
 
 | Class | Requirement summary |
@@ -475,4 +503,5 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 4. Tolerances for loudness and cue timing across browsers.
 5. File-picker availability on `file://`; download as the baseline save path.
 6. `signatures-v1`: what is signed (index and runtime layer), interaction with tier A edits and derived lessons, key identity (e.g. did:web, GitHub keys, Sigstore, C2PA certificates), timestamps and long-term verification.
-7. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
+7. `article-v1` (§9C): section-to-slide link granularity, citation format, TeX/Word conversion profiles, and an optional Python-in-browser feature for simulations.
+8. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
