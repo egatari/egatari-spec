@@ -44,6 +44,23 @@ In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1
 
 When embedded by a host (§9.4, §10), the host MAY hide the player's own controls (`controls=0`) and provide equivalent ones itself (chapter list, playback rate, pause), and MAY restrict forward navigation as a course policy. The requirement to offer controls is then met by the host.
 
+### 1.2A Layouts
+
+Independently of the mode, a player arranges the same content in a **layout**. Layouts are views of one position, not different documents:
+
+| Layout | Arrangement | Advanced by |
+|---|---|---|
+| `slides` | one 16:9 stage at a time | keys, controls, time |
+| `flow` | a vertical document: each slide's stage (scaled, not re-flowed) followed by the narration of its steps as body text | scrolling: a step plays as its text enters the viewport and is at its final state once passed |
+| `pages` | paginated for printing; page breaks never split a step's block, and can be switched off (then equal to `flow`) | pages |
+| `split` | `slides` and `flow` side by side, kept in sync | either side |
+
+- Switching layout MUST preserve the position (slide and step).
+- In `split`, scrolling the text moves the stage to the corresponding step and vice versa; during audio playback the current narration turn SHOULD be highlighted.
+- In `flow`, scroll position maps to *(i, k, t)*; with `prefers-reduced-motion` only final states are shown.
+- Players SHOULD choose a default by context: `slides` for `talk` and `video`; for `learn`, `split` on wide screens and `flow` on narrow (portrait phone) screens; `flow` for `read`; `pages` when printing. A viewer's choice MAY be remembered per viewer (§9.1B), never in the file. Hosts MAY set `layout=` when embedding (§9.4).
+- When the article layer (§9C) links a section to a slide, `flow` and `split` show that section in place of the narration.
+
 ### 1.3 Narration
 
 Each step MAY have narration: an ordered list of **turns**, each with a **role** (`expert` or `novice`; single-speaker lessons use `expert` only) and text. Text MAY contain **boundaries** — `cue` (a synchronization point for an animated component) and `mark` (an attention mark on a target element) — and **readings** (display text with a separate spoken form, e.g. φ read as ファイ). The authoring syntax is defined in §8.
@@ -334,7 +351,7 @@ A player SHOULD offer to save the archive layer as a ZIP of `files` plus `audio/
 
 ### 9.4 Embedding
 
-A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Egatari file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept messages from `window.parent` via `postMessage` (objects with a string member `egatari`) and ignore messages from any other source. Query parameters `mode`, `controls=0` and `preview=1` set the initial state. Every command MAY carry an `id`; the player echoes it in the reply or acknowledgement. Times are seconds as floating-point numbers.
+A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Egatari file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept messages from `window.parent` via `postMessage` (objects with a string member `egatari`) and ignore messages from any other source. Query parameters `mode`, `layout`, `controls=0` and `preview=1` set the initial state. Every command MAY carry an `id`; the player echoes it in the reply or acknowledgement. Times are seconds as floating-point numbers.
 
 Commands (host → player):
 
@@ -343,7 +360,7 @@ Commands (host → player):
 | `{egatari:"seek", id?, slide, step, t}` | go to *(slide, step, t)*; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞. Reply `seeked` |
 | `{egatari:"play", id?}` / `{egatari:"pause", id?}` | start / pause timeline playback with audio. If the browser refuses to start audio, reply `playBlocked` |
 | `{egatari:"rate", id?, value}` | playback rate (§1.2) |
-| `{egatari:"mode", id?, mode}` / `{egatari:"preview", id?, on}` / `{egatari:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
+| `{egatari:"mode", id?, mode}` / `{egatari:"layout", id?, layout}` / `{egatari:"preview", id?, on}` / `{egatari:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
 | `{egatari:"snapshot", id, slide, step, t, maxWidth?}` | reply `{egatari:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position |
 
 Events (player → host; target origin `*`; payloads contain no private data):
