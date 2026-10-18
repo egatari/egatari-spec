@@ -334,7 +334,7 @@ A conforming player MUST: render any *(i, k, t)* deterministically; implement th
 ### 9.1A Links to slides
 
 - A link to a slide is an ordinary anchor whose fragment is a slide id: `<a href="#s-k3f9q2">`; `#<slide id>:<stepKey>` addresses a step. Such links contain no script and are allowed in Core documents. The same fragments in the file's URL select the starting position.
-- Following a link moves to step 0 of that slide (or the given step) at its final state in `talk` mode; in `learn` and `video` mode it seeks there and keeps the current playing state. Players SHOULD offer "back" to the position before the most recent link.
+- Following a link moves to step 0 of that slide (or the given step) at its final state in `talk` mode; in `learn` and `video` mode it seeks there and keeps the current playing state. In the `flow` and `pages` layouts it scrolls to that step's block (in `split`, both sides move). Players SHOULD offer "back" to the position before the most recent link.
 - Players MUST keep link navigation inside the document (no top-level navigation). When embedded (§9.4), a link produces a `position` event with `cause: "link"`, and a host that restricts navigation (§1.2) MAY veto it; players then stay where they are.
 
 ### 9.1B Learner data
