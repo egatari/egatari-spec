@@ -215,7 +215,8 @@
         "type": "object",
         "required": [
           "path",
-          "role"
+          "role",
+          "title"
         ],
         "properties": {
           "path": {
