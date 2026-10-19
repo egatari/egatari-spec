@@ -588,7 +588,7 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 ## Appendix A. Open issues
 
 1. **Blocker for 1.0:** normative text of §8 (import and freeze `docs/contract.md`), component/theme dependency manifests and hash scope, schemas for every runtime block, archive↔runtime consistency rules.
-2. Public component registry: location, naming, hash publication.
+2. Public component registry: direction — releases of a dedicated repository (`egatari/components`), each publishing a manifest of component names, versions and code hashes; proposals collected as issues. To settle: whether a Core document may use a component only from a published release, how old releases stay available so that earlier lessons remain editable (tier B), and naming rules for contributed components.
 3. Whether a lesson may embed a custom reference voice (size, privacy).
 4. Tolerances for loudness and cue timing across browsers.
 5. File-picker availability on `file://`; download as the baseline save path.
