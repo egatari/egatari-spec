@@ -237,7 +237,7 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 |---|---|
 | `deck-meta` | `{format:"egatari", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
-| `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
+| `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"} \| {type:"zoom", id, scale?}]}` — boundaries, only for steps with marks or zooms (zoom: §8.3A, draft) |
 | `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff) and `startOffset` (§5.2) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 | `deck-attachments` | attachments offered to learners, with `src` = `egatari:<blobId>` (§3.8, draft) |
@@ -381,6 +381,24 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 ### 8.3 Readings
 
 `{display|reading}` stores the reading in kana (or the lesson language's ordinary spelling). Producers MAY export readings as SSML `<sub alias>`, W3C PLS lexicon entries, or HTML `<ruby>`.
+
+### 8.3A Camera (feature `camera-v1`, draft)
+
+> Draft. Motivation: let any figure — inline SVG, HTML, an equation, a component's output — be zoomed and panned in time with the narration, so that a lesson-specific figure (e.g. a code tree followed downwards) needs no component of its own (§6).
+
+A **camera** frames part of the stage. It is written in the narration like an attention mark and is determined by *(i, k, t)* alone:
+
+```markdown
+[2] {zoom:root}根から見ていきます。{zoom:n01|3}0 の次に 1 を読むと、ここに着きます。{zoom:reset}全体に戻ります。
+```
+
+- **Syntax.** `{zoom:ID}` frames the target with a margin; `{zoom:ID|s}` frames it at scale *s* (a decimal number between 1 and 8, the stage scale after the move); `{zoom:reset}` returns to the whole stage. Targets are found as for attention marks: an element of the slide with `id="ID"` or `data-mark="ID"`, including elements inside inline SVG and inside a component's rendered output.
+- **Timing.** Each `{zoom}` is a boundary, timed like a mark (at its cue plus lead when audio is synchronized; otherwise at the fallback interval). A move takes 0.6 s, eased; with `prefers-reduced-motion` it is instant.
+- **State.** At *(i, k, t)* the camera is the result of the step's zooms whose time has passed, starting from the whole stage at the start of every step unless the step's first boundary is a zoom at time 0. *(i, k, ∞)* is the final framing of the step. Jumping, going back and seeking render that framing directly; the camera never depends on call order.
+- **Rendering.** The camera transforms the whole stage (a CSS transform of the slide content in stage coordinates, 1280×720); text stays vector, so zoomed text is sharp. Attention marks are drawn in the transformed space. The camera does not change layout, the readable layer (§2.1) or printing: printed and `flow`/`pages` views show each step's final framing, or the whole stage when the author marks the step `data-print="whole"`.
+- **Checking.** Producers MUST report a target that does not exist on the rendered slide and SHOULD warn when the framed area would make body text smaller than 24 px or larger than the stage.
+- **Requirements.** A lesson that uses `{zoom}` lists `camera-v1` in `requires` (§3.5): an editor that does not implement it would drop the camera when rebuilding.
+- In `deck-marks`, a zoom is `{type:"zoom", id, scale?}` (`id` = `"reset"` for a reset).
 
 ### 8.4 Component contract (summary)
 
@@ -593,6 +611,7 @@ A host MAY supply its own controls and restrict navigation (§1.2). Conformance 
 4. Tolerances for loudness and cue timing across browsers.
 5. File-picker availability on `file://`; download as the baseline save path.
 6. `signatures-v1`: what is signed (index and runtime layer), interaction with tier A edits and derived lessons, key identity (e.g. did:web, GitHub keys, Sigstore, C2PA certificates), timestamps and long-term verification.
+7A. `camera-v1` (§8.3A): margin and easing values, interaction with morphs (§8 of the contract) at step 0, and whether a host may disable camera moves for accessibility.
 7. `article-v1` (§9C): section-to-slide link granularity, citation format, TeX/Word conversion profiles, and an optional Python-in-browser feature for simulations.
 8. Scholarly use (submission and open review): (a) review comments as separate documents anchored into a lesson with the W3C Web Annotation Data Model (targets by `docId` + `sourceSha256`, selectors by step key, article section id or text quote), never written into the author's file; (b) revision history of one paper (same `docId`, successive `sourceSha256`) and per-step diffs; (c) an anonymized derivative for double-blind review (creators, copyright, attribution, signatures and personal metadata removed).
 9. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
