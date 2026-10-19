@@ -23,6 +23,15 @@ JSON structures are normatively defined by the JSON Schemas in [`schema/`](schem
 
 ## 1. Model
 
+### 1.0 One source, many views
+
+A lesson has **one source of content**: its Egatari source — the slides (`deck.html`), the narration (`narration.md`) and, when present, the article (§9C), all written in the syntax this specification defines and rendered as HTML. Everything a person sees or hears is produced from that source:
+
+- the faces (talk: slides and narration; read: the article), the display modes (§1.2), the layouts (§1.2A) and printing are **views** of the same source; no view carries content of its own;
+- a PDF of the lesson is an **output** — any reader can produce one by printing in the `pages` layout — never a part of the source;
+- files in other formats (PDF, Word, TeX, spreadsheets) never supply content. Content written elsewhere is **imported** into the Egatari source (e.g. a TeX textbook converted to the article, §9C.1); after import, the Egatari source is the original, and the imported file MAY be kept as an attachment for provenance (§3.8, `role: source`);
+- attachments (§3.8) travel with the lesson for readers — an official version typeset elsewhere, the original manuscript, data and code for verification — and are never rendered.
+
 ### 1.1 Position
 
 A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a final `concl` step. The **position** is the triple *(i, k, t)*: slide index, step, and seconds since the step began.
@@ -189,7 +198,7 @@ An **attachment** is a file carried for readers rather than for rendering — th
 
 | `role` | Meaning (PDF/A-3 `AFRelationship`) | Allowed media types | Conditions |
 |---|---|---|---|
-| `pdf` | the typeset or official version (Alternative) | `application/pdf` | no JavaScript, no automatic actions (`OpenAction`, `AA`, `Launch`), no embedded files |
+| `pdf` | an official version typeset elsewhere, e.g. the journal's or the publisher's PDF (Alternative); a PDF printed from the lesson itself SHOULD NOT be attached, since any reader can produce it (§1.0) | `application/pdf` | no JavaScript, no automatic actions (`OpenAction`, `AA`, `Launch`), no embedded files |
 | `data` | data for exercises or verification (Data) | `text/csv`, `text/tab-separated-values`, `application/json`, `text/plain`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` | spreadsheets: no macros (`vbaProject.bin`, macro-enabled content types), no embedded objects or ActiveX, no external links, DDE or functions that fetch external data |
 | `code` | program source (Source) | `text/plain` and other text types for source in a programming language; `application/x-ipynb+json`; environment definitions (e.g. `requirements.txt`, `pyproject.toml` with its lock file, `environment.yml`) | notebooks without credentials or machine-specific paths |
 | `source` | the original manuscript (Source) | `text/x-tex`, `text/markdown`, `text/plain` (e.g. BibTeX), `application/vnd.openxmlformats-officedocument.wordprocessingml.document` | documents: as for spreadsheets, and no field codes that execute or fetch (e.g. `DDEAUTO`, `INCLUDETEXT`) and no remote template |
@@ -493,7 +502,7 @@ A lesson MAY carry an **article**: long-form text (a paper, a textbook chapter) 
 ### 9C.1 Article
 
 - The runtime layer contains the article as HTML in `<article id="egatari-article">`: headings with ids, paragraphs, figures, tables, equations (rendered like slide math), citations and a reference list. HTML is the canonical reading form, as on arXiv's HTML pages.
-- The archive layer contains the article's authoring source (e.g. `article.md`, or HTML converted from TeX or Word). Producers convert TeX (e.g. with LaTeXML or pandoc), Markdown and Word to this HTML; conversion fidelity is the producer's responsibility.
+- The archive layer contains the article's authoring source (e.g. `article.md`, or HTML converted from TeX or Word). Producers convert TeX (e.g. with LaTeXML or pandoc), Markdown and Word to this source when importing; conversion fidelity is the producer's responsibility. After import, the Egatari source is the original (§1.0): later edits are made to it, not to the TeX or Word file, which MAY be kept as an attachment (`role: source`) for provenance.
 - A figure in the article MAY be a component (`<m-…>`), rendered at its final state when read and interactive in `read` mode; the same Core/Extended rules apply (§6).
 - The article satisfies the readable layer (§2.1) for the content it covers.
 
