@@ -55,21 +55,30 @@ When embedded by a host (§9.4, §10), the host MAY hide the player's own contro
 
 ### 1.2A Layouts
 
-Independently of the mode, a player arranges the same content in a **layout**. Layouts are views of one position, not different documents:
+Independently of the mode, a player arranges the lesson in **panes**. A layout is an arrangement of panes; every pane shows the same position, and layouts are views of one source (§1.0), not different documents.
 
-| Layout | Arrangement | Advanced by |
+| Pane | Shows | In the file |
 |---|---|---|
-| `slides` | one 16:9 stage at a time | keys, controls, time |
-| `flow` | a vertical document: each slide's stage (scaled, not re-flowed) followed by the narration of its steps as body text | scrolling: a step plays as its text enters the viewport and is at its final state once passed |
-| `pages` | paginated, as a single page or a two-page **spread** (`pages=single|spread`); page breaks never split a step's block (talk face) or a figure (read face), and can be switched off (then equal to `flow`) | pages |
-| `split` | `slides` and `flow` side by side, kept in sync | either side |
+| **stage** | the talk face: one 16:9 slide stage at a time, animated | yes |
+| **text** | the read face: the article (§9C) when present, otherwise the narration of each step as body text, with each slide's stage scaled (not re-flowed) at its place | yes |
+| **notes** | the learner's notes and ink for the current position (§9.1B) | **no** — learner data |
 
-- Switching layout MUST preserve the position (slide and step).
-- In `split`, scrolling the text moves the stage to the corresponding step and vice versa; during audio playback the current narration turn SHOULD be highlighted.
-- In `flow`, scroll position maps to *(i, k, t)*; with `prefers-reduced-motion` only final states are shown.
-- Players SHOULD choose a default by context: `slides` for `talk` and `video`; for `learn`, `split` on wide screens and `flow` on narrow (portrait phone) screens; `flow` for `read`; `pages` when printing. A viewer's choice MAY be remembered per viewer (§9.1B), never in the file. Hosts MAY set `layout=` when embedding (§9.4).
-- When the article layer (§9C) links a section to a slide, `flow` and `split` show that section in place of the narration.
-- **Faces and layouts.** The talk face (slides and narration) and the read face (the article, §9C) can both be laid out in `flow` or `pages`. Laying out the talk face as pages gives *slides in a book*; a book proper is the **read face in `pages`** (single or spread), with figures as live components in the text. A lesson declares which face is primary in `metadata.primary` (`"talk"` or `"read"`, default `"talk"`); players open on that face. A file may carry both faces, but typically one is primary: slides for a talk, a book for a textbook.
+A pane of kind text is either **scrolled** (a vertical document) or **paginated** (single pages or a two-page **spread**; page breaks never split a step's block or a figure, and can be switched off). A stage pane can also be paginated (one slide per page, for printing and handouts).
+
+The usual layouts are named combinations:
+
+| Layout | Panes | Typical use |
+|---|---|---|
+| `slides` | stage | talk, video |
+| `flow` | text, scrolled | reading, portrait phones |
+| `pages` (`pages=single\|spread`) | text, paginated — the read face as pages is a **book**; the talk face as pages is *slides in a book* | books, printing |
+| `split` | stage + text | self-study on wide screens |
+| — | stage + notes, text + notes, stage + text + notes | self-study with note-taking |
+
+- **Synchronization.** All panes follow one position. Moving any pane — advancing the stage, scrolling or turning pages of the text, selecting a note — moves the others: the text to the step's block or to the article section linked to the slide (§9C.2), the stage to the corresponding step, the notes to that position. Switching layout MUST preserve the position (slide and step). During audio playback the current narration turn SHOULD be highlighted in the text.
+- **Scrolled text and motion.** In a scrolled text pane, scroll position maps to *(i, k, t)*: a step plays as its block enters the viewport and is at its final state once passed; with `prefers-reduced-motion` only final states are shown.
+- **Detached panes.** A player SHOULD let the viewer move a pane into a separate window (e.g. the stage on a projector or a second display, the text or notes on the laptop) and back. A detached pane stays synchronized with the others through the opening window, without network access; closing it returns the pane to the main window. The presenter view of `talk` is a detached arrangement of the same kind.
+- **Defaults.** Players SHOULD choose by context: `slides` for `talk` and `video`; for `learn`, `split` on wide screens and `flow` on narrow (portrait phone) screens; `flow` for `read`; `pages` when printing. A lesson declares which face is primary in `metadata.primary` (`"talk"` or `"read"`, default `"talk"`); players open on that face. A file may carry both faces, but typically one is primary: slides for a talk, a book for a textbook. A viewer's choice of layout and panes MAY be remembered per viewer (§9.1B), never in the file. Hosts MAY set `layout=` when embedding (§9.4).
 
 ### 1.3 Narration
 
@@ -391,7 +400,11 @@ A conforming player MUST: render any *(i, k, t)* deterministically; implement th
 
 ### 9.1B Learner data
 
-Notes, ink, bookmarks and other data a learner creates MUST NOT be written into the Egatari file. Players MAY keep them in local storage keyed by `docId`, and SHOULD let the learner export them (e.g. the final state of each slide with the learner's notes, as PDF or Markdown).
+Notes, ink, bookmarks, highlights and other data a learner creates MUST NOT be written into the Egatari file. Players MAY keep them in local storage keyed by `docId` (hosts MAY keep them per learner).
+
+- **Anchors.** Each note is anchored to a position that survives revisions of the lesson: a slide key and step key, or an article section id, optionally with a point or range inside it (e.g. coordinates on the 1280×720 stage, or a text range in the section). Because slide ids are stable (§8.1), notes stay attached when the lesson is revised; a note whose anchor no longer exists is kept and shown as detached, never discarded silently.
+- **Kinds.** Typed text and ink (pen strokes with pressure, in stage or page coordinates), as in note-taking applications.
+- **Export.** Players SHOULD let the learner export notes: as PDF (each slide's final state or each page of the text, with the learner's notes and ink drawn over or beside it), and as Markdown with the anchors. Notes are output: importing them back is optional.
 
 ### 9.2 Tracking
 
