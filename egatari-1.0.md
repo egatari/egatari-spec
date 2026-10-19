@@ -47,6 +47,8 @@ A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a f
 | `learn` | the learner: start, pause, previous/next, jump, playback rate | advances along the timeline (§5.5) with narration audio | self-study, LMS (default in LMS bindings and hosted players) |
 | `video` | nobody (no controls) | advances along the timeline | recording and video export |
 
+**Offered modes.** A lesson MAY state which modes and faces it offers and where it opens, in `metadata.offer`: `{modes?, faces?, open?}` — `modes` a non-empty subset of `talk`, `learn`, `video`; `faces` a non-empty subset of `talk`, `read`; `open` `{mode?, face?}`. Producers copy it into `deck-meta.offer`, so that play-only derivatives keep it. Players SHOULD show only the offered modes and faces in their controls and open as `open` states (defaults: all modes, the faces present, `metadata.primary`). **This is the author's intent, not access control:** anyone who has the file can play it in any mode (§11), and players MAY let the viewer override it (e.g. `?mode=`). A host that must enforce a policy — a course that allows only `learn`, a sharing site that shows only `video` — does so in its own frame through embedding (§9.4: `mode`, `controls=0`, restricted navigation), §10.1.
+
 **Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step. `?mode=lecture` is a legacy alias for `talk` with preview on.
 
 In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1.5 and 2, keeping the pitch of speech; the timeline clock advances at the same rate, so the screen stays a function of *(i, k, t)*. Presenter-only tools (presenter view, laser) SHOULD be hidden.
@@ -336,7 +338,7 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId` (unl
 
 Egatari cannot prevent anyone from modifying a file (§11). It carries the rights holder's terms so that conforming software states them and keeps credit intact:
 
-- Producers SHOULD copy `license`, `copyright` and `attribution` from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
+- Producers SHOULD copy `license`, `copyright` and `attribution` (and `offer`, §1.2) from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
 - Players SHOULD show title, creators, copyright, license and attribution in an information panel.
 - Each time a document is opened for editing, before the first change, an editor MUST show its license. If the license does not permit derivatives (e.g. any Creative Commons `-ND` license, or no license with a copyright notice), the editor MUST warn that modifying or redistributing the lesson may infringe the rights holder's copyright and MUST require explicit confirmation.
 - An editor that saves a document under a new `docId` (e.g. "save as a new lesson") MUST keep the original `copyright`, `attribution` and `creators`, MUST set `derivedFrom` (§3.6.1), and MAY add the new editor's name to `creators`. An editor that keeps the `docId` MUST NOT set or change `derivedFrom`.
@@ -576,7 +578,7 @@ A conforming host MUST:
 5. Record progress from §9.2/§9.4 events, keeping Egatari completion (`deck-meta.completion`) distinct from the host's own grading.
 6. Never write learner data into files (§9.1B).
 
-A host MAY supply its own controls and restrict navigation (§1.2). Conformance covers Egatari content only; other kinds of material a platform offers are out of scope.
+A host MAY supply its own controls and restrict navigation (§1.2), and MAY restrict the modes and faces it offers beyond `deck-meta.offer`; restrictions are enforced by the host's own frame and controls, never by the file. Conformance covers Egatari content only; other kinds of material a platform offers are out of scope.
 
 ## 11. Security considerations
 
