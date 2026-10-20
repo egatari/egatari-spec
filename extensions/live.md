@@ -53,4 +53,4 @@ The reference service at `live.egatari.org` (Egatari Studio) keeps rooms only fo
 - Whether `board` (v2) and a teacher overview of learners' work need end-to-end encryption by default, and how that interacts with moderation.
 - Whether a lesson may declare more than one room (several classes, one file) or the editor exports one derivative per room.
 - Minimum notice wording in both languages.
-- Anyone can create a room without an account: the reference service limits room creation per client and watches usage; whether v2 needs a teacher identity (e.g. a signed lesson, §8 signatures) to create rooms.
+- Anyone can create a room without an account: the reference service limits room creation per client and watches usage; whether v2 needs a teacher identity (e.g. a signed lesson, `signatures-v1`) to create rooms.
