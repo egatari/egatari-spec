@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% seo %}
+    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    <link rel="icon" href="{{ "/favicon.ico" | relative_url }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ "/apple-touch-icon.png" | relative_url }}">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      {{ content }}
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        Egatari specification ·
+        <a href="https://github.com/egatari/egatari-spec">Source on GitHub</a> ·
+        <a href="https://github.com/egatari/egatari-spec/issues">Feedback and questions (Issues)</a> ·
+        Tools: <a href="https://studio.egatari.org/">Egatari Studio</a>
+      </div>
+    </div>
+  </body>
+</html>
