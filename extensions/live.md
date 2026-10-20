@@ -36,7 +36,7 @@ A player that implements `live`:
 1. MUST NOT open any connection unless `extensions.live` is present, the current time is inside `window`, and the context allows network access. In a host or preview that forbids network access (spec §10.1, §11), it MUST NOT try; it MAY show the room's web address (and a code) instead, so that learners can join from a browser.
 2. MUST, before or at the first connection, show that the lesson connects to `endpoint` (e.g. "This lesson is connected to a live room at live.egatari.org"), and while connected show a persistent indicator with a way to disconnect. It MAY connect without a tap when the window is open; joining must not require an account.
 3. MUST send only what an activity needs: the learner's question or choice, the activity id and step key, and a random participant id generated on the device (no name unless the learner types one). It MUST NOT send viewing position, timing, playback events or any other telemetry.
-4. MUST restrict its connections to `endpoint` (e.g. `connect-src` in the runtime's content security policy) and MUST NOT load scripts, styles or images from it; activity content arrives as data and is shown as text.
+4. MUST restrict its connections to `endpoint` and MUST NOT load scripts, styles or images from it; activity content arrives as data and is shown as text. Producers SHOULD write a content security policy `<meta>` into derivatives that carry `live` (before any script), with `connect-src` set to `endpoint` and nothing else that reaches the network; players SHOULD also check every connection against `endpoint` themselves.
 5. Shows activities outside the stage (a pane, spec §1.0), so that the stage, captions and marks stay as authored. A `poll` for a step appears when that step is reached; `qa` is available for the whole window.
 
 ## 3. Results
@@ -45,7 +45,7 @@ Results belong to the teacher. The room service lets the teacher download them a
 
 ## 4. Room service (informative)
 
-The reference service at `live.egatari.org` (Egatari Studio) keeps rooms only for their window plus a short grace period and then deletes them. The teacher can open and close a room, require approval before learners appear, and replace the key (which locks out copies of the file that leaked). Learners' questions are visible to the teacher only unless the teacher shows them.
+The reference service at `live.egatari.org` (Egatari Studio) keeps rooms only for their window plus a short grace period and then deletes them. In v1 the teacher creates a room on the service's own page and copies `room` and `key` into the editor's export settings, so the editor itself still makes no network requests. Managing a room needs a separate **teacher key**, shown once when the room is created and kept in the fragment (`#…`) of the teacher's page address; it is never written into a lesson or an export. The teacher can open and close a room, require approval before learners appear, and replace the key (which locks out copies of the file that leaked). Learners' questions are visible to the teacher only unless the teacher shows them.
 
 ## 5. Open questions
 
