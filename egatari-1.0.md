@@ -244,6 +244,7 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 | `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff), `startOffset` (§5.2) and `kind` (`tts`, `recorded` or `imported`, copied from the audio record so that play-only derivatives and folder builds keep it; producers SHOULD write it) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 | `deck-attachments` | attachments offered to learners, with `src` = `egatari:<blobId>` (§3.8, draft) |
+| `deck-extensions` | `{<extension name>: <data>}` — the extension data that players consume (§9A), copied from the index's `extensions` because play-only derivatives have no index; only extensions whose definition says so (e.g. [`live`](extensions/live.md)) |
 
 Every slide MUST carry a `data-key`: the slide's `id` attribute if present, otherwise its normalized heading text (legacy). Producers SHOULD give every slide an explicit, stable id (§8.1), so that editing a title does not break narration and audio associations.
 
