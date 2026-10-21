@@ -137,6 +137,7 @@ Structure: one `<section id="egatari-readable">` containing, per slide, `<articl
 | `metadata` | MUST | descriptive metadata (§3.6) |
 | `excluded` | MAY | informative list of categories the producer deliberately left out |
 | `attachments` | MAY | files carried for readers rather than for rendering (§3.8) |
+| `exportedFrom` | MAY | `{kind: "folder", sourceSha256}` when the file is a copy exported from an authoring folder that remains the master: `sourceSha256` is the folder's source hash at export. It carries no time, path or user name, so that exports stay reproducible and `pack(unpack(x))` equals `x`. Editors that open such a file SHOULD tell the user that edits made in it do not reach the folder and offer to unpack it into a folder; they MUST NOT refuse to edit it. Editors MUST keep `exportedFrom` unchanged when they save the file: a top-level `sourceSha256` that differs from `exportedFrom.sourceSha256` then shows that the copy was edited after export. Exporting again from a folder replaces it; a file saved by an editor that is itself the master (no folder) has no `exportedFrom` |
 
 ### 3.2 Blob blocks
 
