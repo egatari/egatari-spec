@@ -47,7 +47,7 @@ A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a f
 | `learn` | the learner: start, pause, previous/next, jump, playback rate | advances along the timeline (§5.5) with narration audio | self-study, LMS (default in LMS bindings and hosted players) |
 | `video` | nobody (no controls) | advances along the timeline | recording and video export |
 
-**Offered modes.** A lesson MAY state which modes and faces it offers and where it opens, in `metadata.offer`: `{modes?, faces?, open?}` — `modes` a non-empty subset of `talk`, `learn`, `video`; `faces` a non-empty subset of `talk`, `read`; `open` `{mode?, face?}`. Producers copy it into `deck-meta.offer`, so that play-only derivatives keep it. Players SHOULD show only the offered modes and faces in their controls and open as `open` states (defaults: all modes, the faces present, `metadata.primary`). **This is the author's intent, not access control:** anyone who has the file can play it in any mode (§11), and players MAY let the viewer override it (e.g. `?mode=`). A host that must enforce a policy — a course that allows only `learn`, a sharing site that shows only `video` — does so in its own frame through embedding (§9.4: `mode`, `controls=0`, restricted navigation), §10.1.
+**Offered modes.** A lesson MAY state which modes and faces it offers and where it opens, in `metadata.offer`: `{modes?, faces?, open?}` — `modes` a non-empty subset of `talk`, `learn`, `video`; `faces` a non-empty subset of `talk`, `read`; `open` `{mode?, face?}`. Producers copy it into `deck-meta.offer`, so that play-only derivatives keep it. Players SHOULD show only the offered modes and faces in their controls and open as `open` states (defaults: all modes, the faces present, `metadata.primary`). What a player opens in is decided in this order, the first that applies winning: the viewer's or host's explicit choice (an address parameter such as `?mode=`, the embedding interface §9.4), then `offer.open`, then `metadata.primary` (face only), then the defaults by context (layout by mode and screen, §1.2A). **This is the author's intent, not access control:** anyone who has the file can play it in any mode (§11), and players MAY let the viewer override it (e.g. `?mode=`). A host that must enforce a policy — a course that allows only `learn`, a sharing site that shows only `video` — does so in its own frame through embedding (§9.4: `mode`, `controls=0`, restricted navigation), §10.1.
 
 **Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step. `?mode=lecture` is a legacy alias for `talk` with preview on.
 
@@ -65,7 +65,7 @@ Independently of the mode, a player arranges the lesson in **panes**. A layout i
 | **text** | the read face: the article (§9C) when present, otherwise the narration of each step as body text, with each slide's stage scaled (not re-flowed) at its place | yes |
 | **notes** | the learner's notes and ink for the current position (§9.1B) | **no** — learner data |
 
-A pane of kind text is either **scrolled** (a vertical document) or **paginated** (single pages or a two-page **spread**). Page breaks MUST NOT split a step's block or a figure; a block taller than a page is scaled down to fit rather than split. Players choose the page breaks and the pairing of pages in a spread; page breaks can be switched off. A stage pane can also be paginated (one slide per page, for printing and handouts).
+A pane of kind text is either **scrolled** (a vertical document) or **paginated** (single pages or a two-page **spread**). Page breaks MUST NOT split a step's block or a figure; a block taller than a page is scaled down to fit rather than split. Players choose the page breaks and the pairing of pages in a spread; page breaks can be switched off. Page breaks depend on the pane's size, fonts and language and are not part of the *(i, k, t)* determinism (§1), which covers the stage; conformance tests of video frames and stage rendering do not cover pagination. A stage pane can also be paginated (one slide per page, for printing and handouts).
 
 The usual layouts are named combinations:
 
@@ -459,11 +459,11 @@ Events (player → host; target origin `*`; payloads contain no private data):
 |---|---|
 | `{egatari:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | after loading |
 | `{egatari:"seeked", id?, slideKey, stepKey, t}` | after a seek has been applied |
-| `{egatari:"position", slideKey, stepKey, t, cause}` | on every step change (`cause`: `play`, `seek`, `control`, `link`), and at most 4 times per second during playback |
-| `{egatari:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped) |
+| `{egatari:"position", slideKey, stepKey, t, cause}` | MUST on every step change (`cause`: `play`, `seek`, `control`, `link`); during playback a player MAY also send it between step changes, at most 4 times per second, driven by a clock it already has (e.g. the audio element's `timeupdate`); it need not add a timer for this. Scrolling or turning pages in a text pane is a `seek` |
+| `{egatari:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped; moving to another step by scrolling or turning pages in a text pane is a skip) |
 | `{egatari:"state", playing, rate}` | whenever playing state or rate changes, including by the player's own controls |
 | `{egatari:"playBlocked", id?}` | audio could not start for lack of a user gesture |
-| `{egatari:"turn", slideKey, stepKey, index}` | OPTIONAL: when narration turn `index` starts |
+| `{egatari:"turn", slideKey, stepKey, index}` | OPTIONAL: when narration turn `index` starts; `index` is 0-based within the step's turns (§4). It marks the same moments at which a text pane highlights the current turn |
 | `{egatari:"ended"}` | after the last step of the timeline |
 | `{egatari:"error", id?, code, message}` | a command failed or the file cannot be played |
 
