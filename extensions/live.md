@@ -15,7 +15,7 @@ This is the only part of Egatari that lets a lesson connect to the network. It i
   "window": {"from": "2026-10-30T09:00:00+09:00", "to": "2026-10-30T11:00:00+09:00"},
   "activities": {
     "*": [{"id": "qa", "kind": "qa"}],
-    "s-k3f9q2:2": [{"id": "p1", "kind": "poll", "prompt": "学習率を大きくすると？", "choices": ["速く収束", "発散しうる", "変わらない"]}]
+    "s-k3f9q2:2": [{"id": "p1", "kind": "poll", "label": "4 枚目「更新の式」・ステップ 2", "prompt": "学習率を大きくすると？", "choices": ["速く収束", "発散しうる", "変わらない"]}]
   }
 }
 ```
@@ -25,7 +25,7 @@ This is the only part of Egatari that lets a lesson connect to the network. It i
 | `endpoint` | the only origin the player may connect to. MUST be `https:`; a player MAY accept a loopback `http:` origin (`127.0.0.1`, `localhost`) only in a development build, never in the player that producers embed in distributed lessons. |
 | `room`, `key` | the room (`r-` and 8 lowercase base32 characters) and a capability to join it. The key travels in the WebSocket address when joining; it is already in the file, so this exposes nothing new. Anyone holding the file can join while the room is open (see §4). |
 | `window` | the only interval in which the player may connect. Outside it the player MUST NOT make any request. Players MAY allow a small clock skew at both ends (at most 5 minutes; the reference player uses 2). |
-| `activities` | step key (or `"*"` for the whole lesson) → list. `kind`: `qa` (learners send questions; the teacher sees and answers), `poll` (single choice; `choices` required; a vote is the 0-based index of the choice; v1 shows learners no tally). `board` (short notes on a shared board) is reserved for v2. |
+| `activities` | step key (or `"*"` for the whole lesson) → list. `kind`: `qa` (learners send questions; the teacher sees and answers), `poll` (single choice; `choices` required; a vote is the 0-based index of the choice; v1 shows learners no tally). `board` (short notes on a shared board) is reserved for v2. Each activity MAY carry `label` (at most 80 characters): where it is, in words people recognize (e.g. "Slide 4 «The XML wall» · step 1", or "Conclusion"), which the teacher's page, the join page and the results show instead of the step key; producers SHOULD generate it from the slide number, title and step. |
 
 In a play-only derivative (which has no index, spec §3.7) players read this object from the runtime block `deck-extensions` (`{"live": {...}}`, spec §3).
 
