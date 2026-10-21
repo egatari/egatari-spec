@@ -2,7 +2,7 @@
 
 **Status:** Editor's Draft, 2026-10-17. Not stable. Anything may change before 1.0 is frozen.
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
-**Reference implementation:** [motion-academic-slides](https://github.com/moiku/motion-academic-slides) (producer, player, editor).
+**Reference implementation:** [Egatari Studio](https://github.com/egatari/egatari-studio) (producer, player, editor; https://studio.egatari.org/).
 **License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
 **Repository:** https://github.com/egatari/egatari-spec · **Site:** https://egatari.org/
 
@@ -10,6 +10,8 @@ Egatari (絵語り, "narrating with pictures") is a file format for **narrated, 
 
 1. plays offline in a current web browser as a self-narrating lesson, a live presentation, or a lecture handout, and
 2. carries its own authoring source, so that an Egatari editor can reopen the file *without the original folder*, change one sentence or one step's narration, replace that step's audio, and save the same kind of file again.
+
+**Self-contained by design.** Everything a lesson shows — images, fonts, styles, data, audio, components — is inside the file; a lesson never loads a resource from elsewhere by address. This keeps lessons working offline and years later (no broken links), keeps viewing private (nothing is told to a third party when a lesson is opened), and makes what a viewer sees depend only on the file and the position (§1). Links the viewer follows by choice are navigation, not loading. Anything that does reach the network — a live session, embedded third-party content shown only after the viewer asks for it — is an optional extension (§9A) that states exactly what it connects to.
 
 The name is written *Egatari* (or 絵語り). The file extension is `.ega.html`.
 
