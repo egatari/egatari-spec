@@ -42,6 +42,15 @@ A player that implements `live`:
 5. Shows activities outside the stage (a pane, spec §1.0), so that the stage, captions and marks stay as authored. A `poll` for a step is shown while that step is on screen; `qa` is available for the whole window. Text from the service is shown as text (never as markup).
 6. Reconnects only after a close that the service marks as retryable, with increasing delays, and only inside `window`; it stops trying when the window ends. In the reference protocol (egatari/live PROTOCOL.md) the retryable closes are 4423 room closed (wait at least 30 s; the teacher may reopen), 4425 too early (wait until `window.from`), 4429 too many requests and 4430 room full (wait at least 60 s); every other close, including 4441 (the teacher declined this learner), is final. A learner waiting for the teacher's approval stays connected and is told so; that is not a close.
 
+## 2A. A host acting for the lesson
+
+A host (spec §10.1) that plays a lesson in a sandboxed frame — where the lesson itself never connects (§2.1) — MAY implement `live` on the lesson's behalf: for example a player page where a viewer opens a lesson file from the device (on systems whose browsers cannot run a local HTML file, such as iPhone and iPad), the file being read in the page and never uploaded. Such a host:
+
+1. reads `extensions.live` (from the index, or from `deck-extensions` in a play-only derivative) with a parser that runs nothing (spec §11), and keeps the lesson's frame without network access as §10.1 requires;
+2. follows §2 itself: the window, the one-tap join, the visible indicator, the data rules (§2.3), the endpoint restriction for its own connections, the retry rules;
+3. learns the current step from the embedding events (spec §9.4, `position`) to show a step's poll, and shows activities outside the lesson's frame;
+4. serves the page from an origin separate from any editor, so that lessons played there cannot reach an editor's storage.
+
 ## 3. Results
 
 Results belong to the teacher. The room service lets the teacher download them as JSON (`{room, window, activities, responses}`; the shape of `responses` is defined by the reference protocol, [egatari/live PROTOCOL.md](https://github.com/egatari/live/blob/main/PROTOCOL.md)), which the editor MAY add to the teacher's lesson as an attachment with role `data` (spec §3.8). Results are never written into play-only derivatives.
