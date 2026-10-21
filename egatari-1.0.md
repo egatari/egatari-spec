@@ -409,7 +409,7 @@ A **camera** frames part of the stage. It is written in the narration like an at
 
 ### 8.4 Component contract (summary)
 
-`steps`, `props`, `mount(ctx)`, `duration(k)`, `cues(k)`, `render(k, t, ctx)`; `render` gives the same output for the same *(k, t)*; colors only through theme CSS variables.
+`steps`, `props`, `mount(ctx)`, `duration(k)`, `cues(k)`, `render(k, t, ctx)`; `render` gives the same output for the same *(k, t)*; colors only through theme CSS variables. The runtime calls `mount` only after the stage has been laid out (the component has its final, non-zero size) and the web fonts in use have loaded, so that a lesson started in a hidden or not yet laid-out context (a hidden frame, a background tab, before printing) renders the same as one started visibly; seeks requested before that are applied after mounting. A component MAY let the viewer interact with it (rotate a model, drag a value) during a step; that state is not part of *(i, k, t)*: entering any step (including the same one again) restores the rendering `render(k, t)` gives, and video, print and the presenter's view always show that rendering.
 
 ## 9. Player requirements
 
