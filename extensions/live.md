@@ -51,6 +51,8 @@ A host (spec §10.1) that plays a lesson in a sandboxed frame — where the less
 2. follows §2 itself: the window, the one-tap join, the visible indicator, the data rules (§2.3), the endpoint restriction for its own connections, the retry rules;
 3. learns the current step from the embedding events (spec §9.4, `position`) to show a step's poll, and shows activities outside the lesson's frame;
 4. serves the page from an origin separate from any editor, so that lessons played there cannot reach an editor's storage.
+5. MAY connect only to endpoints it knows (an allow-list, e.g. its own reference service) and offer the join page (§4) for any other endpoint, so that a lesson cannot make the host a client of an arbitrary server;
+6. MAY hide the lesson's own live indicator and pane inside the frame (where the lesson cannot connect), so that the viewer sees one way to join, the host's.
 
 ## 3. Results
 
