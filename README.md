@@ -12,6 +12,7 @@ Egatari (絵語り, "narrating with pictures") is a file format for narrated, an
 | File | Content |
 |---|---|
 | [egatari-1.0.md](egatari-1.0.md) | The specification (Editor's Draft) |
+| [CHANGES.md](CHANGES.md) | Dated snapshots (`wd-YYYY-MM-DD`) and what changed in each |
 | [schema/](schema/) | JSON Schemas (draft 2020-12) for the index, audio records, metadata and `deck-meta` |
 | [bindings/scorm12.md](bindings/scorm12.md) | Packaging an Egatari lesson as a SCORM 1.2 package |
 | [extensions.md](extensions.md) | Registry of extension names (platform-specific data, §9A) |
