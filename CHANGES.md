@@ -2,12 +2,9 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-10-24b
+## Since WD 2026-10-25
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
-
-**Components (§8.4)**
-- Presentation variants and the lesson seed: `data-egatari-seed` on the source root (absent = 0), `seed` and `variant` on a component; the variant is a pure function of these; variants never change steps, durations, cues, final content or colors, and never move more than seed 0; editors write a seed once when creating a lesson and preserve it.
 
 **Article layer (`article-v1`, draft, §9C)**
 - Source: `article.md` at the archive root in Egatari Text 1, a subset of MyST Markdown written into this specification and versioned with it (CommonMark core, `$…$`/`$$…$$` math with labels, `:::{figure}`/`:::{table}` with `:label:`, pipe tables, `[](#id)` cross-references, `[@key]` citations against CSL-JSON `references.json`, and one role `` {step}`<slideKey>:<stepKey>` ``); a table of constructs with their AST node types; everything else is rejected or converted.
@@ -18,6 +15,13 @@ Changes on `main` after the snapshot; they will be in the next Working Draft.
 - Validation errors (missing step, citation key, cross-reference target, section); text pane shows the article; pagination never splits figures, tables or display math.
 - `article-v1` is not listed in `requires`; players without it play the lesson; editors without it are limited to tier A edits on lessons with an article (§7.2).
 - Informative: print/PDF as output, a JATS mapping, authoring guidance for AI.
+
+## WD 2026-10-25
+
+Snapshot for the Egatari Studio release after 0.4.8 (new-lesson flow). It adds one change to WD 2026-10-24b; the article layer (§9C) stays on `main` as a draft and is not part of this snapshot.
+
+**Components (§8.4)**
+- Presentation variants and the lesson seed: `data-egatari-seed` on the source root (absent = 0), `seed` and `variant` on a component; the variant is a pure function of these; variants never change steps, durations, cues, final content or colors, and never move more than seed 0; editors write a seed once when creating a lesson and preserve it.
 
 ## WD 2026-10-24b
 

@@ -1,6 +1,6 @@
 # Egatari 1.0 — Editor's Draft
 
-**Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-10-24b).
+**Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-10-25).
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Reference implementation:** [Egatari Studio](https://github.com/egatari/egatari-studio) (producer, player, editor; https://studio.egatari.org/).
 **License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
