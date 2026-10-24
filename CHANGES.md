@@ -2,6 +2,13 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
+## WD 2026-10-25
+
+Snapshot for the Egatari Studio release after 0.4.8 (new-lesson flow). It adds one change to WD 2026-10-24b; the article layer (§9C) stays on `main` as a draft and is not part of this snapshot.
+
+**Components (§8.4)**
+- Presentation variants and the lesson seed: `data-egatari-seed` on the source root (absent = 0), `seed` and `variant` on a component; the variant is a pure function of these; variants never change steps, durations, cues, final content or colors, and never move more than seed 0; editors write a seed once when creating a lesson and preserve it.
+
 ## WD 2026-10-24b
 
 Second snapshot of the day, for Egatari Studio 0.4.8. It adds four changes to WD 2026-10-24; the article layer (§9C) stays on `main` as a draft and is not part of this snapshot.

@@ -1,6 +1,6 @@
 # Egatari 1.0 — Editor's Draft
 
-**Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-10-24b).
+**Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-10-25).
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Reference implementation:** [Egatari Studio](https://github.com/egatari/egatari-studio) (producer, player, editor; https://studio.egatari.org/).
 **License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
@@ -417,6 +417,8 @@ A **camera** frames part of the stage. It is written in the narration like an at
 ### 8.4 Component contract (summary)
 
 `steps`, `props`, `mount(ctx)`, `duration(k)`, `cues(k)`, `render(k, t, ctx)`; `render` gives the same output for the same *(k, t)*; colors only through theme CSS variables. The runtime calls `mount` only after the stage has been laid out (the component has its final, non-zero size) and the web fonts in use have loaded, so that a lesson started in a hidden or not yet laid-out context (a hidden frame, a background tab, before printing) renders the same as one started visibly; seeks requested before that are applied after mounting. A component MAY let the viewer interact with it (rotate a model, drag a value) during a step; that state is not part of *(i, k, t)*: entering any step (including the same one again) restores the rendering `render(k, t)` gives, and video, print and the presenter's view always show that rendering.
+
+**Presentation variants and the lesson seed.** A component MAY offer several ways of showing the same content (variants: how things appear within a step and where the eye is led). A lesson MAY carry a seed as `data-egatari-seed` on the root element of its source (a decimal integer, 0 ≤ N < 2³²); when it is absent the seed is 0. A component MAY also carry `seed` (overriding the lesson seed for that component) and `variant` (a variant name, overriding any seed). The variant a component shows MUST be a pure function of these values, its tag name and its own attributes, so that *(i, k, t)* still determines the rendering. A variant MUST NOT change `steps`, `duration(k)`, `cues(k)`, the content of the final state (text, numbers, positions, the meaning of colors) or the colors, and MUST NOT move more than the component's variant for seed 0; narration, captions, video timing, print and the presenter's view are therefore the same for every variant. Editors creating a lesson SHOULD write a seed once (so that lessons do not all look alike) and MUST preserve it on save. Because the lesson pins component versions (§6), a seeded lesson changes its look only when the author moves to a newer component release.
 
 ## 9. Player requirements
 
