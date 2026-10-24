@@ -6,6 +6,11 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+**Viewer input and stage directions**
+- §8.2: stage directions `{note:…}` — shown only in the presenter's view; not spoken, not in captions, video or print; outside `ttsParts` and `inputHash`.
+- §8.4: viewer input — components MAY take values from the presenter (on the stage or from the presenter's view) or a learner; viewer state outside *(i, k, t)*, reset on entering a step; no input in video mode; keys inside an input field are the field's; no digit keys for component input; poll counts from `ctx.live` under the `live` rules.
+- extensions/live.md §2.5: a component bound to a poll MAY show its counts on the stage after the teacher reveals them, counts only, nothing below 3 answers, never in video or print.
+
 **Article layer (`article-v1`, draft, §9C)**
 - Source: `article.md` at the archive root in Egatari Text 1, a subset of MyST Markdown written into this specification and versioned with it (CommonMark core, `$…$`/`$$…$$` math with labels, `:::{figure}`/`:::{table}` with `:label:`, pipe tables, `[](#id)` cross-references, `[@key]` citations against CSL-JSON `references.json`, and one role `` {step}`<slideKey>:<stepKey>` ``); a table of constructs with their AST node types; everything else is rejected or converted.
 - Placement: `index.article = {path, references?}`; the dependency closure includes the references file and article images.
