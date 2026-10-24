@@ -1,6 +1,18 @@
 # Changes
 
-Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
+Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
+
+## WD 2026-10-24b
+
+Second snapshot of the day, for Egatari Studio 0.4.8. It adds four changes to WD 2026-10-24; the article layer (§9C) stays on `main` as a draft and is not part of this snapshot.
+
+**Archive and index**
+- `egatari.json`: a producer may keep its own state under one producer-named member, which others preserve.
+- `egatari.json` may pin themes with the same rules as components; `index.themes[].version` is the theme's own version.
+- A theme's identity hash covers the files a build reads, not documentation.
+
+**Runtime**
+- `deck-narration`: optional `ttsParts` per turn, so that device read-aloud says what the audio would say.
 
 ## WD 2026-10-24
 
