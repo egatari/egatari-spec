@@ -242,7 +242,7 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 | id | Content |
 |---|---|
 | `deck-meta` | `{format:"egatari", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
-| `deck-narration` | `{slideKey: {stepKey: [{role, text}]}}` — display text |
+| `deck-narration` | `{slideKey: {stepKey: [{role, text, ttsParts?}]}}` — display text; `ttsParts` (OPTIONAL, the spoken pieces of §5.4 with readings applied) lets a player read a step aloud with the device voice (§5.6) as the audio would say it. Producers SHOULD include it; it is the same value that enters `inputHash` |
 | `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"} \| {type:"zoom", id, scale?}]}` — boundaries, only for steps with marks or zooms (zoom: §8.3A, draft) |
 | `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff), `startOffset` (§5.2) and `kind` (`tts`, `recorded` or `imported`, copied from the audio record so that play-only derivatives and folder builds keep it; producers SHOULD write it) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
@@ -308,7 +308,7 @@ with defaults `lead = 0.25`, `pad_after = 0.6`, `hold = 1.2` seconds; `anim` is 
 
 ### 5.6 Reading with the device voice
 
-A player MAY read the narration of a step that has no audio with a speech synthesizer of the viewer's device (e.g. the Web Speech API), when the viewer asks for it. It MUST use only voices that run on the device (in the Web Speech API, `localService` voices), since other voices send the text off the device (spec, *Self-contained by design*); it SHOULD substitute readings (§4) before handing over the text, and MUST say that the narration is being read by the device. Such reading is not audio of the lesson: it is never written into the file or a video, it is not part of the timeline (a step being read lasts as long as the reading), and *(i, k, t)* rendering and `video` mode are unaffected. Editors MAY offer the same as a preview.
+A player MAY read the narration of a step that has no audio with a speech synthesizer of the viewer's device (e.g. the Web Speech API), when the viewer asks for it. It MUST use only voices that run on the device (in the Web Speech API, `localService` voices), since other voices send the text off the device (spec, *Self-contained by design*); it SHOULD substitute readings (§4) before handing over the text (from `ttsParts` in `deck-narration` when present), and MUST say that the narration is being read by the device. Such reading is not audio of the lesson: it is never written into the file or a video, it is not part of the timeline (a step being read lasts as long as the reading), and *(i, k, t)* rendering and `video` mode are unaffected. Editors MAY offer the same as a preview.
 
 ## 6. Components and profiles
 
