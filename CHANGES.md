@@ -6,6 +6,9 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+**Components (§8.4)**
+- Presentation variants and the lesson seed: `data-egatari-seed` on the source root (absent = 0), `seed` and `variant` on a component; the variant is a pure function of these; variants never change steps, durations, cues, final content or colors, and never move more than seed 0; editors write a seed once when creating a lesson and preserve it.
+
 **Article layer (`article-v1`, draft, §9C)**
 - Source: `article.md` at the archive root in Egatari Text 1, a subset of MyST Markdown written into this specification and versioned with it (CommonMark core, `$…$`/`$$…$$` math with labels, `:::{figure}`/`:::{table}` with `:label:`, pipe tables, `[](#id)` cross-references, `[@key]` citations against CSL-JSON `references.json`, and one role `` {step}`<slideKey>:<stepKey>` ``); a table of constructs with their AST node types; everything else is rejected or converted.
 - Placement: `index.article = {path, references?}`; the dependency closure includes the references file and article images.
