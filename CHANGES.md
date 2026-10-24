@@ -39,3 +39,25 @@ First dated snapshot. It covers the draft from 2026-10-17 to 2026-10-24.
 
 **Other**
 - Logo recoloured to konai #4A488E and hiiro #D3381C.
+
+## Since WD 2026-10-24
+
+Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+**Article layer (`article-v1`, draft, §9C)**
+- Source: `article.md` at the archive root in Egatari Text 1, a subset of MyST Markdown written into this specification and versioned with it (CommonMark core, `$…$`/`$$…$$` math with labels, `:::{figure}`/`:::{table}` with `:label:`, pipe tables, `[](#id)` cross-references, `[@key]` citations against CSL-JSON `references.json`, and one role `` {step}`<slideKey>:<stepKey>` ``); a table of constructs with their AST node types; everything else is rejected or converted.
+- Placement: `index.article = {path, references?}`; the dependency closure includes the references file and article images.
+- Section ids `sec-` + 6 base32 characters, assigned by tools, never by AI authors; each section is wrapped in `<section data-section-id>` inside `<article id="egatari-article">`, nested as the last child of the readable layer.
+- Step links carry `data-egatari-step` and `href="#<slideKey>:<stepKey>"`; slides name sections with `data-article`.
+- Staleness: `index.articleLinks[slideKey][sectionId] = {article, slide}`, hashed over source text, not rendered text; also carried in `egatari.json`.
+- Validation errors (missing step, citation key, cross-reference target, section); text pane shows the article; pagination never splits figures, tables or display math.
+- `article-v1` is not listed in `requires`; players without it play the lesson; editors without it are limited to tier A edits on lessons with an article (§7.2).
+- Informative: print/PDF as output, a JATS mapping, authoring guidance for AI.
+
+**Archive and index**
+- `egatari.json`: a producer may keep its own state under one producer-named member, which others preserve (78bcf81).
+- `egatari.json` may pin themes with the same rules as components; `index.themes[].version` is the theme's own version (5710051).
+- A theme's identity hash covers the files a build reads, not documentation (7590411).
+
+**Runtime**
+- `deck-narration`: optional `ttsParts` per turn, so that device read-aloud says what the audio would say (94d8658).

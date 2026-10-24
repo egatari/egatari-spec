@@ -67,7 +67,7 @@ Independently of the mode, a player arranges the lesson in **panes**. A layout i
 | **text** | the read face: the article (§9C) when present, otherwise the narration of each step as body text, with each slide's stage scaled (not re-flowed) at its place | yes |
 | **notes** | the learner's notes and ink for the current position (§9.1B) | **no** — learner data |
 
-A pane of kind text is either **scrolled** (a vertical document) or **paginated** (single pages or a two-page **spread**). Page breaks MUST NOT split a step's block or a figure; a block taller than a page is scaled down to fit rather than split. Players choose the page breaks and the pairing of pages in a spread; page breaks can be switched off. Page breaks depend on the pane's size, fonts and language and are not part of the *(i, k, t)* determinism (§1), which covers the stage; conformance tests of video frames and stage rendering do not cover pagination. A stage pane can also be paginated (one slide per page, for printing and handouts).
+A pane of kind text is either **scrolled** (a vertical document) or **paginated** (single pages or a two-page **spread**). Page breaks MUST NOT split a step's block, a figure, a table or a display equation; a block taller than a page is scaled down to fit rather than split. Players choose the page breaks and the pairing of pages in a spread; page breaks can be switched off. Page breaks depend on the pane's size, fonts and language and are not part of the *(i, k, t)* determinism (§1), which covers the stage; conformance tests of video frames and stage rendering do not cover pagination. A stage pane can also be paginated (one slide per page, for printing and handouts).
 
 The usual layouts are named combinations:
 
@@ -79,7 +79,7 @@ The usual layouts are named combinations:
 | `split` | stage + text | self-study on wide screens |
 | — | stage + notes, text + notes, stage + text + notes | self-study with note-taking |
 
-- **Synchronization.** All panes follow one position. Moving any pane — advancing the stage, scrolling or turning pages of the text, selecting a note — moves the others: the text to the step's block or to the article section linked to the slide (§9C.2), the stage to the corresponding step, the notes to that position. Switching layout MUST preserve the position (slide and step). During audio playback the current narration turn SHOULD be highlighted in the text.
+- **Synchronization.** All panes follow one position. Moving any pane — advancing the stage, scrolling or turning pages of the text, selecting a note — moves the others: the text to the step's block or to the article section of the slide (§9C.5), the stage to the corresponding step, the notes to that position. Switching layout MUST preserve the position (slide and step). During audio playback the current narration turn SHOULD be highlighted in the text.
 - **Scrolled text and motion.** In a scrolled text pane, scroll position maps to *(i, k, t)*: a step plays once from *t = 0* as its block enters the viewport (again only after it has left the viewport entirely) and is at its final state once passed; with `prefers-reduced-motion` only final states are shown. Players MAY additionally let the viewer scrub *t* by scrolling; it is not required.
 - **Detached panes.** A player SHOULD let the viewer move a pane into a separate window (e.g. the stage on a projector or a second display, the text or notes on the laptop) and back. A detached pane stays synchronized with the others without network access, also when the lesson is opened from a local file; the mechanism is the player's (e.g. messages through the opening window; a same-origin broadcast channel only as an optimization). Closing it returns the pane to the main window. **Exactly one window plays the audio** at any time (by default the opening window; the viewer MAY move it, e.g. to the projector's speakers); other windows show the stage silently. The presenter view of `talk` is a detached arrangement of the same kind.
 - **Defaults.** Players SHOULD choose by context: `slides` for `talk` and `video`; for `learn`, `split` on wide screens and `flow` on narrow (portrait phone) screens; `flow` for `read`; `pages` when printing. A lesson declares which face is primary in `metadata.primary` (`"talk"` or `"read"`, default `"talk"`); players open on that face. A file may carry both faces, but typically one is primary: slides for a talk, a book for a textbook. A viewer's choice of layout and panes MAY be remembered per viewer (§9.1B), never in the file. Hosts MAY set `layout=` when embedding (§9.4). **Precedence:** when embedded, the host's `layout=` and mode win over the viewer's remembered choice; otherwise the viewer's choice wins over `metadata.offer.open` (§1.2), which wins over the defaults above.
@@ -105,7 +105,7 @@ All JSON blocks are `<script>` elements with a non-executable `type` and a uniqu
 
 A conforming document MUST also contain, as ordinary DOM outside any `<script>`, for every step of every slide: the display text of its narration. It SHOULD contain, for every slide, either a static image of the final state or text equivalent to it. Producers MAY also include a final-state image per **step**, so that hosts can show stills without running a browser. This layer serves archiving, accessibility, search, and recovery when no script runs.
 
-Structure: one `<section id="egatari-readable">` containing, per slide, `<article data-slide-key="…">` with the slide title, and per step `<div data-step-key="…">` with one `<p data-role="expert|novice">` per turn (display text). Images, if any, are `<img alt="…">` inside the article or step. The runtime hides this section when it starts; without script it stays visible. Within an article, step `div`s are in step order (numbers ascending, `concl` last). Narration addressed to a slide key that matches no slide has no article: such steps are omitted from the readable layer and reported. Tier A edits update the affected `div` elements (§7.2).
+Structure: one `<section id="egatari-readable">` containing, per slide, `<article data-slide-key="…">` with the slide title, and per step `<div data-step-key="…">` with one `<p data-role="expert|novice">` per turn (display text). Images, if any, are `<img alt="…">` inside the article or step. The runtime hides this section when it starts; without script it stays visible. Within an article, step `div`s are in step order (numbers ascending, `concl` last). Narration addressed to a slide key that matches no slide has no article: such steps are omitted from the readable layer and reported. Tier A edits update the affected `div` elements (§7.2). When the lesson has an article (§9C), its `<article id="egatari-article">` is the last child of `#egatari-readable`, after the slide entries; it has no `data-slide-key`. Readers MUST select slide entries by `article[data-slide-key]`, never by element name or position alone.
 
 ## 3. Archive layer
 
@@ -139,6 +139,8 @@ Structure: one `<section id="egatari-readable">` containing, per slide, `<articl
 | `metadata` | MUST | descriptive metadata (§3.6) |
 | `excluded` | MAY | informative list of categories the producer deliberately left out |
 | `attachments` | MAY | files carried for readers rather than for rendering (§3.8) |
+| `article` | MAY | `{path, references?}`: the article's source and bibliography (§9C.1, draft) |
+| `articleLinks` | MAY | `{slideKey: {sectionId: {article, slide}}}`: hashes of linked slides and article sections when last confirmed (§9C.7, draft) |
 | `exportedFrom` | MAY | `{kind: "folder", sourceSha256}` when the file is a copy exported from an authoring folder that remains the master: `sourceSha256` is the folder's source hash at export. It carries no time, path or user name, so that exports stay reproducible and `pack(unpack(x))` equals `x`. Editors that open such a file SHOULD tell the user that edits made in it do not reach the folder and offer to unpack it into a folder; they MUST NOT refuse to edit it. Editors MUST keep `exportedFrom` unchanged when they save the file (including tier A edits), except when they save it as a new lesson with a new `docId`, which MUST drop it: a top-level `sourceSha256` that differs from `exportedFrom.sourceSha256` then shows that the copy was edited after export. Exporting again from a folder replaces it; a file saved by an editor that is itself the master (no folder) has no `exportedFrom` |
 
 ### 3.2 Blob blocks
@@ -167,7 +169,7 @@ Keys of `files` are archive paths: `/`-separated, relative, UTF-8, NFC. A reader
 
 Case-insensitive comparison uses the key `NFC(lower(upper(NFC(path))))`, where `upper` and `lower` are the locale-independent Unicode case mappings (as ECMAScript `toUpperCase`/`toLowerCase`). A path is at most 1024 bytes and 10 segments. Readers MUST build every key-indexed structure from untrusted input with maps that have no inherited keys.
 
-Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?, "attachments"?, "components"?}`) so that an unpacked folder keeps its `docId` and attachment records (§3.8); when present, its `docId` MUST equal the index's, and its `attachments`, when present, MUST equal `index.attachments`. Editors MAY add it to a document that lacks it (this changes `sourceSha256`, which the edit updates anyway). A producer MAY keep its own state in `egatari.json` under one member named after the producer (e.g. `studio`); other producers and editors MUST preserve such members unchanged and MUST NOT give them meaning. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, and the complete dependency closure needed to rebuild the runtime layer (images, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
+Paths under `audio/` are reserved for narration audio; their blobs MUST have an audio media type from §5.1. `audio/manifest.json` MUST NOT appear in `files`: it is derived from `index.audio` when an archive is unpacked. Producers SHOULD include a root file `egatari.json` (`{"docId", "metadata"?, "attachments"?, "components"?, "articleLinks"?}`) so that an unpacked folder keeps its `docId` and attachment records (§3.8); when present, its `docId` MUST equal the index's, and its `attachments`, when present, MUST equal `index.attachments`. Editors MAY add it to a document that lacks it (this changes `sourceSha256`, which the edit updates anyway). A producer MAY keep its own state in `egatari.json` under one member named after the producer (e.g. `studio`); other producers and editors MUST preserve such members unchanged and MUST NOT give them meaning. An archive MUST include the slide source (`entry`), `narration.md` if the lesson has narration, `article.md` and its references file if the lesson has an article (§9C.1), and the complete dependency closure needed to rebuild the runtime layer (images of the slides and the article, data, styles, deck-local components and themes, macros, `timeline.json`, a voice configuration without private paths). When `egatari.json` carries `articleLinks`, it MUST equal `index.articleLinks`. Registry components (§6) are excluded from the closure; they are resolved by exact name, version and hash. Metadata embedded in images (EXIF, XMP) SHOULD be stripped when an image is first added to a lesson rather than at export, so that rebuilds stay byte-identical. It MUST NOT include: absolute or machine-specific paths, credentials, editor review notes, caches, backups, unreferenced audio, private reference-voice recordings, or personal identifiers not deliberately entered as content.
 
 ### 3.4 Source hash
 
@@ -186,7 +188,7 @@ Paths under `audio/` are reserved for narration audio; their blobs MUST have an 
 These OPTIONAL members support lessons made for one learner, by learners, or by software agents.
 
 - `derivedFrom`: `{docId, sourceSha256, anchor?}` — the lesson this one was derived from (e.g. a version adapted for one learner, or a short branch answering a question, where `anchor` is the step key it branches from). An editor that changes the original can then find derived lessons and offer to carry a fix over, step by step, using slide ids.
-- `importedFrom`: `[{mime, sha256, title?, attachment?}]` — non-Egatari material the lesson was made from (e.g. a PDF, a slide file, scans or photos of printed pages with handwritten comments, a separate errata sheet). `sha256` identifies the original bytes; `attachment` is its path when the original is carried as an attachment with role `source` (§9C.3). Steps produced by conversion (e.g. by an AI reading the scans) SHOULD be marked in `authorship` as `by: "ai"`, `reviewed: false` until a person has checked them against the original.
+- `importedFrom`: `[{mime, sha256, title?, attachment?}]` — non-Egatari material the lesson was made from (e.g. a PDF, a slide file, scans or photos of printed pages with handwritten comments, a separate errata sheet). `sha256` identifies the original bytes; `attachment` is its path when the original is carried as an attachment with role `source` (§3.8). Steps produced by conversion (e.g. by an AI reading the scans) SHOULD be marked in `authorship` as `by: "ai"`, `reviewed: false` until a person has checked them against the original.
 - `authorship`: `{<stepKey or slideKey>: {by, reviewed}}` with `by` one of `human`, `ai`, `mixed` and `reviewed` a boolean (a person responsible for the lesson has checked it). Keys without an entry are unknown. Names of reviewers are not recorded (§3.6).
 - `audience`: `"public"` (default) or `"individual"`. An individual lesson is made for a specific learner or group and SHOULD NOT be redistributed; hosts MUST NOT show it to other learners. It still MUST NOT contain learner records (§9.1B): it may be tailored to a learner, but grades, answers or personal data are not part of it.
 
@@ -337,9 +339,11 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 
 | Tier | Change | Required behavior |
 |---|---|---|
-| **A** (default) | narration text, audio, timing overrides (`timeline.json` / `deck-timing`; durations themselves are computed, §5.5) only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records, attachment records (`index.attachments` and `egatari.json`, §3.8) and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. When saving under a new `docId` (§7.3), `deck-meta.docId`, the index `docId`, `metadata.derivedFrom` and `egatari.json` are also tier A regions. Every byte outside these regions, including existing font data, MUST stay identical. |
+| **A** (default) | narration text, audio, timing overrides (`timeline.json` / `deck-timing`; durations themselves are computed, §5.5) only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records, attachment records (`index.attachments` and `egatari.json`, §3.8), article link records (`index.articleLinks` and `egatari.json`, §9C.7) and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. When saving under a new `docId` (§7.3), `deck-meta.docId`, the index `docId`, `metadata.derivedFrom` and `egatari.json` are also tier A regions. Every byte outside these regions, including existing font data, MUST stay identical. |
 | **B** | slide content (text, math, figures) | Rebuild with the editor's runtime of the same `contracts.runtime`, using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
 | **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
+
+An editor that does not implement `article-v1` MUST NOT perform tier B or C edits on a document whose index has an `article` member, since a rebuild would drop the article (§9C); it MAY perform tier A edits. Changing the article is a tier B edit that rebuilds only the article (§9C.1).
 
 Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId` (unless saving as a new lesson, §7.3).
 
@@ -426,7 +430,7 @@ A conforming player MUST: render any *(i, k, t)* deterministically; implement th
 
 ### 9.1A Links to slides
 
-- A link to a slide is an ordinary anchor whose fragment is a slide id: `<a href="#s-k3f9q2">`; `#<slide id>:<stepKey>` addresses a step. Such links contain no script and are allowed in Core documents. The same fragments in the file's URL select the starting position.
+- A link to a slide is an ordinary anchor whose fragment is a slide id: `<a href="#s-k3f9q2">`; `#<slide id>:<stepKey>` addresses a step. Step links in the article carry the same fragment and `data-egatari-step` (§9C.6). Such links contain no script and are allowed in Core documents. The same fragments in the file's URL select the starting position.
 - Following a link moves to step 0 of that slide (or the given step) at its final state in `talk` mode; in `learn` and `video` mode it seeks there and keeps the current playing state. In the `flow` and `pages` layouts it scrolls to that step's block (in `split`, both sides move). Players SHOULD offer "back" to the position before the most recent link.
 - Players MUST keep link navigation inside the document (no top-level navigation). When embedded (§9.4), a link produces a `position` event with `cause: "link"`, and a host that restricts navigation (§1.2) MAY veto it; players then stay where they are.
 
@@ -542,31 +546,164 @@ Signing certificates that contain personal data beyond name and affiliation (e.g
 
 ## 9C. Article layer (feature `article-v1`, draft)
 
-> Draft. Motivation: one file as *paper + code + talk* ("arXiv + GitHub + conference"). Not part of 1.0 conformance until this note is removed.
+> Draft. Motivation: one file as *paper + code + talk* ("arXiv + GitHub + conference"). Not part of 1.0 conformance until this note is removed. Open questions: Appendix A, issue 7.
 
-A lesson MAY carry an **article**: long-form text (a paper, a textbook chapter) that is the *reading face* of the same content whose *talking face* is the slides and narration. Neither face is the master; they are linked both ways.
+A lesson MAY carry an **article**: long-form text (a paper, a textbook chapter) that is the *read face* of the same content whose *talk face* is the slides and narration (§1.0). Neither face is the master; they are linked both ways (§9C.5).
 
-### 9C.1 Article
+`article-v1` is ignorable for playing: a player that does not implement it still plays the lesson, and shows the narration in its text pane and readable layer as for a lesson without an article (§9C.10). Producers MUST NOT list `article-v1` in `requires` (§3.5). Editors that do not implement it are limited to tier A edits (§7.2).
 
-- The runtime layer contains the article as HTML in `<article id="egatari-article">`: headings with ids, paragraphs, figures, tables, equations (rendered like slide math), citations and a reference list. HTML is the canonical reading form, as on arXiv's HTML pages.
-- The archive layer contains the article's authoring source (e.g. `article.md`, or HTML converted from TeX or Word). Producers convert TeX (e.g. with LaTeXML or pandoc), Markdown and Word to this source when importing; conversion fidelity is the producer's responsibility. After import, the Egatari source is the original (§1.0): later edits are made to it, not to the TeX or Word file, which MAY be kept as an attachment (`role: source`) for provenance.
-- A figure in the article MAY be a component (`<m-…>`), rendered at its final state when read and interactive in `read` mode; the same Core/Extended rules apply (§6).
-- The article satisfies the readable layer (§2.1) for the content it covers.
+### 9C.1 Source and placement
 
-### 9C.2 Links between the faces
+- The article's source is the archive file `article.md` at the archive root, written in **Egatari Text** (§9C.2). `index.article` is `{path, references?}`: `path` is `"article.md"`; `references`, when the article cites anything, is the archive path of its bibliography, normally `"references.json"` (§9C.4). Both MUST be present in `files`. A lesson without `index.article` has no article; an `article.md` without `index.article` is an ordinary archive file and producers SHOULD warn.
+- The dependency closure (§3.3) includes `article.md`, the references file and every image the article uses. Image paths in `article.md` are archive paths (§3.3); they MUST NOT be URLs or point outside the archive. Producers resolve them at build time (§9C.6); players never read archive paths.
+- Producers import TeX (e.g. with pandoc or MyST's TeX reader), Word (e.g. with pandoc) and other Markdown into Egatari Text; conversion fidelity is the producer's responsibility, and a practical path is a converter's draft corrected by a person or an AI (§9C.14). Converters are used only when importing and are not part of a lesson. After import, the Egatari source is the original (§1.0): later edits are made to `article.md`, not to the TeX or Word file, which MAY be kept as an attachment (`role: source`, §3.8). BibTeX is converted to CSL-JSON when importing and MAY likewise be kept as an attachment.
+- Changing the article (`article.md`, the references file or an article image) re-renders `#egatari-article` (§9C.6) only. It is a tier B edit (§7.2) in which no slide is rebuilt: every byte of the runtime layer outside `#egatari-article`, and outside the affected tier A regions, MUST stay identical.
 
-- A slide MAY name the article sections it presents: `<section class="slide" data-article="sec-method sec-results">`.
-- The article MAY link to positions in the talk: `<a data-egatari-step="<stepKey>">` (and to a slide with a slide key).
-- Players offer "watch this part" from an article section and "read more" from a slide.
-- **Staleness:** when a link is made or confirmed, the producer records the SHA-256 of the section's text in `index.articleLinks[slideKey][sectionId]`. If the section changes, editors show the linked slides as possibly out of date, as for narration audio (§5.4).
+### 9C.2 Egatari Text
 
-### 9C.3 Attachments
+**Egatari Text** is a subset of MyST Markdown, written down in this section and frozen with this specification. It is versioned with this specification and does not follow changes to upstream MyST (whose specification states that it may change without notice). A document in Egatari Text is valid MyST, so that MyST tools can read it, and it is also readable as CommonMark: every Egatari construct degrades to visible text or an ordinary link in other Markdown tools. This version is **Egatari Text 1**; a later version that adds constructs will add a feature identifier (e.g. `article-v2`).
 
-See §3.8. An article commonly carries its typeset PDF (`pdf`), its TeX or Word source (`source`), and its code and data.
+The file is UTF-8 without BOM, in Unicode Normalization Form C, with LF line endings. It MAY begin with a YAML front matter block (`---` … `---`) containing only these members: `title` (string; default `metadata.title`), `subtitle` (string), `lang` (BCP 47; if present it MUST equal `metadata.lang`), `bibliography` (if present it MUST equal `index.article.references`). The article's language is `metadata.lang`.
 
-### 9C.4 Modes
+The constructs of Egatari Text 1 are exactly these. The node types are those of mdast and the MyST specification, plus one Egatari node, so that a conforming parser can be written without MyST's own tools. Conformance fixtures (input and expected tree) are in [`fixtures/article-text/`](fixtures/article-text/) (to be written).
 
-A `read` mode shows the article face. `learn` mode MAY show the linked article section beside the slides. `talk` and `video` are unchanged.
+| Construct | Syntax | Node type(s) | Notes |
+|---|---|---|---|
+| Paragraphs, line breaks | CommonMark | `paragraph`, `text`, `break` | soft line breaks are text |
+| Headings | ATX `##`, `###`, `####` (setext `---` for level 2 is equivalent) | `heading` (`depth` 2–4) | `#` (level 1) MUST NOT be used: the title comes from the front matter. Level 5–6 MUST NOT be used |
+| Emphasis, strong, code span | `*…*`, `**…**`, `` `…` `` | `emphasis`, `strong`, `inlineCode` | |
+| Lists | CommonMark bullet and ordered lists | `list` (`ordered`, `start`, `spread`), `listItem` | |
+| Block quote | `>` | `blockquote` | |
+| Thematic break | `---`, `***` | `thematicBreak` | |
+| Code block | fenced (backtick or tilde) or indented; info string = language | `code` (`lang`, `value`) | never executed. An info string starting with `{` is a directive and outside the subset |
+| Links | `[text](url "title")`, `<url>`, reference links | `link`, `linkReference`, `definition` | external URLs follow §11 when followed. A link whose URL starts with `#` is a cross-reference (below) |
+| Inline image | `![alt](path)` | `image` | `path` an archive path (§9C.1). Images that need a number or caption use a figure |
+| Inline math | `$…$` | `inlineMath` | TeX math in the subset KaTeX supports, as on slides |
+| Display math | `$$…$$` on its own lines, optionally followed on the closing line by `(label)`; or preceded by a `(label)=` line | `math` (`identifier`, `label`, `enumerated`) | numbered only when labelled |
+| Target | a line `(label)=` directly before a heading, display math, a figure or a table | `mystTarget` (`label`); attaches `identifier` to the next node | labels: §9C.3 |
+| Figure | colon fence `:::{figure} <path>` with options `:label: <label>` (`:name:` is accepted as an alias, which producers rewrite to `:label:`) and `:alt: <text>`; the first paragraph of the body is the caption, further paragraphs the legend | `container` (`kind: "figure"`, `identifier`) with `image`, `caption`, `legend` | `:alt:` is REQUIRED for a figure whose caption does not describe the image. Numbered when it has a name |
+| Table | GFM pipe table; optionally wrapped in `:::{table} <caption>` with `:label: <label>` (`:name:` as for figures) | `table`, `tableRow`, `tableCell` (`header`, `align`); `container` (`kind: "table"`) with `caption` | cells hold inline content only. Numbered when wrapped and named |
+| Cross-reference | `[](#label)` (empty text); `[text](#label)` | `link` resolved to `crossReference` (`identifier`, `kind`) | with empty text, the producer fills in the number or title (§9C.6); other Markdown tools still see a link. With text, the text is shown as written |
+| Citation | `[@key]`, `[@key, <locator>]`, several separated by `;` (`[@a; @b, p. 3]`) | `citeGroup` (`kind: "parenthetical"`) with `cite` (`identifier`, `label`; the locator as `suffix`<!-- to verify against myst-parser -->) | keys: §9C.4 |
+| Step link | `` {step}`<slideKey>:<stepKey>` `` or `` {step}`<text> <<slideKey>:<stepKey>>` `` | `mystRole` (`name: "step"`) resolved to `egatariStep` (`slideKey`, `stepKey`, children = the text, if any) | the only Egatari role. Target: §9C.5 |
+| Escapes | CommonMark backslash escapes and entity references | `text` | e.g. `\$`, `\@`, `\[` |
+
+Everything else is **outside the subset**: raw HTML (blocks and inline), every other directive and role (admonitions, `{code-cell}`, `{list-table}`, `{numref}`, `{eq}`, `{cite:p}`, `{math}`, `{glossary}`, `{include}`, …), backtick-fenced directives, footnotes, MyST comments (a line starting with `%`), block breaks (`+++`), substitutions (`{{ … }}`), bare-word citations (`@key` outside brackets), GFM autolinks of bare URLs, strikethrough, task lists, definition lists, and any front matter member not listed above. A producer that reads `article.md` MUST reject a construct outside the subset, or convert it into the subset and tell the author what it converted; it MUST NOT pass it into the runtime layer. Informative conversions: `{numref}`/`{ref}`/`{eq}` → `[](#label)`; `{cite:p}` → `[@key]`; `{math}` role and directive → `$…$`, `$$…$$`; backtick-fenced `{figure}` → colon fence; `{list-table}` → pipe table; admonitions → block quote with a strong first word. Because a MyST parser treats a line starting with `%` as a comment and `@word` as a citation, authors escape them (`\%`, `\@`) when they mean the characters; producers MUST report such lines instead of silently dropping text.
+
+### 9C.3 Identifiers
+
+- **Sections.** A section is the content from a level-2 heading up to the next level-2 heading or the end of the article. Every level-2 heading MUST carry a target `(sec-xxxxxx)=` on the line before it, where the id is `sec-` followed by 6 random base32 characters (`[a-z2-7]`), with the same rules as slide ids (§8.1): never derived from the heading, never changed when the heading changes. Level-3 and level-4 headings MAY carry targets of the same form.
+- **Section ids are assigned by tools, never by authors.** Producers and editors add a missing section id when the article is saved or built, and SHOULD write it back into `article.md`; AI authors MUST NOT be asked to write them (§9C.14; the same rule as slide ids). A build MUST NOT export an article with a level-2 heading without an id.
+- **Figures, tables, equations.** Their labels are written by the author (person or AI), since the text refers to them; they SHOULD be readable and start with `fig-`, `tbl-` or `eq-` (e.g. `fig-bitmap`).
+- Every label matches the id pattern of §8.1 and is unique in the whole document, including against slide ids and every other `id` in the runtime layer. Labels other than section ids MUST NOT start with `sec-`, `s-`, `ref-` or `egatari-` (`ref-` is used for the reference list, §9C.4).
+
+### 9C.4 Citations
+
+- The bibliography is a CSL-JSON array (the format of citeproc, pandoc, Zotero and Crossref) at `index.article.references`. Each item's `id` is unique and is the citation key. Keys match `^[A-Za-z0-9_]+([.:-][A-Za-z0-9_]+)*$` and are at most 64 characters.
+- Producers resolve citations at build time into rendered in-text citations and a reference list (§9C.6); players need no bibliography engine. The style, placement and list follow `metadata.citations` (Appendix A, issue 7); without it, an author–date style with one reference list at the end, listing only works cited, in order of first citation or alphabetically as the style says.
+- Producers SHOULD warn about entries that are never cited.
+
+### 9C.5 Links between the faces
+
+- **Article → talk.** A step link `` {step}`s-k3f9q2:3` `` points to step 3 of slide `s-k3f9q2`. The slide key MUST be a slide id (§8.1), not a key derived by a legacy rule, and the step MUST exist on that slide (`0`…`n` or `concl`). Both parts MUST be written (`:0` for the start of a slide). A step link without text is given generated text naming the slide (e.g. its title and the step).
+- **Talk → article.** A slide MAY name the article sections it presents, in order of relevance: `<section class="slide" data-article="sec-k2m4q7 sec-p9x3ab">` (a space-separated list of section ids).
+- **Linked pairs.** A slide and a section are **linked** when the slide's `data-article` names the section, or when the section's source contains a step link to that slide. Linked pairs are what staleness tracks (§9C.7).
+- **Section of a slide; slide of a section.** For synchronization (§1.2A), the section of a slide is the first id in its `data-article`, otherwise the first section (in article order) containing a step link to it; the slide of a section is the target of the first step link in the section, otherwise the first slide (in deck order) whose `data-article` names it. A slide or section without one leaves the other pane where it is.
+- Players SHOULD offer "watch this part" on a section linked to slides, and "read more" on a slide that has a section. Producers MAY render "watch this part" links into the article (as step links to step 0); players MUST NOT depend on them.
+- Following a step link moves the position as a link to a step does (§9.1A). In a layout without a stage (`flow`, `pages`) that shows the article, a player SHOULD show that step's stage without leaving the article (e.g. in an overlay or inline), and return to the same article position afterwards.
+
+### 9C.6 Runtime form
+
+- The runtime layer contains the article as HTML, built by the producer from `article.md`: one `<article id="egatari-article" lang="…">` as the last child of `<section id="egatari-readable">` (§2.1), so that a player that does not implement `article-v1` hides it together with the readable layer, and a reader without script sees it. It carries no `data-slide-key`. HTML is the canonical reading form, as on arXiv's HTML pages.
+- Structure: an optional `<header>` with `<h1>` (the title) and the subtitle; then each section as `<section id="<section id>" data-section-id="<section id>">` beginning with its `<h2>`; content before the first level-2 heading precedes the first section; the reference list, if any, as a final `<section data-egatari-references>` whose items are `<li id="ref-<key>">`.
+- **Numbers.** Producers number figures, tables and labelled equations in article order, separately per kind, and write the numbers into the HTML: in captions, after display equations, and as the text of empty-text cross-references (`<a href="#<label>" class="egatari-xref">`), using the words of the lesson language (e.g. "図 1", "Figure 1", "式 (2)"). An empty-text cross-reference to a section shows the section's heading text.
+- **Math** is rendered at build time, as on slides; producers SHOULD include MathML with the TeX source as an annotation (`<annotation encoding="application/x-tex">`), for accessibility and export (§9C.13).
+- **Images** become `data:` URIs or inline SVG, so that they show without script, or `egatari:<blobId>` references (§4), which only a player resolves. SVG follows the profile rules of §6.
+- **Citations** are `<a class="egatari-cite" href="#ref-<key>">` with the rendered citation as text.
+- **Step links** are `<a data-egatari-step="<slideKey>:<stepKey>" href="#<slideKey>:<stepKey>">`. The `href` is the step fragment of §9.1A, so that a player that knows step links but not articles still navigates; `data-egatari-step` marks it for players that implement `article-v1`.
+- The article contains no script, no event-handler attributes and no embedding elements; it never changes the profile (§6). Interactive figures (components) are not part of `article-v1`; an article shows them by a step link or a still image.
+
+### 9C.7 Staleness
+
+- When a link between a slide and a section (§9C.5) is made or confirmed, the producer records two hashes in `index.articleLinks[slideKey][sectionId]` = `{article, slide}` (lowercase hex SHA-256 of UTF-8):
+  - `article` — of the section's **source text**: the lines of `article.md` from the section's heading line up to, not including, the next heading of the same or higher level (or the end of the file), without the target line `(…)=` that belongs to that next heading; normalized to NFC and LF and trimmed of leading and trailing whitespace. Step links, citations and cross-references count as written in the source. Rendered text MUST NOT be used: renumbering a figure elsewhere would otherwise make every section stale.
+  - `slide` — of `JSON.stringify([deckText, narrationText])`, where `deckText` is the slide's element in `deck.html` from `<section` to its matching `</section>` and `narrationText` is the slide's block in `narration.md` from its heading line up to the next `## ` heading (`""` if none), each normalized as above.
+- An editor compares the recorded hashes with the current ones. When `article` differs, it shows the linked slides as possibly out of date; when `slide` differs, it shows the linked section as possibly out of date, as for narration audio (§5.4). A linked pair without a record is shown as unconfirmed. Confirming (the author says the two still agree) records both current hashes. Editors MUST NOT change either text automatically to resolve staleness.
+- Records of pairs that are no longer linked are removed when the lesson is built. Staleness is for editors only; players ignore `articleLinks`.
+- `articleLinks` is carried in `egatari.json` with the same value (§3.3), so that an unpacked folder keeps it.
+
+### 9C.8 Validation
+
+Producers MUST report as errors, and MUST NOT export an article that has any of them:
+
+1. a step link to a slide that does not exist, to a slide key that is not a slide id, or to a step the slide does not have;
+2. a citation key with no entry in the references file (or a citation when there is no references file);
+3. a cross-reference to a label that does not exist;
+4. a section id in a slide's `data-article` that is not a section of the article;
+5. a construct outside Egatari Text (§9C.2) that was not converted, an invalid or duplicate label (§9C.3), or a level-2 heading without a section id;
+6. an image path that is not in the archive.
+
+Producers SHOULD warn about uncited references, figures without alt text, and sections linked to no slide.
+
+### 9C.9 Narration and article
+
+The narration and the article are independent texts written for different purposes (speech and reading); neither is generated from the other at build or run time, and neither is checked into agreement with the other automatically. Numbers that appear in both (results, counts, values in figures) SHOULD be produced from the same data files in the archive (e.g. the CSV a component draws), not typed twice. Quality checks MAY compare the narration of linked slides with the linked section (e.g. numbers, terms, the order of claims) and report differences; they MUST NOT rewrite either text.
+
+### 9C.10 Panes, pagination and players without article support
+
+- When a lesson has an article, the text pane (§1.2A) shows the article, not the narration. The narration remains in the readable layer and in `deck-narration`, and players MAY offer it as an alternative text.
+- When the text pane is paginated, page breaks MUST NOT split a figure, a table or a display equation, and SHOULD NOT separate a heading from the text that follows it; a block taller than a page is scaled down to fit rather than split. Pagination stays outside the *(i, k, t)* determinism (§1.1, §1.2A).
+- A player that does not implement `article-v1` plays the lesson unchanged: it hides `#egatari-readable` (with the article in it) when it starts, its text pane shows the narration, and the readable layer still lists every step's narration (§2.1). Step links keep working as fragment links if such a player shows the article at all.
+- Faces and modes: the article is the read face (§1.2 `faces`); `talk`, `learn` and `video` are unchanged. In `learn` mode a `split` layout shows the article beside the stage. Video export never includes the article.
+
+### 9C.11 Attachments
+
+See §3.8. An article commonly carries its typeset PDF (`pdf`), its TeX or Word source and BibTeX (`source`), and its code and data.
+
+### 9C.12 Requirements summary
+
+| Role | Requirements |
+|---|---|
+| Producer | §9C.1–§9C.9; writes `index.article`, `index.articleLinks` and `egatari.json` `articleLinks`; never lists `article-v1` in `requires` |
+| Player implementing `article-v1` | shows `#egatari-article` in the text pane; §9C.5 navigation and synchronization; §9C.10 pagination |
+| Player not implementing it | nothing beyond §2.1 and §9.1A |
+| Editor implementing it | §9C.3 id assignment, §9C.7 staleness, §9C.8 validation; article edits as in §9C.1 |
+| Editor not implementing it | tier A edits only on a lesson with `index.article`; preserves `article.md`, the references file, `index.article`, `index.articleLinks` and `#egatari-article` (§7.1, §7.2) |
+
+### 9C.13 Exports (informative)
+
+- **Print and PDF.** Printing the `pages` layout of the read face produces a PDF of the article (§1.0); it is an output, not a part of the lesson, and SHOULD NOT be attached (§3.8). Step links print as text naming the slide and step (e.g. "slide 4, step 3"). Producers MAY also typeset the article through MyST's LaTeX or Typst export; the result is likewise an output.
+- **JATS.** For archiving and for journals and preprint servers, producers SHOULD offer an export to JATS (NISO Z39.96, version 1.3 or later). The subset maps as follows:
+
+| Egatari Text | JATS |
+|---|---|
+| article, front matter `title` / `subtitle`, `metadata.lang` | `<article xml:lang>`; `<front><article-meta><title-group><article-title>` / `<subtitle>` |
+| `metadata.creators`, `license`, `copyright` | `<contrib-group>`; `<permissions><copyright-statement>`, `<license>` |
+| level-2 section with id; level-3/4 heading | `<sec id><title>`; nested `<sec>` |
+| `paragraph`, `emphasis`, `strong`, `inlineCode` | `<p>`, `<italic>`, `<bold>`, `<monospace>` |
+| `list` / `listItem` | `<list list-type="bullet\|order">` / `<list-item>` |
+| `blockquote`, `code`, `thematicBreak`, `break` | `<disp-quote>`, `<code language>` (or `<preformat>`), `<hr/>`, `<break/>` |
+| `link` (external) | `<ext-link ext-link-type="uri" xlink:href>` |
+| `image` (inline) | `<inline-graphic xlink:href>` |
+| `inlineMath` | `<inline-formula><alternatives><mml:math>…</mml:math><tex-math>` |
+| `math` with label | `<disp-formula id><label>(n)</label><alternatives>…` |
+| figure | `<fig id><label>Figure n</label><caption><p>…</p></caption><graphic xlink:href><alt-text>` |
+| table | `<table-wrap id><label>Table n</label><caption>…</caption><table>` (XHTML table model) |
+| `crossReference` | `<xref ref-type="sec\|fig\|table\|disp-formula" rid>` |
+| `cite` | `<xref ref-type="bibr" rid="ref-<key>">`, locator as following text |
+| references file | `<back><ref-list><ref id="ref-<key>"><element-citation publication-type>` (type from CSL `type`) |
+| `egatariStep` | `<ext-link ext-link-type="egatari-step" xlink:href="#<slideKey>:<stepKey>">` (or its text alone when the export does not travel with the lesson) |
+
+### 9C.14 Authoring by AI (informative)
+
+Trials with six chat models (2026-10-24) found that models write valid Egatari Text, correct step links and correct citations, and fail mainly on length, on writing ids, and on link density. Producers that ask an AI to write or revise `article.md` SHOULD:
+
+- ask for `article.md` (and `references.json` when sources are cited) **without section ids**: no `(sec-…)=` lines; tools add them afterwards (§9C.3). Figure, table and equation labels are written by the AI, since its text refers to them;
+- state a length limit of the producer's choosing (e.g. 1,500–2,500 characters for a single lesson) and check it before accepting the result;
+- ask for at most one step link per paragraph, placed where the slide shows something the text cannot;
+- ask for cross-references (`[](#fig-…)`) instead of literal numbers such as "図 1" or "Figure 1", which go wrong when figures move;
+- give the slide ids and step keys that exist, and check every link, citation and cross-reference with §9C.8 before accepting the result;
+- mark AI-written sections in `metadata.authorship` (§3.6.1), keyed by section id, until a person has reviewed them.
 
 ## 10. Conformance classes
 
@@ -630,9 +767,9 @@ A host MAY supply its own controls and restrict navigation (§1.2), and MAY rest
 5. File-picker availability on `file://`; download as the baseline save path.
 6. `signatures-v1`: what is signed (index and runtime layer), interaction with tier A edits and derived lessons, key identity (e.g. did:web, GitHub keys, Sigstore, C2PA certificates), timestamps and long-term verification.
 7A. `camera-v1` (§8.3A): margin and easing values, interaction with morphs (§8 of the contract) at step 0, and whether a host may disable camera moves for accessibility.
-7. `article-v1` (§9C): section-to-slide link granularity, TeX/Word conversion profiles, and an optional Python-in-browser feature for simulations. **Citations — direction:** the archive carries references as CSL-JSON (e.g. `references.json`), the format of citeproc, pandoc, Zotero and Crossref; slides, narration and the article cite with pandoc-style keys (`[@key]`, `[@key, p. 3]`), which producers resolve at build time into rendered citations and a reference list (players need no bibliography engine); BibTeX is converted when importing and MAY be kept as an attachment (`role: source`); citations in narration are excluded from speech or given a reading; quality checks report keys without a reference. Presentation is the author's choice, recorded in `metadata.citations` = `{style, placement, list}`: `style` a CSL style id (default a common author–date style; a lesson imported from TeX SHOULD default to the CSL style matching its `\bibliographystyle`, or keep the references as the TeX build typeset them, from its `.bbl`, so that a journal's notation is preserved); `placement` `inline` (e.g. "(Vaswani et al., 2017)", default), `footer` (the works cited on a slide listed in that slide's footer, e.g. by short title) or `both`; `list` `end` (a reference list at the end, default), `section` (per article section) or `none`. To settle with `article-v1` (v0.7), together with DOIs.
+7. `article-v1` (§9C): TeX/Word conversion profiles; footnotes, readings (ruby) and interactive figures (components) in Egatari Text 2; conformance fixtures for Egatari Text 1 (`fixtures/article-text/`); and an optional Python-in-browser feature for simulations. **Citations:** the article's syntax and bibliography are specified in §9C.4. Still open: citations on slides and in narration (same keys and `references.json`; in narration excluded from speech or given a reading). Presentation is the author's choice, recorded in `metadata.citations` = `{style, placement, list}`: `style` a CSL style id (default a common author–date style; a lesson imported from TeX SHOULD default to the CSL style matching its `\bibliographystyle`, or keep the references as the TeX build typeset them, from its `.bbl`, so that a journal's notation is preserved); `placement` `inline` (e.g. "(Vaswani et al., 2017)", default), `footer` (the works cited on a slide listed in that slide's footer, e.g. by short title) or `both`; `list` `end` (a reference list at the end, default), `section` (per article section) or `none`. To settle with `article-v1` (v0.7), together with DOIs.
 8. Scholarly use (submission and open review): (a) review comments as separate documents anchored into a lesson with the W3C Web Annotation Data Model (targets by `docId` + `sourceSha256`, selectors by step key, article section id or text quote), never written into the author's file; (b) revision history of one paper (same `docId`, successive `sourceSha256`) and per-step diffs; (c) an anonymized derivative for double-blind review (creators, copyright, attribution, signatures and personal metadata removed).
-9. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing.
+9. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing. TODO: an Egatari Text fixture for citation locators (`[@key, p. 3]`), checking that myst-parser puts the locator in the `cite` node's `suffix` (§9C.2).
 9A. Multilingual lessons: narration, audio and captions in several languages within one lesson (viewer-selectable), a narration language distinct from the slide language (e.g. Japanese slides with English captions), and `translate="no"` on math, code and component output so that browser translation does not break them. Right-to-left scripts (Arabic, Hebrew, Persian, Urdu): `dir="rtl"` on the lesson or a slide, which layout regions mirror (heading, conclusion line, progress bar, step order of side-by-side columns), and which stay left-to-right (math, code, numbers, components unless they declare RTL support); bidirectional text inside one line; and how a vertical-writing slide (`layout-tate`) relates to these writing modes.
 10. Attachments (§3.8): whether to allow audio and video attachments; the outer package format (RO-Crate based) for material that does not belong in the file; measured size budgets.
 11. Audio watermarks (§5.2, §7.3): which schemes to name, whether producers of cloned voices should embed one by default, detection without network access, and how robust common schemes are to the reference post-processing (−20 LUFS, MP3).
