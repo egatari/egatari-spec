@@ -2,7 +2,8 @@
 
 **Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-10-25).
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
-**Reference implementation:** [Egatari Studio](https://github.com/egatari/egatari-studio) (producer, player, editor; https://studio.egatari.org/).
+**Companion:** [Egatari Player 1.0](egatari-player-1.0.md) — how players show a lesson (modes, layouts, playback, links, embedding), versioned separately.
+**Reference implementation:** [Egatari Studio](https://github.com/egatari/egatari-studio) (producer and editor, https://studio.egatari.org/), which bundles Egatari Player.
 **License of this document:** [CC BY 4.0](LICENSE.md). Schemas, fixtures and tools are MIT ([LICENSE](LICENSE)).
 **Repository:** https://github.com/egatari/egatari-spec · **Site:** https://egatari.org/
 
@@ -29,7 +30,7 @@ JSON structures are normatively defined by the JSON Schemas in [`schema/`](schem
 
 A lesson has **one source of content**: its Egatari source — the slides (`deck.html`), the narration (`narration.md`) and, when present, the article (§9C), all written in the syntax this specification defines and rendered as HTML. Everything a person sees or hears is produced from that source:
 
-- the faces (talk: slides and narration; read: the article), the display modes (§1.2), the layouts (§1.2A) and printing are **views** of the same source; no view carries content of its own;
+- the faces (talk: slides and narration; read: the article), the display modes (§1.2), the layouts (Player P2) and printing are **views** of the same source; no view carries content of its own;
 - a PDF of the lesson is an **output** — any reader can produce one by printing in the `pages` layout — never a part of the source;
 - files in other formats (PDF, Word, TeX, spreadsheets) never supply content. Content written elsewhere is **imported** into the Egatari source (e.g. a TeX textbook converted to the article, §9C.1); after import, the Egatari source is the original, and the imported file MAY be kept as an attachment for provenance (§3.8, `role: source`);
 - attachments (§3.8) travel with the lesson for readers — an official version typeset elsewhere, the original manuscript, data and code for verification — and are never rendered.
@@ -41,48 +42,12 @@ A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a f
 - **Determinism.** The rendered screen MUST be a function of *(i, k, t)* alone (plus the display mode and viewport). Content MUST NOT depend on wall-clock time, timers, animation-frame callbacks, call order, or unseeded randomness. The only additional input is the **transition source**: at step 0, a slide transition (cross-fade or morph) depends on an explicit source slide parameter. Without that parameter, a player renders without a transition. Final states never depend on transition history.
 - *t = ∞* denotes the final state of the step. A player MUST be able to render any *(i, k, ∞)* directly (jumping, going back, printing, reduced motion).
 
-### 1.2 Display modes
+### 1.2 Faces and views
 
-| Mode | Who drives | Time | Typical use |
-|---|---|---|---|
-| `talk` (default for a bare file) | the presenter, step by step | real time of each step | live presentation, class |
-| `learn` | the learner: start, pause, previous/next, jump, playback rate | advances along the timeline (§5.5) with narration audio | self-study, LMS (default in LMS bindings and hosted players) |
-| `video` | nobody (no controls) | advances along the timeline | recording and video export |
+A lesson has up to two **faces**: `talk` (slides and narration) and `read` (the article, §9C). How a player shows them — the display modes (`talk`, `learn`, `video`), the option to preview later steps, layouts, panes and detached windows — is specified separately in **Egatari Player 1.0** ([egatari-player-1.0.md](egatari-player-1.0.md)), referred to below as *Player*. Players are separate from the format and anyone may write one (§4.1). The file carries only the author's intent:
 
-**Offered modes.** A lesson MAY state which modes and faces it offers and where it opens, in `metadata.offer`: `{modes?, faces?, open?}` — `modes` a non-empty subset of `talk`, `learn`, `video`; `faces` a non-empty subset of `talk`, `read`; `open` `{mode?, face?}`. Producers copy it into `deck-meta.offer`, so that play-only derivatives keep it. Players SHOULD show only the offered modes and faces in their controls and open as `open` states (defaults: all modes, the faces present, `metadata.primary`). What a player opens in is decided in this order, the first that applies winning: the viewer's or host's explicit choice (an address parameter such as `?mode=`, the embedding interface §9.4), then `offer.open`, then `metadata.primary` (face only), then the defaults by context (layout by mode and screen, §1.2A). **This is the author's intent, not access control:** anyone who has the file can play it in any mode (§11), and players MAY let the viewer override it (e.g. `?mode=`). A host that must enforce a policy — a course that allows only `learn`, a sharing site that shows only `video` — does so in its own frame through embedding (§9.4: `mode`, `controls=0`, restricted navigation), §10.1.
-
-**Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step.
-
-In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1.5 and 2, keeping the pitch of speech; the timeline clock advances at the same rate, so the screen stays a function of *(i, k, t)*. Presenter-only tools (presenter view, laser) SHOULD be hidden.
-
-When embedded by a host (§9.4, §10), the host MAY hide the player's own controls (`controls=0`) and provide equivalent ones itself (chapter list, playback rate, pause), and MAY restrict forward navigation as a course policy. The requirement to offer controls is then met by the host.
-
-### 1.2A Layouts
-
-Independently of the mode, a player arranges the lesson in **panes**. A layout is an arrangement of panes; every pane shows the same position, and layouts are views of one source (§1.0), not different documents.
-
-| Pane | Shows | In the file |
-|---|---|---|
-| **stage** | the talk face: one 16:9 slide stage at a time, animated | yes |
-| **text** | the read face: the article (§9C) when present, otherwise the narration of each step as body text, with each slide's stage scaled (not re-flowed) at its place | yes |
-| **notes** | the learner's notes and ink for the current position (§9.1B) | **no** — learner data |
-
-A pane of kind text is either **scrolled** (a vertical document) or **paginated** (single pages or a two-page **spread**). Page breaks MUST NOT split a step's block, a figure, a table or a display equation; a block taller than a page is scaled down to fit rather than split. Players choose the page breaks and the pairing of pages in a spread; page breaks can be switched off. Page breaks depend on the pane's size, fonts and language and are not part of the *(i, k, t)* determinism (§1), which covers the stage; conformance tests of video frames and stage rendering do not cover pagination. A stage pane can also be paginated (one slide per page, for printing and handouts).
-
-The usual layouts are named combinations:
-
-| Layout | Panes | Typical use |
-|---|---|---|
-| `slides` | stage | talk, video |
-| `flow` | text, scrolled | reading, portrait phones |
-| `pages` (`pages=single\|spread`) | text, paginated — the read face as pages is a **book**; the talk face as pages is *slides in a book* | books, printing |
-| `split` | stage + text | self-study on wide screens |
-| — | stage + notes, text + notes, stage + text + notes | self-study with note-taking |
-
-- **Synchronization.** All panes follow one position. Moving any pane — advancing the stage, scrolling or turning pages of the text, selecting a note — moves the others: the text to the step's block or to the article section of the slide (§9C.5), the stage to the corresponding step, the notes to that position. Switching layout MUST preserve the position (slide and step). During audio playback the current narration turn SHOULD be highlighted in the text.
-- **Scrolled text and motion.** In a scrolled text pane, scroll position maps to *(i, k, t)*: a step plays once from *t = 0* as its block enters the viewport (again only after it has left the viewport entirely) and is at its final state once passed; with `prefers-reduced-motion` only final states are shown. Players MAY additionally let the viewer scrub *t* by scrolling; it is not required.
-- **Detached panes.** A player SHOULD let the viewer move a pane into a separate window (e.g. the stage on a projector or a second display, the text or notes on the laptop) and back. A detached pane stays synchronized with the others without network access, also when the lesson is opened from a local file; the mechanism is the player's (e.g. messages through the opening window; a same-origin broadcast channel only as an optimization). Closing it returns the pane to the main window. **Exactly one window plays the audio** at any time (by default the opening window; the viewer MAY move it, e.g. to the projector's speakers); other windows show the stage silently. The presenter view of `talk` is a detached arrangement of the same kind.
-- **Defaults.** Players SHOULD choose by context: `slides` for `talk` and `video`; for `learn`, `split` on wide screens and `flow` on narrow (portrait phone) screens; `flow` for `read`; `pages` when printing. A lesson declares which face is primary in `metadata.primary` (`"talk"` or `"read"`, default `"talk"`); players open on that face. A file may carry both faces, but typically one is primary: slides for a talk, a book for a textbook. A viewer's choice of layout and panes MAY be remembered per viewer (§9.1B), never in the file. Hosts MAY set `layout=` when embedding (§9.4). **Precedence:** when embedded, the host's `layout=` and mode win over the viewer's remembered choice; otherwise the viewer's choice wins over `metadata.offer.open` (§1.2), which wins over the defaults above.
+- **Primary face.** `metadata.primary`: `"talk"` or `"read"` (default `"talk"`; an article-only lesson is `"read"`, §4).
+- **Offered views.** `metadata.offer`: `{modes?, faces?, open?}` — `modes` a non-empty subset of `talk`, `learn`, `video` (identifiers defined in Player P1); `faces` a non-empty subset of `talk`, `read`; `open` `{mode?, face?}`. Producers copy it into `deck-meta.offer`, so that play-only derivatives keep it. **This is the author's intent, not access control:** anyone who has the file can play it in any mode (§11); a host that must enforce a policy does so in its own frame (Player P8, §10.1). How players apply it: Player P1.
 
 ### 1.3 Narration
 
@@ -178,7 +143,7 @@ Paths under `audio/` are reserved for narration audio; their blobs MUST have an 
 
 ### 3.5 Features
 
-`requires` lists feature identifiers (`^[a-z0-9-]+$`). Version 1.0 defines `sources-v1` (archive layer present) and `audio-v1` (§5.2 records). A reader MUST refuse to edit or re-export a file whose `requires` contains an identifier it does not implement; it MAY still play the file and extract its source (§9.3) when the index and blobs validate. Source extraction is not re-export. Optional information that a reader may ignore MUST NOT be listed in `requires`.
+`requires` lists feature identifiers (`^[a-z0-9-]+$`). Version 1.0 defines `sources-v1` (archive layer present) and `audio-v1` (§5.2 records). A reader MUST refuse to edit or re-export a file whose `requires` contains an identifier it does not implement; it MAY still play the file and extract its source (Player P7) when the index and blobs validate. Source extraction is not re-export. Optional information that a reader may ignore MUST NOT be listed in `requires`.
 
 ### 3.6 Metadata
 
@@ -431,68 +396,28 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 **Viewer input.** A component MAY accept values from the viewer during a step (a count typed or stepped with +1/−1, a number changed to see the result move): from the presenter on the stage or from the presenter's view, or from a learner studying alone. Such values are viewer state: they are outside *(i, k, t)* and, unlike the interaction state above, **persist while the viewer stays on the same slide** (moving forward or back between its steps), so that a count entered at one step can be compared with an answer revealed at a later step. They are reset to the author's values when the slide is entered from another slide or by a jump (link, slide list, page number), and they never change `steps`, `duration(k)`, `cues(k)` or the meaning of colors, and video, print and the presenter's script use the values the author wrote. A component with viewer input MAY let the viewer extend or shorten the running time of the current step (e.g. a countdown timer's +1 min / −1 min): it asks the player through `ctx.extend(seconds)`, which returns the step's total extension so far in seconds (`ctx.extend(0)` only reads it), and the player keeps advancing that step's live clock past `duration(k)` by the amount asked (or ends it earlier), as viewer state that persists like other input. `duration(k)`, the timeline, video and print are unaffected and use the author's durations. A player that offers the presenter's view SHOULD forward the presenter's input to the stage and show the same values in the presenter's view, and MUST NOT accept input commands in video mode. A component that shows such values re-renders when they change (including counts arriving from `ctx.live`). Inside a component's input field, the player MUST NOT act on the keys the field uses (arrows, Space, digits typed into it); digit keys are never assigned to component input, because digits followed by Enter move between pages. Where a lesson carries the `live` extension, a component MAY show the aggregated counts of a poll it is bound to, read from `ctx.live` (`null` without `live`), under the rules of that extension; such counts are viewer state too.
 
-**Component sounds.** A component MAY declare sound events for step *k* through `events(k)` → `[{t, sound, …}]` (seconds within the step). It never produces audio itself. The player synthesizes the sounds with the Web Audio API from a small fixed set (no files, no network): `bell` with `count` 1–3 (rings about 0.6 s apart), `chime`, and `note` with `pitch` (a MIDI number or a name such as `"C4"`), `dur` (seconds) and `vel` (0–1); several `note` events at the same *t* form a chord. Unknown sounds are ignored. During playback in `talk` and `learn` the player sounds an event only when *t* crosses its time moving forward, never when going back, jumping, seeking, in the presenter's view or in print, and it offers one setting that mutes all component sounds. Video export renders the same events into the audio track at their times, so the output stays a function of *(i, k, t)*. When the viewer extends the step (`ctx.extend`), the live player re-times the step's events by the extension; video uses the author's times. Sounds MUST NOT be the only carrier of information (a timer that rings also shows the time). The rule that audio starts only after a user gesture (§9.1) applies; the presenter's step key is such a gesture.
+**Component sounds.** A component MAY declare sound events for step *k* through `events(k)` → `[{t, sound, …}]` (seconds within the step). It never produces audio itself. The player synthesizes the sounds with the Web Audio API from a small fixed set (no files, no network): `bell` with `count` 1–3 (rings about 0.6 s apart), `chime`, and `note` with `pitch` (a MIDI number or a name such as `"C4"`), `dur` (seconds) and `vel` (0–1); several `note` events at the same *t* form a chord. Unknown sounds are ignored. During playback in `talk` and `learn` the player sounds an event only when *t* crosses its time moving forward, never when going back, jumping, seeking, in the presenter's view or in print, and it offers one setting that mutes all component sounds. Video export renders the same events into the audio track at their times, so the output stays a function of *(i, k, t)*. When the viewer extends the step (`ctx.extend`), the live player re-times the step's events by the extension; video uses the author's times. Sounds MUST NOT be the only carrier of information (a timer that rings also shows the time). The rule that audio starts only after a user gesture (Player P3) applies; the presenter's step key is such a gesture.
 
 **Presentation variants and the lesson seed.** A component MAY offer several ways of showing the same content (variants: how things appear within a step and where the eye is led). A lesson MAY carry a seed as `data-egatari-seed` on the root element of its source (a decimal integer, 0 ≤ N < 2³²); when it is absent the seed is 0. A component MAY also carry `seed` (overriding the lesson seed for that component) and `variant` (a variant name, overriding any seed). The variant a component shows MUST be a pure function of these values, its tag name and its own attributes, so that *(i, k, t)* still determines the rendering. A variant MUST NOT change `steps`, `duration(k)`, `cues(k)`, the content of the final state (text, numbers, positions, the meaning of colors) or the colors, and MUST NOT move more than the component's variant for seed 0; narration, captions, video timing, print and the presenter's view are therefore the same for every variant. Editors creating a lesson SHOULD write a seed once (so that lessons do not all look alike) and MUST preserve it on save. Because the lesson pins component versions (§6), a seeded lesson changes its look only when the author moves to a newer component release.
 
-## 9. Player requirements
+## 9. Playing a lesson
 
-### 9.1 Playback
-
-A conforming player MUST: render any *(i, k, t)* deterministically; implement the `talk`, `learn` and `video` modes and the preview option (§1.2); play the formats in §5.1; start audio only after a user gesture (a visible start/resume control); pause when the page is hidden; honor `prefers-reduced-motion` by rendering final states, except for a component that declares elapsed time as its content (a clock or countdown, `clock` in the component release manifest, §6), which still receives the real *t* and drops only decorative motion; and work from `file://` with no network access.
+How players play a lesson — playback, following links, learner data, tracking adapters, source extraction and embedding — is specified in Egatari Player 1.0 (Player P3–P8). This section keeps what the file itself guarantees to every player.
 
 ### 9.1A Links to slides
 
 - A link to a slide is an ordinary anchor whose fragment is a slide id: `<a href="#s-k3f9q2">`; `#<slide id>:<stepKey>` addresses a step. Step links in the article carry the same fragment and `data-egatari-step` (§9C.6). Such links contain no script and are allowed in Core documents. The same fragments in the file's URL select the starting position.
-- Following a link moves to step 0 of that slide (or the given step) at its final state in `talk` mode; in `learn` and `video` mode it seeks there and keeps the current playing state. In the `flow` and `pages` layouts it scrolls to that step's block (in `split`, both sides move). Players SHOULD offer "back" to the position before the most recent link.
-- Players MUST keep link navigation inside the document (no top-level navigation). When embedded (§9.4), a link produces a `position` event with `cause: "link"`, and a host that restricts navigation (§1.2) MAY veto it; players then stay where they are.
+- How players follow such links: Player P4.
 
 ### 9.1B Learner data
 
 Notes, ink, bookmarks, highlights and other data a learner creates MUST NOT be written into the Egatari file. Players MAY keep them in local storage keyed by `docId` (hosts MAY keep them per learner).
 
-- **Anchors.** Each note is anchored to a position that survives revisions of the lesson: a slide key and step key, or an article section id, optionally with a point or range inside it. A note made on a stage pane carries a point in stage coordinates (1280×720); a note made on a text pane carries a text range (a quote of the selected text with a little context before and after, as in the W3C Web Annotation text-quote selector), so that it survives reflow and small edits. Because slide ids are stable (§8.1), notes stay attached when the lesson is revised; a note whose anchor no longer exists is kept and shown as detached, never discarded silently.
-- **Kinds.** Typed text and ink (pen strokes with pressure, in stage or page coordinates), as in note-taking applications.
-- **Export.** Players SHOULD let the learner export notes: as PDF (each slide's final state or each page of the text, with the learner's notes and ink drawn over or beside it), and as Markdown with the anchors. Notes are output: importing them back is optional.
+Anchors, kinds and export of learner data: Player P5.
 
-### 9.2 Tracking
+### 9.2 Completion
 
-A player SHOULD expose progress through a tracking adapter, detected in this order: SCORM 1.2 API (`window.API` in a parent frame), then `postMessage` to the parent, then local storage. Events: `started`, `step` (`{slideKey, stepKey, index, total}`), `completed`, `suspend` (`{location, data}`). The SCORM 1.2 binding is defined in [`bindings/scorm12.md`](bindings/scorm12.md). A player lists the adapters it implements in `deck-meta.tracking`; completion rules are read from `deck-meta.completion` so that play-only files can be tracked. Completion defaults to "every step visited"; `metadata.completion` MAY set `{"visitedFraction": number}` or `{"reachedEnd": true}`.
-
-### 9.3 Source extraction
-
-A player SHOULD offer to save the archive layer as a ZIP of `files` plus `audio/manifest.json`, so the source remains recoverable without any editor.
-
-### 9.4 Embedding
-
-A host page (a learning platform, an LMS plugin, a video tool) MAY embed an Egatari file in an `<iframe>` and drive it. A player that supports embedding MUST, when loaded with the query parameter `embed=1`, accept messages from `window.parent` via `postMessage` (objects with a string member `egatari`) and ignore messages from any other source. Query parameters `mode`, `layout`, `controls=0` and `preview=1` set the initial state. Every command MAY carry an `id`; the player echoes it in the reply or acknowledgement. Times are seconds as floating-point numbers.
-
-Commands (host → player):
-
-| Message | Effect / reply |
-|---|---|
-| `{egatari:"seek", id?, slide, step, t}` | go to *(slide, step, t)*; `slide` is a slide key or index, `step` a step key, `t` seconds or `null` for ∞. Reply `seeked` |
-| `{egatari:"play", id?}` / `{egatari:"pause", id?}` | start / pause timeline playback with audio. If the browser refuses to start audio, reply `playBlocked` |
-| `{egatari:"rate", id?, value}` | playback rate (§1.2) |
-| `{egatari:"mode", id?, mode}` / `{egatari:"layout", id?, layout}` / `{egatari:"preview", id?, on}` / `{egatari:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
-| `{egatari:"snapshot", id, slide, step, t, maxWidth?}` | reply `{egatari:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position |
-
-Events (player → host; target origin `*`; payloads contain no private data):
-
-| Message | When |
-|---|---|
-| `{egatari:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | after loading |
-| `{egatari:"seeked", id?, slideKey, stepKey, t}` | after a seek has been applied |
-| `{egatari:"position", slideKey, stepKey, t, cause}` | MUST on every step change (`cause`: `play`, `seek`, `control`, `link`); during playback a player MAY also send it between step changes, at most 4 times per second, driven by a clock it already has (e.g. the audio element's `timeupdate`); it need not add a timer for this. Scrolling or turning pages in a text pane is a `seek` |
-| `{egatari:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped; moving to another step by scrolling or turning pages in a text pane is a skip) |
-| `{egatari:"state", playing, rate}` | whenever playing state or rate changes, including by the player's own controls |
-| `{egatari:"playBlocked", id?}` | audio could not start for lack of a user gesture |
-| `{egatari:"turn", slideKey, stepKey, index}` | OPTIONAL: when narration turn `index` starts; `index` is 0-based within the step's turns (§4). It marks the same moments at which a text pane highlights the current turn |
-| `{egatari:"ended"}` | after the last step of the timeline |
-| `{egatari:"openLink", href, text, download?}` | when the viewer activates a link that leaves the lesson (§11) and the player cannot open it itself (e.g. in a sandboxed frame without popups); sent only on the viewer's own activation. `text` is the link's visible text (at most 200 characters); `download: true` when the link has a `download` attribute, which the host confirms every time or refuses. A host that acts on it treats it as untrusted and applies §11 itself (schemes, confirmation showing the full destination, opening outside the lesson); it never opens anything without a tap in its own interface |
-| `{egatari:"error", id?, code, message}` | a command failed or the file cannot be played |
-
-The first start of audio SHOULD happen through the player's own start control, because browsers (notably Safari on iPad) may not pass a user gesture in the host page into the frame; hosts SHOULD allow `autoplay` on the frame and MUST handle `playBlocked`. Since a sandboxed frame has the origin `null`, hosts MUST identify the player by `event.source === iframe.contentWindow`. The same messages serve the `postMessage` tracking adapter (§9.2). Embedding commands are unprivileged: they can only do what a viewer could do with the controls. Narration text is not sent at run time; hosts read `deck-narration` from the file.
+`deck-meta.completion` carries the completion rule, so that play-only files can be tracked: by default "every step visited"; `metadata.completion` MAY set `{"visitedFraction": number}` or `{"reachedEnd": true}`. `deck-meta.tracking` lists the tracking adapters the bundled player implements (Player P6). The SCORM 1.2 binding ([`bindings/scorm12.md`](bindings/scorm12.md)) is outside 1.0.
 
 ## 9A. Extensions
 
@@ -621,7 +546,7 @@ Everything else is **outside the subset**: raw HTML (blocks and inline), every o
 - **Article → talk.** A step link `` {step}`s-k3f9q2:3` `` points to step 3 of slide `s-k3f9q2`. The slide key is a slide id (§8.1), and the step MUST exist on that slide (`0`…`n` or `concl`). Both parts MUST be written (`:0` for the start of a slide). A step link without text is given generated text naming the slide (e.g. its title and the step).
 - **Talk → article.** A slide MAY name the article sections it presents, in order of relevance: `<section class="slide" data-article="sec-k2m4q7 sec-p9x3ab">` (a space-separated list of section ids).
 - **Linked pairs.** A slide and a section are **linked** when the slide's `data-article` names the section, or when the section's source contains a step link to that slide. Linked pairs are what staleness tracks (§9C.7).
-- **Section of a slide; slide of a section.** For synchronization (§1.2A), the section of a slide is the first id in its `data-article`, otherwise the first section (in article order) containing a step link to it; the slide of a section is the target of the first step link in the section, otherwise the first slide (in deck order) whose `data-article` names it. A slide or section without one leaves the other pane where it is.
+- **Section of a slide; slide of a section.** For synchronization (Player P2), the section of a slide is the first id in its `data-article`, otherwise the first section (in article order) containing a step link to it; the slide of a section is the target of the first step link in the section, otherwise the first slide (in deck order) whose `data-article` names it. A slide or section without one leaves the other pane where it is.
 - Players SHOULD offer "watch this part" on a section linked to slides, and "read more" on a slide that has a section. Producers MAY render "watch this part" links into the article (as step links to step 0); players MUST NOT depend on them.
 - Following a step link moves the position as a link to a step does (§9.1A). In a layout without a stage (`flow`, `pages`) that shows the article, a player SHOULD show that step's stage without leaving the article (e.g. in an overlay or inline), and return to the same article position afterwards.
 
@@ -664,8 +589,8 @@ The narration and the article are independent texts written for different purpos
 
 ### 9C.10 Panes, pagination and players without article support
 
-- When a lesson has an article, the text pane (§1.2A) shows the article, not the narration. The narration remains in the readable layer and in `deck-narration`, and players MAY offer it as an alternative text.
-- When the text pane is paginated, page breaks MUST NOT split a figure, a table or a display equation, and SHOULD NOT separate a heading from the text that follows it; a block taller than a page is scaled down to fit rather than split. Pagination stays outside the *(i, k, t)* determinism (§1.1, §1.2A).
+- When a lesson has an article, the text pane (Player P2) shows the article, not the narration. The narration remains in the readable layer and in `deck-narration`, and players MAY offer it as an alternative text.
+- When the text pane is paginated, page breaks MUST NOT split a figure, a table or a display equation, and SHOULD NOT separate a heading from the text that follows it; a block taller than a page is scaled down to fit rather than split. Pagination stays outside the *(i, k, t)* determinism (§1.1, Player P2).
 - A player that does not implement `article-v1` plays the lesson unchanged: it hides `#egatari-readable` (with the article in it) when it starts, its text pane shows the narration, and the readable layer still lists every step's narration (§2.1). Step links keep working as fragment links if such a player shows the article at all.
 - Faces and modes: the article is the read face (§1.2 `faces`); `talk`, `learn` and `video` are unchanged. In `learn` mode a `split` layout shows the article beside the stage. Video export never includes the article.
 
@@ -725,7 +650,7 @@ Trials with six chat models (2026-10-24) found that models write valid Egatari T
 | Class | Requirement summary |
 |---|---|
 | **Document — Core / Extended** | valid runtime layer; if portable, valid archive layer of that profile; readable layer (§2.1) |
-| **Player — Core / Extended** | §9.1; resolves `egatari:` audio; Extended players run embedded component code |
+| **Player — Core / Extended** | conforms to Egatari Player 1.0 (Player P9); resolves `egatari:` audio; Extended players run embedded component code |
 | **Editor** | safe import (§11), tier A at least, §7, preserves unknown members and `docId` |
 | **Producer** | writes conforming documents; §3.3 exclusions; §5 audio rules |
 | **LMS Binding** | packages a document for a learning platform per a binding document (SCORM 1.2 in 1.0) |
@@ -738,10 +663,10 @@ Conformance is tested with the fixtures in [`fixtures/`](fixtures/).
 A conforming host MUST:
 
 1. Validate uploaded files on the server per §11 without executing them (limits, hashes, `requires`), and reject unsupported `requires` with a clear message. Hosts whose platform limits are lower than §11's recommendations MUST stream uploads rather than buffer them.
-2. Play files through §9.4 in an iframe with `sandbox="allow-scripts"` and without `allow-same-origin`, and serve the file itself with a `Content-Security-Policy` that sandboxes it and forbids network access even when its URL is opened directly, e.g. `sandbox allow-scripts; default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline' data:; script-src 'unsafe-inline' blob:; font-src data:`.
+2. Play files through Player P8 in an iframe with `sandbox="allow-scripts"` and without `allow-same-origin`, and serve the file itself with a `Content-Security-Policy` that sandboxes it and forbids network access even when its URL is opened directly, e.g. `sandbox allow-scripts; default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline' data:; script-src 'unsafe-inline' blob:; font-src data:`.
 3. Store the original bytes unmodified and return them unchanged to users authorized to edit. It MAY serve learners a play-only derivative (§3.7), and MUST do so when extensions carry information to be withheld from learners.
 4. Play files that carry no extensions for that host.
-5. Record progress from §9.2/§9.4 events, keeping Egatari completion (`deck-meta.completion`) distinct from the host's own grading.
+5. Record progress from the tracking and embedding events (Player P6, P8), keeping Egatari completion (`deck-meta.completion`) distinct from the host's own grading.
 6. Never write learner data into files (§9.1B).
 
 A host MAY supply its own controls and restrict navigation (§1.2), and MAY restrict the modes and faces it offers beyond `deck-meta.offer`; restrictions are enforced by the host's own frame and controls, never by the file. Conformance covers Egatari content only; other kinds of material a platform offers are out of scope.
@@ -749,7 +674,7 @@ A host MAY supply its own controls and restrict navigation (§1.2), and MAY rest
 ## 11. Security considerations
 
 - **Opening an Egatari file as a web page runs its scripts**, as with any HTML file. Being importable safely by an editor does not make arbitrary HTML trustworthy.
-- **Links that leave the lesson** are a phishing surface like links in PDF files, and a browser shows less context than a PDF reader. A player MUST open them outside the lesson (a new browsing context, `noopener`, `noreferrer`) and MUST let the viewer see the destination's host before leaving (a confirmation, or a preview on hover or long press). It MUST ask for confirmation, showing the full destination, when the link's visible text names a different host than the destination, when the destination is not `https:`, or when it would download a file; it SHOULD NOT ask again for the same host in the same viewing session. Links within the lesson (§9.1A) need no confirmation. Hosts that play lessons apply the same rule to links the lesson asks them to open. In detail: (a) players open only `https:`, `http:`, `mailto:` and `tel:` destinations and refuse every other scheme (`javascript:`, `data:`, `blob:`, `file:` as an absolute address, …); every destination other than plain `https:` is confirmed each time; (b) in a lesson opened from a file, a relative link to a neighbouring file is confirmed each time; (c) a destination carrying user information (`user:pass@`) or an internationalized host (`xn--` labels) is treated like a different host and confirmed each time; (d) "names a different host" means any host-like token in the link's visible text that differs from the destination's host, ignoring a leading `www.`, a subdomain counting as different (players MAY narrow host-like tokens with a public-suffix list to avoid needless confirmations); (e) "would download" means a `download` attribute (a player cannot know a server's response in advance); (f) only plain `https:` hosts are remembered for the session, in memory only; where the platform needs a fresh tap to open a new browsing context (e.g. a host acting on `openLink`, §9.4, on Safari), a single tap on an open control without the warning counts as not asking again; (g) where the player cannot open a new browsing context (an editor's sandboxed preview), it shows the destination without a way to open it; (h) links the player itself generates (e.g. joining a live room in the browser, saving an attachment) are not lesson content and need no confirmation, provided the player shows their destination host in its own interface and no lesson markup can mark a link as such; (i) a browser's own "open in new tab" cannot be intercepted, and the browser then shows the address itself.
+- **Links that leave the lesson** are navigation, not loading, and a phishing surface as in PDF files; players open them only as Player P4.2 requires.
 - **The file itself forbids network access** through its policy (§4.2), so that the guarantee holds for every script in it, not only for a well-behaved player.
 - **A conforming runtime makes no network requests.** The only way a lesson may connect is an optional extension (§9A) whose own definition allows it — today only [`live`](extensions/live.md), honoured only for the one endpoint and time window the author declared and visibly to the learner. Players, editors and hosts conform to Egatari without implementing any extension; a lesson without such an extension, or played by a player that ignores it, never connects.
 - An editor MUST read an imported file as bytes and extract the index and blobs with a parser that neither executes scripts nor loads resources. It MUST NOT navigate to, `srcdoc`, or insert the file into a document. It MUST validate the index hash, blob hashes, MIME types, and archive paths (§3.3) before constructing any workspace.

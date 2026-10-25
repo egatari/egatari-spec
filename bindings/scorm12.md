@@ -1,6 +1,6 @@
 # Egatari LMS Binding: SCORM 1.2
 
-**Status:** Editor's Draft, 2026-10-17. Part of [Egatari 1.0](../egatari-1.0.md) §9.2, §10 (LMS Binding).
+**Status:** Editor's Draft, 2026-10-17. Builds on [Egatari Player 1.0](../egatari-player-1.0.md) P6 (tracking adapters); outside Egatari 1.0, the format.
 
 SCORM 1.2 is the only packaging format that Moodle core tracks without plugins, and it is also supported by most other LMSs. This binding packages one Egatari file as a single-SCO SCORM 1.2 package and maps the player's tracking events to the SCORM 1.2 run-time API.
 
@@ -46,7 +46,7 @@ The package MUST NOT add other launch files or modify the Egatari file: extracti
 
 The bridge is part of the Egatari player's tracking adapter (no separate script in the package). A packager MUST refuse an Egatari file whose `deck-meta.tracking` does not contain `"scorm12"`.
 
-The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to 7 levels and then `window.opener`, as in the ADL reference algorithm. If none is found, it falls back to the next adapter (Egatari 1.0 §9.2). API functions return the strings `"true"` / `"false"`; the player compares them literally and calls `LMSGetLastError()` immediately after any failed call and after every `LMSGetValue`.
+The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to 7 levels and then `window.opener`, as in the ADL reference algorithm. If none is found, it falls back to the next adapter (Egatari 1.0 Player P6). API functions return the strings `"true"` / `"false"`; the player compares them literally and calls `LMSGetLastError()` immediately after any failed call and after every `LMSGetValue`.
 
 ### 2.1 Lifecycle
 
@@ -82,7 +82,7 @@ Steps are numbered by zero-based **ordinal** in timeline order (Egatari 1.0 §5.
 
 ## 3. Completion
 
-Completion follows Egatari 1.0 §9.2: by default every step has been reached at least once in any mode; `metadata.completion.visitedFraction` lowers the threshold; `metadata.completion.reachedEnd` requires only reaching the final step of the last slide. Once completed, the status is never set back to `incomplete`.
+Completion follows Egatari 1.0 §9.2 and Egatari Player 1.0 P6: by default every step has been reached at least once in any mode; `metadata.completion.visitedFraction` lowers the threshold; `metadata.completion.reachedEnd` requires only reaching the final step of the last slide. Once completed, the status is never set back to `incomplete`.
 
 ## 4. Conformance
 
