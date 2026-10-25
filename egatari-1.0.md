@@ -718,6 +718,8 @@ Trials with six chat models (2026-10-24) found that models write valid Egatari T
 - give the slide ids and step keys that exist, and check every link, citation and cross-reference with §9C.8 before accepting the result;
 - mark AI-written sections in `metadata.authorship` (§3.6.1), keyed by section id, until a person has reviewed them.
 
+**Book first.** A common order of work is source material → article → slides: an article-only lesson (§4) is a normal stage, not an incomplete one. When slides are made from an article, producers SHOULD ask for the slides of one section (or a few paragraphs) at a time, giving the AI that section's text; give the new slides ids themselves (§8.1); link each new slide to the section it came from (§9C.5) and record the pair as confirmed (§9C.7), so that later edits on either side are shown as possibly out of date. Narration is written for the new slides' steps; the article itself carries none (§4).
+
 ## 10. Conformance classes
 
 | Class | Requirement summary |

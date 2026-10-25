@@ -13,6 +13,7 @@ Changes on `main` after the snapshot; they will be in the next Working Draft.
 - Removed: slide keys from heading text, hand-written `data-key` and `s<n>` (every slide has an id; narration headings carry `{#id}`); `?mode=lecture`; `:name:` in Egatari Text; camera `camera-v1` (§8.3A) and `zoom` in `deck-marks` — zooming is a component effect (owner, 2026-10-25).
 - §8: the contract link points to egatari/egatari-studio.
 - Lessons without slides: a lesson has slides, an article, or both; `entry` is no longer required when `article` is present (schema `anyOf`); an article-only lesson has no steps, narration or audio in 1.0, its primary face is `read`. `index.article` is now in the schema.
+- §9C.14 (informative): book first — source material → article → slides is a common order of work; an article-only lesson is a normal stage; slides made from an article are linked to their section and recorded as confirmed.
 - `contracts.runtime` is removed (`contracts` is `{source}`): the data-block layout is the format version, behaviour is the bundled player's. Tier B rebuilds with the editor's player; tier C is now updating components or themes beyond their pins. Tier A edits keep `player` and `generator`; rebuilding writes the editor's `player`, `generator` and `deck-meta.tracking`.
 
 **Viewer input and stage directions**
