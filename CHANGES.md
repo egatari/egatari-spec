@@ -6,6 +6,13 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+**The 1.0 file shape (owner, 2026-10-25: the format describes the lesson; players are separate and anyone may write one)**
+- §4.1 the bundled player: the runtime script is one conforming player carried in the file, not part of the format; `player` `{name, version}` is REQUIRED in the index and `deck-meta`; `generator` names the producer only; the lesson MUST be playable without the bundled player; an editor that rebuilds tells the user when the player changes; information panels show format, player, producer in that order.
+- §4.2 network policy in the file: every file carries a fixed Content-Security-Policy `<meta>` first in `<head>` (baseline `connect-src 'none'`, every resource `data:`/`blob:` only); only extensions that allow network access add their declared destinations (`live` to `connect-src`, `embed` to `frame-src`); validators, editors and hosts check it. `extensions/live.md` and `extensions/embed.md` refer to it.
+- No backward compatibility with earlier drafts (§7.1): files without `player` are pre-1.0 drafts; they keep playing with their own player; 1.0 editors MAY refuse to edit them and point to an earlier editor or migration instructions.
+- Removed: slide keys from heading text, hand-written `data-key` and `s<n>` (every slide has an id; narration headings carry `{#id}`); `?mode=lecture`; `:name:` in Egatari Text; camera `camera-v1` (§8.3A) and `zoom` in `deck-marks` — zooming is a component effect (owner, 2026-10-25).
+- §8: the contract link points to egatari/egatari-studio.
+
 **Viewer input and stage directions**
 - §8.2: stage directions `{note:…}` — shown only in the presenter's view; not spoken, not in captions, video or print; outside `ttsParts` and `inputHash`.
 - §8.4: viewer input — components MAY take values from the presenter (on the stage or from the presenter's view) or a learner; viewer state outside *(i, k, t)* that persists while the viewer stays on the same slide and is reset on entering the slide from elsewhere or by a jump (owner, 2026-10-25: a count must survive into the step that reveals the answer); no input in video mode; keys inside an input field are the field's; no digit keys for component input; poll counts from `ctx.live` under the `live` rules.

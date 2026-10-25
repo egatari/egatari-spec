@@ -13,6 +13,7 @@
   "source": 1,
   "runtime": 1
  },
+ "player": {"name": "egatari-player", "version": "1.0.0"},
  "generator": {
   "name": "motion-academic-slides",
   "version": "0.3.0"

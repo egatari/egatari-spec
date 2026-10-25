@@ -28,7 +28,8 @@ Producers fold these into `extensions.embed` at export (`{v:1, items:{<element i
 3. Never activates by itself: not on entering the step, not in autoplay, not in video mode, print or the presenter's view; those always show the placeholder, so *(i, k, t)* rendering is unchanged.
 4. Inside a frame that forbids network (spec §10.1, §11; editor previews) it shows the placeholder and the link only.
 5. When the destination refuses to play in this context (some services refuse lessons opened from a local file), the player falls back to the link.
-6. A host acting for a sandboxed lesson (as in `live` §2A) MAY create the iframe itself, outside the lesson's frame, positioned over the placeholder.
+6. The file's policy (spec §4.2) adds the listed destination hosts to `frame-src`, and nothing else; without them the browser refuses the iframe.
+7. A host acting for a sandboxed lesson (as in `live` §2A) MAY create the iframe itself, outside the lesson's frame, positioned over the placeholder.
 
 ## 3. Allowed destinations (v1)
 
