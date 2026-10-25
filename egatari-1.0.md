@@ -261,7 +261,7 @@ A portable file SHOULD reference audio as `egatari:<blobId>` so that audio bytes
 
 The runtime script in a file is **the bundled player**: one conforming player, carried in the file so that the lesson plays in any current browser without installing anything. It is not part of the format. `player` (in the index and in `deck-meta`) names it; `generator` names the software that wrote the file, which may be different.
 
-- The lesson MUST be playable without the bundled player: everything a player needs is in the compiled slides, the runtime JSON blocks (§4), the styles and fonts, and the components (§6). A player MUST NOT depend on the bundled player's script or on undocumented state.
+- The lesson MUST be playable without the bundled player: everything a player needs is in the compiled slides, the runtime JSON blocks (§4), the styles and fonts, and the components (§6). Nothing a player needs may exist only in the bundled script or in undocumented state; every player, the bundled one included, plays from these documented parts.
 - A different player MAY play the file by reading those parts and ignoring the bundled player's script.
 - An editor that rebuilds the runtime layer (tier B or C, §7.2) replaces the bundled player with its own. When the new player's `name` differs from the old one, the editor MUST tell the user before saving which player the saved file will carry.
 - Players and hosts SHOULD show the format version, the bundled player and the producer in their information panel, in that order (e.g. "Egatari 1.0 · Player X 1.2 · made with Y").
@@ -275,8 +275,9 @@ default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-s
 ```
 
 - The only permitted additions are the destinations declared by an extension whose definition allows network access (§9A), and only in the directive that extension names (e.g. `live` adds its endpoint to `connect-src`; `embed` adds its listed hosts to `frame-src`). Nothing else may be loosened.
-- No script, element or attribute in the file may come before this element, and the file MUST NOT carry a second policy that could be read as replacing it.
-- Validators, editors and hosts MUST check the policy against the baseline plus the declared extensions, and MUST NOT describe a file whose policy differs as conforming.
+- The policy element MUST precede every `<script>`, `<style>` and `<link>`, every element with a URL-bearing attribute (`src`, `href`, `srcset`, `poster`, `data`) and every event-handler (`on*`) attribute; only `<!DOCTYPE>`, `<html>`, `<head>` and `<meta charset>` come before it, and none of them carries an event-handler attribute. The file MUST NOT carry a second policy.
+- Validators, editors and hosts MUST compare the policy with the baseline plus the declared extensions as parsed directives and source lists (directive order and spacing are not significant), and MUST NOT describe a file whose policy differs as conforming.
+- The file's policy binds the file's own scripts in a browser. It is not evidence that an editor may trust the file: the preview rules of §11 (a policy from a trusted prefix, never found by searching untrusted markup) are unchanged.
 - The policy does not restrict links the viewer follows by choice (§11), nor navigation started by script; hosts therefore still serve files with their own headers (§10.1), and players still apply §11.
 
 ## 5. Audio and timing
