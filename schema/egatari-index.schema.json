@@ -9,6 +9,7 @@
     "profile",
     "requires",
     "contracts",
+    "player",
     "generator",
     "docId",
     "entry",
@@ -83,7 +84,8 @@
           "type": "string",
           "minLength": 1
         }
-      }
+      },
+      "description": "The producing software (informative; spec §7.1)."
     },
     "docId": {
       "type": "string",
@@ -264,6 +266,24 @@
         }
       },
       "description": "A copy exported from an authoring folder that remains the master (§3.1)."
+    },
+    "player": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "The bundled player (spec §4.1)."
     }
   },
   "$defs": {

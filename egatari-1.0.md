@@ -51,7 +51,7 @@ A lesson is a sequence of slides. Each slide has steps `0..n` and optionally a f
 
 **Offered modes.** A lesson MAY state which modes and faces it offers and where it opens, in `metadata.offer`: `{modes?, faces?, open?}` — `modes` a non-empty subset of `talk`, `learn`, `video`; `faces` a non-empty subset of `talk`, `read`; `open` `{mode?, face?}`. Producers copy it into `deck-meta.offer`, so that play-only derivatives keep it. Players SHOULD show only the offered modes and faces in their controls and open as `open` states (defaults: all modes, the faces present, `metadata.primary`). What a player opens in is decided in this order, the first that applies winning: the viewer's or host's explicit choice (an address parameter such as `?mode=`, the embedding interface §9.4), then `offer.open`, then `metadata.primary` (face only), then the defaults by context (layout by mode and screen, §1.2A). **This is the author's intent, not access control:** anyone who has the file can play it in any mode (§11), and players MAY let the viewer override it (e.g. `?mode=`). A host that must enforce a policy — a course that allows only `learn`, a sharing site that shows only `video` — does so in its own frame through embedding (§9.4: `mode`, `controls=0`, restricted navigation), §10.1.
 
-**Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step. `?mode=lecture` is a legacy alias for `talk` with preview on.
+**Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step.
 
 In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1.5 and 2, keeping the pitch of speech; the timeline clock advances at the same rate, so the screen stays a function of *(i, k, t)*. Presenter-only tools (presenter view, laser) SHOULD be hidden.
 
@@ -127,7 +127,8 @@ Structure: one `<section id="egatari-readable">` containing, per slide, `<articl
 | `profile` | MUST | `"core"` or `"extended"` (§6) |
 | `requires` | MUST | feature identifiers a reader must understand to edit (§3.5). May be empty |
 | `contracts` | MUST | `{source, runtime}` integer versions of the authoring syntax and of the runtime behavior (§7) |
-| `generator` | MUST | `{name, version}` of the producing software |
+| `player` | MUST | `{name, version}` of the bundled player (§4.1) |
+| `generator` | MUST | `{name, version}` of the producing software (informative; may differ from the player) |
 | `docId` | MUST | a UUID identifying the lesson across edits; editors MUST preserve it |
 | `entry` | MUST | archive path of the slide source (normally `deck.html`) |
 | `sourceSha256` | MUST | hash of the source set the runtime layer was built from (§3.4) |
@@ -244,17 +245,40 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 
 | id | Content |
 |---|---|
-| `deck-meta` | `{format:"egatari", version, contracts, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
+| `deck-meta` | `{format:"egatari", version, contracts, player, generator, docId, title, lang, portable, sourceSha256?, completion?, tracking, license?, copyright?, attribution?}` — schema [`schema/deck-meta.schema.json`](schema/deck-meta.schema.json). `tracking` lists the tracking adapters the runtime implements (e.g. `["scorm12","postmessage","local"]`), so that packagers and hosts need not read the archive |
 | `deck-narration` | `{slideKey: {stepKey: [{role, text, ttsParts?}]}}` — display text; `ttsParts` (OPTIONAL, the spoken pieces of §5.4 with readings applied) lets a player read a step aloud with the device voice (§5.6) as the audio would say it. Producers SHOULD include it; it is the same value that enters `inputHash` |
-| `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"} \| {type:"zoom", id, scale?}]}` — boundaries, only for steps with marks or zooms (zoom: §8.3A, draft) |
+| `deck-marks` | `{stepKey: [{type:"cue"} \| {type:"mark", id, effect, hold} \| {type:"clear"}]}` — boundaries, only for steps with marks |
 | `deck-audio` | `{stepKey: {src, dur, cues}}` — `src` is a `data:` URI or `egatari:<blobId>`; `dur` seconds; `cues` the time of every boundary in order (§5.3); `sync` (`auto`, `manual`, `none`; default `auto`); optional `mime` (the audio media type, so that players of play-only derivatives need not sniff), `startOffset` (§5.2) and `kind` (`tts`, `recorded` or `imported`, copied from the audio record so that play-only derivatives and folder builds keep it; producers SHOULD write it) — schema [`schema/deck-audio.schema.json`](schema/deck-audio.schema.json) |
 | `deck-timing` | `{stepKey: {dur?, hold?, lead?, pad_after?}}` — explicit overrides |
 | `deck-attachments` | attachments offered to learners, with `src` = `egatari:<blobId>` (§3.8, draft) |
 | `deck-extensions` | `{<extension name>: <data>}` — the extension data that players consume (§9A), copied from the index's `extensions` because play-only derivatives have no index; only extensions whose definition says so (e.g. [`live`](extensions/live.md)) |
 
-Every slide MUST carry a `data-key`: the slide's `id` attribute if present, otherwise its normalized heading text (legacy). Producers SHOULD give every slide an explicit, stable id (§8.1), so that editing a title does not break narration and audio associations.
+Every slide MUST carry an `id` (§8.1) and a `data-key` equal to it, so that editing a title never breaks narration and audio associations.
 
 A portable file SHOULD reference audio as `egatari:<blobId>` so that audio bytes are stored once, in the archive layer. A player resolves `egatari:<blobId>` by decoding that blob.
+
+### 4.1 The bundled player
+
+The runtime script in a file is **the bundled player**: one conforming player, carried in the file so that the lesson plays in any current browser without installing anything. It is not part of the format. `player` (in the index and in `deck-meta`) names it; `generator` names the software that wrote the file, which may be different.
+
+- The lesson MUST be playable without the bundled player: everything a player needs is in the compiled slides, the runtime JSON blocks (§4), the styles and fonts, and the components (§6). Nothing a player needs may exist only in the bundled script or in undocumented state; every player, the bundled one included, plays from these documented parts.
+- A different player MAY play the file by reading those parts and ignoring the bundled player's script.
+- An editor that rebuilds the runtime layer (tier B or C, §7.2) replaces the bundled player with its own. When the new player's `name` differs from the old one, the editor MUST tell the user before saving which player the saved file will carry.
+- Players and hosts SHOULD show the format version, the bundled player and the producer in their information panel, in that order (e.g. "Egatari 1.0 · Player X 1.2 · made with Y").
+
+### 4.2 Network policy in the file
+
+Every Egatari file MUST carry, as the first element of `<head>` after `<meta charset>`, a `<meta http-equiv="Content-Security-Policy">` that applies to all scripts in the file, the bundled player and components included. Its baseline is:
+
+```
+default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; frame-src 'self' file:; worker-src 'none'; object-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'
+```
+
+- The only permitted additions are the destinations declared by an extension whose definition allows network access (§9A), and only in the directive that extension names (e.g. `live` adds its endpoint to `connect-src`; `embed` adds its listed hosts to `frame-src`). Nothing else may be loosened.
+- The policy element MUST precede every `<script>`, `<style>` and `<link>`, every element with a URL-bearing attribute (`src`, `href`, `srcset`, `poster`, `data`) and every event-handler (`on*`) attribute; only `<!DOCTYPE>`, `<html>`, `<head>` and `<meta charset>` come before it, and none of them carries an event-handler attribute. The file MUST NOT carry a second policy.
+- Validators, editors and hosts MUST compare the policy with the baseline plus the declared extensions as parsed directives and source lists (directive order and spacing are not significant), and MUST NOT describe a file whose policy differs as conforming.
+- The file's policy binds the file's own scripts in a browser. It is not evidence that an editor may trust the file: the preview rules of §11 (a policy from a trusted prefix, never found by searching untrusted markup) are unchanged.
+- The policy does not restrict links the viewer follows by choice (§11), nor navigation started by script; hosts therefore still serve files with their own headers (§10.1), and players still apply §11.
 
 ## 5. Audio and timing
 
@@ -331,7 +355,8 @@ The runtime layer of either profile contains the component code needed to play o
 - `version` (this specification): minor versions only add optional members; editors MUST preserve unknown members through edits, at every level of the index — including inside `metadata`, audio records and component entries. A reader MUST refuse to edit a file with an unknown **major** version, and SHOULD still play it. It MAY extract the source using the rules of the highest major version it implements, if the index validates against them; otherwise it refuses extraction too.
 - `contracts.source`: the authoring syntax (§8). Editors migrate older source contracts with deterministic migrators, and refuse newer ones.
 - `contracts.runtime`: the runtime behavior. See §7.2.
-- `generator.version` is informative.
+- `player` names the bundled player (§4.1); `generator.version` is informative.
+- **Drafts before 1.0.** Files written to Working Drafts before the 1.0 file shape carry no `player` member and no file policy (§4.2). They keep playing with their own bundled player. Editors implementing 1.0 MAY refuse to edit them; when they do, they SHOULD say that the file was made with an earlier draft and point to an editor of that draft or to migration instructions. There is no reader requirement to accept the earlier shapes.
 
 ### 7.2 Edit tiers
 
@@ -362,18 +387,15 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 ## 8. Authoring source (contract version 1)
 
-> This section will incorporate, normatively, the contract of the reference implementation: [`docs/contract.md`](https://github.com/moiku/motion-academic-slides/blob/main/docs/contract.md) §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1` and `contracts.runtime = 1`.
+> This section will incorporate, normatively, the contract of the reference implementation: [`docs/contract.md`](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1` and `contracts.runtime = 1`.
 
 ### 8.1 Slide identifiers
 
 - A slide is `<section class="slide" id="…">`. Ids match `^[A-Za-z][A-Za-z0-9_-]{0,63}$` and are unique in the document — including against every other `id` in it, such as attention-mark targets.
 - Generated ids SHOULD be `s-` followed by 6 random base32 characters (`[a-z2-7]`). They MUST NOT be derived from the heading, so that renaming a heading never changes the id.
-- In `narration.md`, a slide is addressed as `## <heading> {#<id>}` (RECOMMENDED), `## <id>`, or `## <heading>` (legacy, only for slides without id). When an `{#id}` is present it wins over the heading text.
-- A deck MAY mix slides with and without ids; each slide is keyed independently.
-- **Key derivation in `deck.html`.** A slide's key is, in order of precedence: its `id`; a hand-written `data-key` attribute (legacy); the normalized text of its first heading element; `s<n>` with *n* the 1-based position of the slide (legacy). Producers SHOULD warn when a slide is keyed by a legacy rule.
-- **Key derivation in `narration.md`.** A heading line is `## ` followed by the heading text, optionally followed — with or without whitespace before it — by `{#<id>}` at the end of the line (`## {#<id>}` alone is allowed). If `{#…}` is present, its content is the key; if that content is not a valid id (§8.1 pattern), readers MUST report an error and still use the content as the key. Otherwise the key is the **normalized heading**: HTML tags removed, `&nbsp;` treated as a space, and **all** whitespace removed. (A heading consisting of an id normalizes to that id.)
-- **Normalized keys.** The same normalization applies to heading text in `deck.html`.
-- Two slides with the same key make the document invalid. Producers MUST NOT write such documents; a producer MAY refuse to proceed until the author resolves the collision (e.g. by adding an id by hand) rather than guess.
+- Every slide in a file MUST have an id, and its key is that id. In the archived `narration.md`, every slide is addressed as `## <heading> {#<id>}`; the heading text is for readers and never a key. Authoring tools MAY accept slides and headings without ids while a lesson is being written (e.g. from an AI), and MUST assign ids (to the slide and its narration heading together) before writing a file.
+- **Heading lines in `narration.md`.** A heading line is `## ` followed by the heading text and `{#<id>}` at the end of the line, with or without whitespace before it (`## {#<id>}` alone is allowed). Its content is the key; a heading line without `{#…}`, or whose content is not a valid id, is an error.
+- Two slides with the same key make the document invalid. Producers MUST NOT write such documents.
 - **Step markers.** Step numbers are written in canonical decimal (`0`, `1`, … without leading zeros), at most 999, or `concl`. Readers MUST NOT treat a non-canonical marker such as `[01]` or `[1000]` as a step and SHOULD report it; lines up to the next marker or heading then belong to no step.
 
 ### 8.2 Narration syntax (summary)
@@ -401,24 +423,6 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 ### 8.3 Readings
 
 `{display|reading}` stores the reading in kana (or the lesson language's ordinary spelling). Producers MAY export readings as SSML `<sub alias>`, W3C PLS lexicon entries, or HTML `<ruby>`.
-
-### 8.3A Camera (feature `camera-v1`, draft)
-
-> Draft. Motivation: let any figure — inline SVG, HTML, an equation, a component's output — be zoomed and panned in time with the narration, so that a lesson-specific figure (e.g. a code tree followed downwards) needs no component of its own (§6).
-
-A **camera** frames part of the stage. It is written in the narration like an attention mark and is determined by *(i, k, t)* alone:
-
-```markdown
-[2] {zoom:root}根から見ていきます。{zoom:n01|3}0 の次に 1 を読むと、ここに着きます。{zoom:reset}全体に戻ります。
-```
-
-- **Syntax.** `{zoom:ID}` frames the target with a margin; `{zoom:ID|s}` frames it at scale *s* (a decimal number between 1 and 8, the stage scale after the move); `{zoom:reset}` returns to the whole stage. Targets are found as for attention marks: an element of the slide with `id="ID"` or `data-mark="ID"`, including elements inside inline SVG and inside a component's rendered output.
-- **Timing.** Each `{zoom}` is a boundary, timed like a mark (at its cue plus lead when audio is synchronized; otherwise at the fallback interval). A move takes 0.6 s, eased; with `prefers-reduced-motion` it is instant.
-- **State.** At *(i, k, t)* the camera is the result of the step's zooms whose time has passed, starting from the whole stage at the start of every step unless the step's first boundary is a zoom at time 0. *(i, k, ∞)* is the final framing of the step. Jumping, going back and seeking render that framing directly; the camera never depends on call order.
-- **Rendering.** The camera transforms the whole stage (a CSS transform of the slide content in stage coordinates, 1280×720); text stays vector, so zoomed text is sharp. Attention marks are drawn in the transformed space. The camera does not change layout, the readable layer (§2.1) or printing: printed and `flow`/`pages` views show each step's final framing, or the whole stage when the author marks the step `data-print="whole"`.
-- **Checking.** Producers MUST report a target that does not exist on the rendered slide and SHOULD warn when the framed area would make body text smaller than 24 px or larger than the stage.
-- **Requirements.** A lesson that uses `{zoom}` lists `camera-v1` in `requires` (§3.5): an editor that does not implement it would drop the camera when rebuilding.
-- In `deck-marks`, a zoom is `{type:"zoom", id, scale?}` (`id` = `"reset"` for a reset).
 
 ### 8.4 Component contract (summary)
 
@@ -589,8 +593,8 @@ The constructs of Egatari Text 1 are exactly these. The node types are those of 
 | Inline math | `$…$` | `inlineMath` | TeX math in the subset KaTeX supports, as on slides |
 | Display math | `$$…$$` on its own lines, optionally followed on the closing line by `(label)`; or preceded by a `(label)=` line | `math` (`identifier`, `label`, `enumerated`) | numbered only when labelled |
 | Target | a line `(label)=` directly before a heading, display math, a figure or a table | `mystTarget` (`label`); attaches `identifier` to the next node | labels: §9C.3 |
-| Figure | colon fence `:::{figure} <path>` with options `:label: <label>` (`:name:` is accepted as an alias, which producers rewrite to `:label:`) and `:alt: <text>`; the first paragraph of the body is the caption, further paragraphs the legend | `container` (`kind: "figure"`, `identifier`) with `image`, `caption`, `legend` | `:alt:` is REQUIRED for a figure whose caption does not describe the image. Numbered when it has a name |
-| Table | GFM pipe table; optionally wrapped in `:::{table} <caption>` with `:label: <label>` (`:name:` as for figures) | `table`, `tableRow`, `tableCell` (`header`, `align`); `container` (`kind: "table"`) with `caption` | cells hold inline content only. Numbered when wrapped and named |
+| Figure | colon fence `:::{figure} <path>` with options `:label: <label>` and `:alt: <text>`; the first paragraph of the body is the caption, further paragraphs the legend | `container` (`kind: "figure"`, `identifier`) with `image`, `caption`, `legend` | `:alt:` is REQUIRED for a figure whose caption does not describe the image. Numbered when it has a name |
+| Table | GFM pipe table; optionally wrapped in `:::{table} <caption>` with `:label: <label>` | `table`, `tableRow`, `tableCell` (`header`, `align`); `container` (`kind: "table"`) with `caption` | cells hold inline content only. Numbered when wrapped and named |
 | Cross-reference | `[](#label)` (empty text); `[text](#label)` | `link` resolved to `crossReference` (`identifier`, `kind`) | with empty text, the producer fills in the number or title (§9C.6); other Markdown tools still see a link. With text, the text is shown as written |
 | Citation | `[@key]`, `[@key, <locator>]`, several separated by `;` (`[@a; @b, p. 3]`) | `citeGroup` (`kind: "parenthetical"`) with `cite` (`identifier`, `label`; the locator as `suffix`<!-- to verify against myst-parser -->) | keys: §9C.4 |
 | Step link | `` {step}`<slideKey>:<stepKey>` `` or `` {step}`<text> <<slideKey>:<stepKey>>` `` | `mystRole` (`name: "step"`) resolved to `egatariStep` (`slideKey`, `stepKey`, children = the text, if any) | the only Egatari role. Target: §9C.5 |
@@ -613,7 +617,7 @@ Everything else is **outside the subset**: raw HTML (blocks and inline), every o
 
 ### 9C.5 Links between the faces
 
-- **Article → talk.** A step link `` {step}`s-k3f9q2:3` `` points to step 3 of slide `s-k3f9q2`. The slide key MUST be a slide id (§8.1), not a key derived by a legacy rule, and the step MUST exist on that slide (`0`…`n` or `concl`). Both parts MUST be written (`:0` for the start of a slide). A step link without text is given generated text naming the slide (e.g. its title and the step).
+- **Article → talk.** A step link `` {step}`s-k3f9q2:3` `` points to step 3 of slide `s-k3f9q2`. The slide key is a slide id (§8.1), and the step MUST exist on that slide (`0`…`n` or `concl`). Both parts MUST be written (`:0` for the start of a slide). A step link without text is given generated text naming the slide (e.g. its title and the step).
 - **Talk → article.** A slide MAY name the article sections it presents, in order of relevance: `<section class="slide" data-article="sec-k2m4q7 sec-p9x3ab">` (a space-separated list of section ids).
 - **Linked pairs.** A slide and a section are **linked** when the slide's `data-article` names the section, or when the section's source contains a step link to that slide. Linked pairs are what staleness tracks (§9C.7).
 - **Section of a slide; slide of a section.** For synchronization (§1.2A), the section of a slide is the first id in its `data-article`, otherwise the first section (in article order) containing a step link to it; the slide of a section is the target of the first step link in the section, otherwise the first slide (in deck order) whose `data-article` names it. A slide or section without one leaves the other pane where it is.
@@ -743,6 +747,7 @@ A host MAY supply its own controls and restrict navigation (§1.2), and MAY rest
 
 - **Opening an Egatari file as a web page runs its scripts**, as with any HTML file. Being importable safely by an editor does not make arbitrary HTML trustworthy.
 - **Links that leave the lesson** are a phishing surface like links in PDF files, and a browser shows less context than a PDF reader. A player MUST open them outside the lesson (a new browsing context, `noopener`, `noreferrer`) and MUST let the viewer see the destination's host before leaving (a confirmation, or a preview on hover or long press). It MUST ask for confirmation, showing the full destination, when the link's visible text names a different host than the destination, when the destination is not `https:`, or when it would download a file; it SHOULD NOT ask again for the same host in the same viewing session. Links within the lesson (§9.1A) need no confirmation. Hosts that play lessons apply the same rule to links the lesson asks them to open. In detail: (a) players open only `https:`, `http:`, `mailto:` and `tel:` destinations and refuse every other scheme (`javascript:`, `data:`, `blob:`, `file:` as an absolute address, …); every destination other than plain `https:` is confirmed each time; (b) in a lesson opened from a file, a relative link to a neighbouring file is confirmed each time; (c) a destination carrying user information (`user:pass@`) or an internationalized host (`xn--` labels) is treated like a different host and confirmed each time; (d) "names a different host" means any host-like token in the link's visible text that differs from the destination's host, ignoring a leading `www.`, a subdomain counting as different (players MAY narrow host-like tokens with a public-suffix list to avoid needless confirmations); (e) "would download" means a `download` attribute (a player cannot know a server's response in advance); (f) only plain `https:` hosts are remembered for the session, in memory only; where the platform needs a fresh tap to open a new browsing context (e.g. a host acting on `openLink`, §9.4, on Safari), a single tap on an open control without the warning counts as not asking again; (g) where the player cannot open a new browsing context (an editor's sandboxed preview), it shows the destination without a way to open it; (h) links the player itself generates (e.g. joining a live room in the browser, saving an attachment) are not lesson content and need no confirmation, provided the player shows their destination host in its own interface and no lesson markup can mark a link as such; (i) a browser's own "open in new tab" cannot be intercepted, and the browser then shows the address itself.
+- **The file itself forbids network access** through its policy (§4.2), so that the guarantee holds for every script in it, not only for a well-behaved player.
 - **A conforming runtime makes no network requests.** The only way a lesson may connect is an optional extension (§9A) whose own definition allows it — today only [`live`](extensions/live.md), honoured only for the one endpoint and time window the author declared and visibly to the learner. Players, editors and hosts conform to Egatari without implementing any extension; a lesson without such an extension, or played by a player that ignores it, never connects.
 - An editor MUST read an imported file as bytes and extract the index and blobs with a parser that neither executes scripts nor loads resources. It MUST NOT navigate to, `srcdoc`, or insert the file into a document. It MUST validate the index hash, blob hashes, MIME types, and archive paths (§3.3) before constructing any workspace.
 - An editor MUST enforce limits before allocation and account for them in this order: file size before parsing; index size before parsing and member count while parsing, before allocating beyond the limit; each chunk's encoded length (at most 262 144 characters) before decoding; cumulative decoded bytes while decoding; and the **logical** extracted size — the sum over all paths of their blob sizes, since several paths may share one blob — before allocating per-path copies. Recommended limits an editor may refuse beyond: 100 MiB file, 128 MiB decoded archive, 3000 files, path depth 10, 4 MiB index, 32 MiB per file.
@@ -774,7 +779,6 @@ A host MAY supply its own controls and restrict navigation (§1.2), and MAY rest
 4. Tolerances for loudness and cue timing across browsers.
 5. File-picker availability on `file://`; download as the baseline save path.
 6. `signatures-v1`: what is signed (index and runtime layer), interaction with tier A edits and derived lessons, key identity (e.g. did:web, GitHub keys, Sigstore, C2PA certificates), timestamps and long-term verification.
-7A. `camera-v1` (§8.3A): margin and easing values, interaction with morphs (§8 of the contract) at step 0, and whether a host may disable camera moves for accessibility.
 7. `article-v1` (§9C): TeX/Word conversion profiles; footnotes, readings (ruby) and interactive figures (components) in Egatari Text 2; conformance fixtures for Egatari Text 1 (`fixtures/article-text/`); and an optional Python-in-browser feature for simulations. **Citations:** the article's syntax and bibliography are specified in §9C.4. Still open: citations on slides and in narration (same keys and `references.json`; in narration excluded from speech or given a reading). Presentation is the author's choice, recorded in `metadata.citations` = `{style, placement, list}`: `style` a CSL style id (default a common author–date style; a lesson imported from TeX SHOULD default to the CSL style matching its `\bibliographystyle`, or keep the references as the TeX build typeset them, from its `.bbl`, so that a journal's notation is preserved); `placement` `inline` (e.g. "(Vaswani et al., 2017)", default), `footer` (the works cited on a slide listed in that slide's footer, e.g. by short title) or `both`; `list` `end` (a reference list at the end, default), `section` (per article section) or `none`. To settle with `article-v1` (v0.7), together with DOIs.
 8. Scholarly use (submission and open review): (a) review comments as separate documents anchored into a lesson with the W3C Web Annotation Data Model (targets by `docId` + `sourceSha256`, selectors by step key, article section id or text quote), never written into the author's file; (b) revision history of one paper (same `docId`, successive `sourceSha256`) and per-step diffs; (c) an anonymized derivative for double-blind review (creators, copyright, attribution, signatures and personal metadata removed).
 9. Document fixtures (fixtures/README.md), including tier A edits that introduce new glyphs and SCORM lifecycle cases, must exist before freezing. TODO: an Egatari Text fixture for citation locators (`[@key, p. 3]`), checking that myst-parser puts the locator in the `cite` node's `suffix` (§9C.2).
