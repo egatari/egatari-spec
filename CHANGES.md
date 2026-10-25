@@ -9,6 +9,7 @@ Changes on `main` after the snapshot; they will be in the next Working Draft.
 **Viewer input and stage directions**
 - §8.2: stage directions `{note:…}` — shown only in the presenter's view; not spoken, not in captions, video or print; outside `ttsParts` and `inputHash`.
 - §8.4: viewer input — components MAY take values from the presenter (on the stage or from the presenter's view) or a learner; viewer state outside *(i, k, t)* that persists while the viewer stays on the same slide and is reset on entering the slide from elsewhere or by a jump (owner, 2026-10-25: a count must survive into the step that reveals the answer); no input in video mode; keys inside an input field are the field's; no digit keys for component input; poll counts from `ctx.live` under the `live` rules.
+- §8.4: `ctx.extend(seconds)` — a component with viewer input (a timer) MAY extend or shorten the live running time of the current step; durations, the timeline, video and print keep the author's values.
 - extensions/live.md §2.5: a component bound to a poll MAY show its counts on the stage after the teacher reveals them, counts only, nothing below 3 answers, never in video or print.
 
 **Article layer (`article-v1`, draft, §9C)**
