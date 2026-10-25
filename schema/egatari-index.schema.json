@@ -12,7 +12,6 @@
     "player",
     "generator",
     "docId",
-    "entry",
     "sourceSha256",
     "files",
     "blobs",
@@ -55,15 +54,10 @@
     "contracts": {
       "type": "object",
       "required": [
-        "source",
-        "runtime"
+        "source"
       ],
       "properties": {
         "source": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "runtime": {
           "type": "integer",
           "minimum": 1
         }
@@ -284,6 +278,23 @@
         }
       },
       "description": "The bundled player (spec §4.1)."
+    },
+    "article": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "references": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "The article (spec §9C.1): archive path of article.md and of its CSL-JSON references."
     }
   },
   "$defs": {
@@ -404,5 +415,17 @@
         }
       ]
     }
-  }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "entry"
+      ]
+    },
+    {
+      "required": [
+        "article"
+      ]
+    }
+  ]
 }

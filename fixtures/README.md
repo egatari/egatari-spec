@@ -33,6 +33,8 @@ Each fixture is a small `.ega.html` file and a `expect.json` describing what a c
 | `policy-loosened` | an extra `connect-src` host that no declared extension allows | not conforming; validator reports the extra source |
 | `policy-reordered` | the baseline policy with directives in another order | conforming (parsed comparison) |
 | `pre-1.0-draft` | a file from an earlier Working Draft | plays with its bundled player; a 1.0 editor MAY refuse, saying it is an earlier draft and pointing to an earlier editor or migration instructions |
+| `book-only` | an article and no slides | plays the read face; no steps, narration or audio; editor edits the article |
+| `tier-a-keeps-player` | a file whose `player` is not the editor's | a narration edit keeps the bundled player, `player` and `generator` byte for byte |
 | `source-mismatch` | `deck-meta.sourceSha256` ≠ index | editor warns and disallows tier A |
 | `oversize` | index > 4 MiB | editor refuses before allocation |
 | `mislabelled-core-script` | `profile: core` but an archived file has `<script>` | editor treats as Extended (asks before running code) or rejects |
