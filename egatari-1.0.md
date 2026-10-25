@@ -126,11 +126,11 @@ Structure: one `<section id="egatari-readable">` containing, per slide, `<articl
 | `version` | MUST | `{major, minor}` of this specification the index follows (1.0 → `{"major":1,"minor":0}`) |
 | `profile` | MUST | `"core"` or `"extended"` (§6) |
 | `requires` | MUST | feature identifiers a reader must understand to edit (§3.5). May be empty |
-| `contracts` | MUST | `{source, runtime}` integer versions of the authoring syntax and of the runtime behavior (§7) |
+| `contracts` | MUST | `{source}` integer version of the authoring syntax (§7.1, §8) |
 | `player` | MUST | `{name, version}` of the bundled player (§4.1) |
 | `generator` | MUST | `{name, version}` of the producing software (informative; may differ from the player) |
 | `docId` | MUST | a UUID identifying the lesson across edits; editors MUST preserve it |
-| `entry` | MUST | archive path of the slide source (normally `deck.html`) |
+| `entry` | see below | archive path of the slide source (normally `deck.html`). A lesson has slides, an article (§9C), or both: at least one of `entry` and `article` MUST be present |
 | `sourceSha256` | MUST | hash of the source set the runtime layer was built from (§3.4) |
 | `files` | MUST | archive path → blob id |
 | `blobs` | MUST | blob id → `{mime, bytes, sha256, chunks}` |
@@ -255,6 +255,8 @@ The runtime layer contains the compiled slides (`<section class="slide" data-key
 
 Every slide MUST carry an `id` (§8.1) and a `data-key` equal to it, so that editing a title never breaks narration and audio associations.
 
+**Lessons without slides.** A lesson MAY consist of an article only (§9C; no `entry`). It then has no slides and no steps; `deck-narration`, `deck-audio`, `deck-marks` and `deck-timing` are absent; `#egatari-readable` holds only `<article id="egatari-article">`; `deck-meta.title` and `lang` come from the article's front matter; its primary face is `read` and printing uses `pages`. In 1.0 narration and audio are bound to steps, so an article-only lesson has neither.
+
 A portable file SHOULD reference audio as `egatari:<blobId>` so that audio bytes are stored once, in the archive layer. A player resolves `egatari:<blobId>` by decoding that blob.
 
 ### 4.1 The bundled player
@@ -263,7 +265,7 @@ The runtime script in a file is **the bundled player**: one conforming player, c
 
 - The lesson MUST be playable without the bundled player: everything a player needs is in the compiled slides, the runtime JSON blocks (§4), the styles and fonts, and the components (§6). Nothing a player needs may exist only in the bundled script or in undocumented state; every player, the bundled one included, plays from these documented parts.
 - A different player MAY play the file by reading those parts and ignoring the bundled player's script.
-- An editor that rebuilds the runtime layer (tier B or C, §7.2) replaces the bundled player with its own. When the new player's `name` differs from the old one, the editor MUST tell the user before saving which player the saved file will carry.
+- Tier A edits (§7.2) change neither `player` nor `generator`: a file keeps its bundled player and its producer through narration, audio and timing edits. An editor that rebuilds the runtime layer (tier B or C) replaces the bundled player with its own and writes its own `player`, `generator` and `deck-meta.tracking` (which describes the bundled player's adapters). When the new player's `name` differs from the old one, the editor MUST tell the user before saving which player the saved file will carry.
 - Players and hosts SHOULD show the format version, the bundled player and the producer in their information panel, in that order (e.g. "Egatari 1.0 · Player X 1.2 · made with Y").
 
 ### 4.2 Network policy in the file
@@ -354,7 +356,6 @@ The runtime layer of either profile contains the component code needed to play o
 
 - `version` (this specification): minor versions only add optional members; editors MUST preserve unknown members through edits, at every level of the index — including inside `metadata`, audio records and component entries. A reader MUST refuse to edit a file with an unknown **major** version, and SHOULD still play it. It MAY extract the source using the rules of the highest major version it implements, if the index validates against them; otherwise it refuses extraction too.
 - `contracts.source`: the authoring syntax (§8). Editors migrate older source contracts with deterministic migrators, and refuse newer ones.
-- `contracts.runtime`: the runtime behavior. See §7.2.
 - `player` names the bundled player (§4.1); `generator.version` is informative.
 - **Drafts before 1.0.** Files written to Working Drafts before the 1.0 file shape carry no `player` member and no file policy (§4.2). They keep playing with their own bundled player. Editors implementing 1.0 MAY refuse to edit them; when they do, they SHOULD say that the file was made with an earlier draft and point to an editor of that draft or to migration instructions. There is no reader requirement to accept the earlier shapes.
 
@@ -365,8 +366,8 @@ An editor MUST NOT execute a builder or runtime supplied by the document in its 
 | Tier | Change | Required behavior |
 |---|---|---|
 | **A** (default) | narration text, audio, timing overrides (`timeline.json` / `deck-timing`; durations themselves are computed, §5.5) only | Do not rebuild. Only these regions may change: the affected entries of the runtime JSON blocks; the affected entries of the readable layer (§2.1); `sourceSha256` (index and `deck-meta`) and the index hash; archive entries, audio records, attachment records (`index.attachments` and `egatari.json`, §3.8), article link records (`index.articleLinks` and `egatari.json`, §9C.7) and blobs; and **append-only font supplements** — new `<style id="egatari-font-supplement-<n>">` elements carrying glyphs for characters not covered by the embedded fonts. When saving under a new `docId` (§7.3), `deck-meta.docId`, the index `docId`, `metadata.derivedFrom` and `egatari.json` are also tier A regions. Every byte outside these regions, including existing font data, MUST stay identical. |
-| **B** | slide content (text, math, figures) | Rebuild with the editor's runtime of the same `contracts.runtime`, using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
-| **C** | `contracts.runtime` differs from the editor's | Only on explicit request ("upgrade"), with the same comparison as B. Without upgrade, only tier A edits are allowed. |
+| **B** | slide content (text, math, figures) | Rebuild with the editor's player (§4.1), using the archived (pinned) components and themes. Before saving, compare the final state of every slide before and after; show the user every slide that changed besides the edited ones. |
+| **C** | components or themes in versions other than the pinned ones | Only on explicit request ("update"), with the same comparison as B. |
 
 An editor that does not implement `article-v1` MUST NOT perform tier B or C edits on a document whose index has an `article` member, since a rebuild would drop the article (§9C); it MAY perform tier A edits. Changing the article is a tier B edit that rebuilds only the article (§9C.1).
 
@@ -387,7 +388,7 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 ## 8. Authoring source (contract version 1)
 
-> This section will incorporate, normatively, the contract of the reference implementation: [`docs/contract.md`](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1` and `contracts.runtime = 1`.
+> This section will incorporate, normatively, the contract of the reference implementation: [`docs/contract.md`](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1`.
 
 ### 8.1 Slide identifiers
 

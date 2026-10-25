@@ -10,8 +10,7 @@
   "audio-v1"
  ],
  "contracts": {
-  "source": 1,
-  "runtime": 1
+  "source": 1
  },
  "player": {"name": "egatari-player", "version": "1.0.0"},
  "generator": {
