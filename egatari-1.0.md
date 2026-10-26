@@ -488,7 +488,7 @@ Boundaries are listed in order across the turns of a step (`bounds`); they corre
 | `reset` | `true` once, on step entry, when the viewer had changed the component by hand (interaction state, above) |
 | `entered` | `true` on the first render after the viewer entered this slide from another slide or by a jump (the moment viewer input is reset, Viewer input below); `false` otherwise |
 | `lang` | the lesson's language (BCP 47, `deck-meta.lang`); always present |
-| `slides` | the lesson's slides in order, `[{key, title, steps}]`, read-only; `steps` is the slide's largest numbered step key (0 when it has none; `concl` is not counted) |
+| `slides` | the lesson's slides in order, `[{key, title, steps, concl}]`, read-only; `steps` is the slide's largest numbered step key (0 when it has none; `concl` is not counted); `concl` is `true` when the slide has a conclusion step |
 | `go(slideKey, stepKey?)` | asks the player to move there on the viewer's action (e.g. a table of contents); handled as a link to that slide (§9.1A), which a host may veto (Player P8) |
 | `report(code, message)` | reports that the component cannot draw or that its data does not fit its shape; players show the final-state image or text equivalent and make the report available to quality checks |
 | `visited(slideKey)` | whether the viewer has shown that slide in this viewing (`true`/`false`); viewer state, never written into the file |
