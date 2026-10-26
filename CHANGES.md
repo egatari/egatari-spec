@@ -6,6 +6,8 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- **Parts (components 2.0).** §6.1 parts and their dependencies: element and library parts, per-part versions, a producer-written registry `egatariParts.define({name, version, requires, element}, factory)` in dependency order, no imports or player globals, notices directly before third-party data, `license` and `requires` in `index.components`. §6.2 rendering at build time: `build.fields` with the renderers `katex` and `abcjs`, build-assigned `data-*` attributes, `build.subset` and `glyphs`, rendered output read through an element whitelist, renderer recorded. §8.4: context `lang`, `slides`, `go()`, `report()`; optional `layout(ctx)`. Appendix A 1A is specified.
+
 - §8.0 line breaking: Japanese and Chinese text follows W3C JLREQ (行頭禁則・行末禁則・分離禁止), at least CSS `line-break: strict`, on slides, the text pane, captions and the presenter's script; hanging punctuation allowed.
 - §9C.2 article front matter `writing-mode` (`horizontal-tb` | `vertical-rl`); vertical-rl pages progress right to left, as EPUB `page-progression-direction="rtl"`. Player P2: text size in at least three steps, reflowing, per viewer, following EPUB reading-system user settings; vertical writing turns pages leftward (left arrow and left taps go forward).
 
