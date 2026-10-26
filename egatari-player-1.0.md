@@ -19,7 +19,7 @@ The key words MUST, MUST NOT, SHOULD, SHOULD NOT and MAY are to be interpreted a
 | `learn` | the learner: start, pause, previous/next, jump, playback rate | advances along the timeline (format §5.5) with narration audio | self-study, LMS (default in LMS bindings and hosted players) |
 | `video` | nobody (no controls) | advances along the timeline | recording and video export |
 
-**Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step. Content marked `data-preview="none"` (format §8.4), and components that declare `preview: "none"` in their release manifest, keep their later steps hidden under preview: they are answers the audience is meant to work out first. Players draw faint content at the opacity given by the theme's `--preview-opacity` (default 0.45).
+**Preview of later steps** is an option of every interactive mode, not a mode: steps not yet reached are either hidden (default) or shown faintly. The current step renders and animates as usual; only content of later steps is shown faintly, and components keep rendering their current step. Content marked `data-preview="none"` (format §8.4), and components that declare `preview: "none"` (format §8.4), keep their later steps hidden under preview: they are answers the audience is meant to work out first. Players draw faint content at the opacity given by the theme's `--preview-opacity` (default 0.45).
 
 In `learn` mode, a player MUST offer playback rates of at least 0.75, 1, 1.25, 1.5 and 2, keeping the pitch of speech; the timeline clock advances at the same rate, so the screen stays a function of *(i, k, t)*. Presenter-only tools (presenter view, laser) SHOULD be hidden.
 
@@ -57,7 +57,7 @@ The usual layouts are named combinations:
 
 ## P3. Playback
 
-A conforming player MUST: render any *(i, k, t)* deterministically; implement the modes that P9 requires and the preview option (P1); play the formats in format §5.1; start audio only after a user gesture (a visible start/resume control); pause when the page is hidden; honor `prefers-reduced-motion` by rendering final states, except for a component that declares elapsed time as its content (a clock or countdown, `clock` in the component release manifest, format §6), which still receives the real *t* and drops only decorative motion; and work from `file://` with no network access.
+A conforming player MUST: render any *(i, k, t)* deterministically; implement the modes that P9 requires and the preview option (P1); play the formats in format §5.1; start audio only after a user gesture (a visible start/resume control); pause when the page is hidden; honor `prefers-reduced-motion` by rendering final states, except for a component that declares elapsed time as its content (a clock or countdown, `clock` declared on the component, format §8.4), which still receives the real *t* and drops only decorative motion; and work from `file://` with no network access.
 
 **Information panel.** Players SHOULD show, in their information panel, the format version the file follows, the bundled player and the producer, in that order (format §4.1).
 
