@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §8.0 line breaking: Japanese and Chinese text follows W3C JLREQ (行頭禁則・行末禁則・分離禁止), at least CSS `line-break: strict`, on slides, the text pane, captions and the presenter's script; hanging punctuation allowed.
 - §9C.2 article front matter `writing-mode` (`horizontal-tb` | `vertical-rl`); vertical-rl pages progress right to left, as EPUB `page-progression-direction="rtl"`. Player P2: text size in at least three steps, reflowing, per viewer, following EPUB reading-system user settings; vertical writing turns pages leftward (left arrow and left taps go forward).
 
 ## WD 2026-10-26
