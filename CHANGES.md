@@ -6,6 +6,8 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §9C.2 article front matter `writing-mode` (`horizontal-tb` | `vertical-rl`); vertical-rl pages progress right to left, as EPUB `page-progression-direction="rtl"`. Player P2: text size in at least three steps, reflowing, per viewer, following EPUB reading-system user settings; vertical writing turns pages leftward (left arrow and left taps go forward).
+
 ## WD 2026-10-26
 
 Snapshot for Egatari Studio 0.6.0 (the first release in the 1.0 file shape). It includes everything below, the article layer (§9C) among it, and the first draft of [Egatari Player 1.0](egatari-player-1.0.md), now a separate document. Files written to earlier drafts are not compatible (§7.1); they keep playing with their own player.
