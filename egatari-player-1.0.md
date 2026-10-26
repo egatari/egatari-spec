@@ -1,6 +1,6 @@
 # Egatari Player 1.0 — Editor's Draft
 
-**Status:** Editor's Draft, split from the Egatari format specification on 2026-10-25. Not stable. It is versioned separately from the format: a player states which Egatari format versions it plays and which version of this document it follows.
+**Status:** Editor's Draft, split from the Egatari format specification on 2026-10-25. Not stable. Dated snapshots follow the format's ([CHANGES.md](CHANGES.md); latest: WD 2026-10-26). It is versioned separately from the format: a player states which Egatari format versions it plays and which version of this document it follows.
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Companion:** [Egatari 1.0](egatari-1.0.md), the format (referred to as *format*). References written §n are to the format; references written Pn are to this document.
 **License of this document:** [CC BY 4.0](LICENSE.md).

@@ -2,9 +2,13 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-10-25
+## Since WD 2026-10-26
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-10-26
+
+Snapshot for Egatari Studio 0.6.0 (the first release in the 1.0 file shape). It includes everything below, the article layer (§9C) among it, and the first draft of [Egatari Player 1.0](egatari-player-1.0.md), now a separate document. Files written to earlier drafts are not compatible (§7.1); they keep playing with their own player.
 
 **The 1.0 file shape (owner, 2026-10-25: the format describes the lesson; players are separate and anyone may write one)**
 - §4.1 the bundled player: the runtime script is one conforming player carried in the file, not part of the format; `player` `{name, version}` is REQUIRED in the index and `deck-meta`; `generator` names the producer only; the lesson MUST be playable without the bundled player; an editor that rebuilds tells the user when the player changes; information panels show format, player, producer in that order.
