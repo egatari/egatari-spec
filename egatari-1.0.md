@@ -92,8 +92,8 @@ Structure: one `<section id="egatari-readable">` containing, per slide, `<articl
 | `profile` | MUST | `"core"` or `"extended"` (§6) |
 | `requires` | MUST | feature identifiers a reader must understand to edit (§3.5). May be empty |
 | `contracts` | MUST | `{source}` integer version of the authoring syntax (§7.1, §8) |
-| `player` | MUST | `{name, version}` of the bundled player (§4.1) |
-| `generator` | MUST | `{name, version}` of the producing software (informative; may differ from the player) |
+| `player` | MUST | `{name, version, title?}` of the bundled player (§4.1); `title` is the name to show people (e.g. "Egatari Player"), `name` a stable identifier |
+| `generator` | MUST | `{name, version, title?}` of the producing software (informative; may differ from the player); `title` as for `player` |
 | `docId` | MUST | a UUID identifying the lesson across edits; editors MUST preserve it |
 | `entry` | see below | archive path of the slide source (normally `deck.html`). A lesson has slides, an article (§9C), or both: at least one of `entry` and `article` MUST be present |
 | `sourceSha256` | MUST | hash of the source set the runtime layer was built from (§3.4) |
@@ -231,7 +231,7 @@ The runtime script in a file is **the bundled player**: one conforming player, c
 - The lesson MUST be playable without the bundled player, given a host that provides the component interface of §8.4: everything a player needs is in the compiled slides, the runtime JSON blocks (§4), the styles and fonts, and the components (§6). **Draft limitation:** today's components register and draw through globals of the bundled player (Appendix A item 1A); until that interface is defined, this holds for lessons without components. Nothing a player needs may exist only in the bundled script or in undocumented state; every player, the bundled one included, plays from these documented parts.
 - A different player MAY play the file by reading those parts and ignoring the bundled player's script.
 - Tier A edits (§7.2) change neither `player` nor `generator`: a file keeps its bundled player and its producer through narration, audio and timing edits. An editor that rebuilds the runtime layer (tier B or C) replaces the bundled player with its own and writes its own `player`, `generator` and `deck-meta.tracking` (which describes the bundled player's adapters). When the new player's `name` differs from the old one, the editor MUST tell the user before saving which player the saved file will carry.
-- Players and hosts SHOULD show the format version, the bundled player and the producer in their information panel, in that order (e.g. "Egatari 1.0 · Player X 1.2 · made with Y").
+- Players and hosts SHOULD show the format version, the bundled player and the producer in their information panel, in that order (e.g. "Egatari 1.0 · Player X 1.2 · made with Y"), using `title` when present and `name` otherwise.
 
 ### 4.2 Network policy in the file
 
@@ -400,7 +400,7 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 |---|---|
 | `mode` | `"talk"`, `"learn"` or `"video"` (Player P1) |
 | `preview` | `true` when later steps are shown faintly (Player P1) |
-| `slide` | the slide's index in the lesson |
+| `slide` | the slide's key (§8.1), a string. A component finds its own slide element in the document if it needs it; the player passes no element |
 | `instant` | `true` when the player renders final states without motion (jumping, printing, reduced motion) |
 | `reset` | `true` once, on step entry, when the viewer had changed the component by hand (interaction state, above) |
 | `extend(seconds)` | viewer input only: extend or shorten the live running time of the current step; returns the total extension (Viewer input, below) |
@@ -408,7 +408,7 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 `ctx.deck`, which the bundled player of current drafts also passes, is that player's internal object and not part of the interface.
 
-**Answers under preview.** When a player previews later steps faintly (Player P1), a component SHOULD draw the content of its later steps faintly, at `--preview-opacity` (below), and keep its controls inert for them, unless its later steps reveal an answer the audience should work out first (a prediction's answer, the digits of a computation); such a component declares `preview: "none"` in its release manifest and shows nothing ahead. Authors MAY mark any element of a slide `data-preview="none"` for the same effect (e.g. the answer of an exercise).
+**Answers under preview.** When a player previews later steps faintly (Player P1), a component SHOULD draw the content of its later steps faintly, at `--preview-opacity` (below), and keep its controls inert for them, unless its later steps reveal an answer the audience should work out first (a prediction's answer, the digits of a computation); such a component declares `preview: "none"` in its release manifest and shows nothing ahead. Authors MAY mark any element of a slide `data-preview="none"` for the same effect (e.g. the answer of an exercise). Such an element, and a component that declares `preview: "none"`, stays hidden for its later steps even when an ancestor is shown faintly.
 
 **Theme colours.** Colour carries meaning in Egatari: the roles below say what a colour means, and themes choose only what each role looks like. Components MUST use colours only through these CSS custom properties; slides SHOULD (an author MAY use other colours, and producers then report it, but the document stays valid). Every theme keeps their meaning: `--fg` body text; `--bg` the background; `--emph` conclusions and problems; `--term` terms and side notes; `--accent2` a second accent (contrasts, objections); `--muted` known results and secondary text; `--line` decoration only, never the only carrier of information. Also in the vocabulary: `--term-tint` and `--emph-tint`, light fills behind `--term` and `--emph` content; `--series-1` … `--series-4`, colours for data series in order (a theme MAY map them to the roles above); and the font families `--font-sans` (body), `--font-mincho` (Mincho, e.g. classical Chinese) and `--font-cap` (captions; falls back to `--font-sans`). One non-colour property belongs to the same vocabulary: `--preview-opacity`, the opacity of later steps shown faintly (Player P1; default 0.45 when the theme does not set it); components read it rather than using a number of their own. Themes MAY add properties; components MUST NOT depend on them.
 
