@@ -353,7 +353,51 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 ## 8. Authoring source (contract version 1)
 
-> This section will incorporate, normatively, the contract of the reference implementation: [`docs/contract.md`](https://github.com/egatari/egatari-studio/blob/main/docs/contract.md) §1–§5, §7, §8 (position and time, modes, components, narration syntax, timeline, attention marks, morphs). Until then, that document is normative for `contracts.source = 1`.
+The authoring source is `deck.html` (the slides), `narration.md` (the script) and, when present, `article.md` (§9C), with the files they refer to. This section defines the source syntax of `contracts.source = 1`: what a producer turns into the runtime layer and what an editor must understand to rebuild a lesson (tier B, §7.2). The source is ordinary HTML and Markdown with a small vocabulary; everything an author writes is in this section. Timing constants are given in seconds; together with §5.5 they make every player and every video export time a lesson the same way.
+
+### 8.0 Slides (`deck.html`)
+
+**Structure.** `deck.html` is an HTML document whose slides are `<section class="slide">` elements, in lesson order, inside the element with `id="stage"`. A slide is a stage of 1280×720 CSS pixels. Within a slide:
+
+- the heading is the first `<h2>` (`<h1>` on cover and divider slides); producers write its plain text into `data-title` on the heading, and players use `data-title` (else the heading's text) for slide lists, captions of navigation and the information panel;
+- the body is `<div class="body">`;
+- the conclusion line is `<div class="concl"><span>…</span></div>`: one sentence that states what the slide shows; it is always the slide's last step (step key `concl`).
+
+**Kinds of slide** (classes on the section; presentation is the theme's, the meaning is this list):
+
+| Class | Meaning |
+|---|---|
+| `cover` | the lesson's cover: title (`<h1>`), and optionally `.venue` (course or venue) and `.au` (authors) |
+| `sec` | a chapter divider: starts a chapter named by its heading; players MAY list chapters |
+| `sec appendix` | an appendix divider: the following slides are the appendix (players number them as appendix) |
+| `static` | no steps: everything is visible at step 0 and the conclusion line is not a separate step |
+| `nostep` | list items are not turned into steps automatically (below) |
+| `noconcl` | the slide has no conclusion line, so the body may use its space |
+| `layout-tate` | vertical writing for the whole slide (heading, body and conclusion in vertical columns) |
+
+`data-chapter="<name>"` on a slide starts a chapter like a `sec` slide without being a divider.
+
+**Steps.** Every element of a slide belongs to one step:
+
+- an element with `data-step="k"` (canonical decimal, 1 ≤ k ≤ 999) and its descendants belong to step *k*, unless a descendant carries its own `data-step`;
+- otherwise an element belongs to step 0 (visible on entering the slide);
+- **automatic list steps:** on a slide that is neither `static` nor `nostep` and has no `data-step` and no `data-from` anywhere, each `li` child of a `ul` or `ol` that is a direct child of `.body` becomes steps 1, 2, … in document order;
+- the conclusion line is step *max* + 1, where *max* is the largest step of the slide (including components' ranges, §8.4), and its step key is `concl`;
+- a slide's steps are 0 … *max* and `concl`.
+
+At step *k* a player shows the elements of steps ≤ *k* (with the preview option, later steps faintly, Player P1). An element of step *k* appears during step *k* over `fade` = 0.45 s, starting `data-at` seconds (a non-negative number, default 0) after the step begins.
+
+**Drawn strokes.** An SVG element with class `draw` (and `pathLength="1"`) is drawn in along its path rather than faded: it belongs to the step of its own `data-step`, else of its closest ancestor with `data-step`, else 0; drawing starts `drawDelay` = 0.1 s plus its `data-at` after the step begins and lasts `draw` = 0.7 s (`drawslow` also present: 1.4 s).
+
+**Motion length.** `anim` of step *k* (§5.5) is the latest end among: appearing elements of step *k* (`data-at` + `fade`), drawn strokes of step *k* (`data-at` + `drawDelay` + duration), components (`duration(k)` in real time, §8.4), and at step 0 the slide transition (`slide` = 0.35 s) or a morph (0.9 s, §8.6).
+
+**Text and colour.** Body classes for meaning: `term` (terms, questions), `emph` (conclusions, problems, goals), `muted` (known results), `b` (bold); colours only through the theme vocabulary (§8.4). Other layout classes (`sub`, `big`, `note`, `thm`, `box`, `cols`, `fig`, `figcap`, `cite`, `tate`, `mincho`, `tcy`) are presentation, defined by themes; players need not know them.
+
+**Math.** `\( … \)` and `\[ … \]` are inline and display math in TeX syntax, rendered by the producer into the runtime layer (HTML with MathML); players never render TeX. Allowed beyond standard TeX math: `\hlE{…}`, `\hlT{…}`, `\hlM{…}` (colour a part as `emph`, `term`, `muted`), `\htmlId{ID}{…}` and `\htmlData{mark=ID}{…}` (emphasis targets, §8.5), `\morph{ID}{…}` (= `\htmlData{id=ID}{…}`, morph pairing, §8.6) and `\htmlClass{name}{…}`; no other `\html…` command. Macros come from `macros.tex` (`\newcommand`, `\def`) and `<script type="text/x-tex-macros">` in `deck.html`. Math is not recognised inside `script`, `style`, `svg`, `textarea` or comments.
+
+**References in the source.** The source may refer to other files of the archive: `{{FIG:<name>}}` is replaced by `figs/<name>.svg` inlined (its ids prefixed with `<name>-`); `{{JSON:<file>}}` by the minified JSON of `data/<file>` (normally inside a component's `<script type="application/json">`); `/*INCLUDE:<file>*/` by the file's text; and relative `src`, `href`, `srcset`, `poster` and CSS `url()` references are embedded as `data:` URIs. Every reference MUST resolve inside the archive; references that leave it are refused. In the runtime layer no reference remains (§4.2).
+
+**Not part of the source vocabulary.** `data-key` is written by producers (§4), never by authors. Attributes and classes not listed in §8 have no meaning to players.
 
 ### 8.1 Slide identifiers
 
@@ -364,7 +408,7 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 - Two slides with the same key make the document invalid. Producers MUST NOT write such documents.
 - **Step markers.** Step numbers are written in canonical decimal (`0`, `1`, … without leading zeros), at most 999, or `concl`. Readers MUST NOT treat a non-canonical marker such as `[01]` or `[1000]` as a step and SHOULD report it; lines up to the next marker or heading then belong to no step.
 
-### 8.2 Narration syntax (summary)
+### 8.2 Narration syntax (`narration.md`)
 
 ```markdown
 ## <heading> {#<id>}
@@ -373,6 +417,15 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
     Novice: question…
 [concl] text…
 ```
+
+**Blocks and turns.** After a slide's heading line (§8.1), each step is a block that starts with a marker `[k]` or `[concl]` at the beginning of a line and runs to the next marker or heading. A block holds one or more **turns**; a turn starts with `Expert:` or `Novice:` (the speaker, `role` `expert` or `novice`) or, without a speaker, is an `expert` turn (single-speaker lessons). Following lines without a speaker or marker continue the turn. Within a turn:
+
+- `{cue}` is a boundary that synchronises the component's `cues(k)` (§5.3, §8.4);
+- `{mark:…}` is an emphasis mark (§8.5) and also a boundary;
+- `{display|reading}` is a reading (§8.3);
+- `{note:…}` is a stage direction (below).
+
+Boundaries are listed in order across the turns of a step (`bounds`); they correspond one to one with the audio's cue times (§5.3). The display text of a turn is its text with boundaries, notes and the reading part of readings removed; `ttsParts` are the spoken pieces between boundaries with readings applied (§5.4). Every step of a slide, from 0 to `concl`, SHOULD have a block.
 
 **Stage directions.** `{note:<text>}` inside a turn is a direction for the presenter (e.g. `{note:ask for a show of hands}`), not narration. `<text>` runs to the first `}` and MUST NOT contain `{` or `}`. A note is removed from the display text, captions, `ttsParts` and `inputHash` (§5.4), so it is never spoken and editing it never makes audio stale; it is not a boundary. Players SHOULD show notes in the presenter's view at their place in the turn, and MUST NOT show them on the stage, in captions, in video or in print. Producers keep notes in the archive layer only (the runtime narration may omit them). Parentheses in narration are ordinary text and are spoken.
 
@@ -390,7 +443,7 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 
 `{display|reading}` stores the reading in kana (or the lesson language's ordinary spelling). Producers MAY export readings as SSML `<sub alias>`, W3C PLS lexicon entries, or HTML `<ruby>`.
 
-### 8.4 Component contract (summary)
+### 8.4 Component contract
 
 `steps`, `props`, `mount(ctx)`, `duration(k)`, `cues(k)`, `render(k, t, ctx)`; `render` gives the same output for the same *(k, t)*; colors only through theme CSS variables. The runtime calls `mount` only after the stage has been laid out (the component has its final, non-zero size) and the web fonts in use have loaded, so that a lesson started in a hidden or not yet laid-out context (a hidden frame, a background tab, before printing) renders the same as one started visibly; seeks requested before that are applied after mounting. A component MAY let the viewer interact with it (rotate a model, drag a value) during a step; that state is not part of *(i, k, t)*: entering any step (including the same one again) restores the rendering `render(k, t)` gives, and video, print and the presenter's view always show that rendering.
 
@@ -422,6 +475,26 @@ Egatari cannot prevent anyone from modifying a file (§11). It carries the right
 **Component sounds.** A component MAY declare sound events for step *k* through `events(k)` → `[{t, sound, …}]` (seconds within the step). It never produces audio itself. The player synthesizes the sounds with the Web Audio API from a small fixed set (no files, no network): `bell` with `count` 1–3 (rings about 0.6 s apart), `chime`, and `note` with `pitch` (a MIDI number or a name such as `"C4"`), `dur` (seconds) and `vel` (0–1); several `note` events at the same *t* form a chord. A `note` MAY last beyond the end of its step: on a forward crossing into the next step in live playback and in video it keeps sounding for its `dur`; going back, jumping or seeking stops it. Tempo is the component's own: it converts note values to seconds and reports durations through `duration(k)`. Unknown sounds are ignored. During playback in `talk` and `learn` the player sounds an event only when *t* crosses its time moving forward, never when going back, jumping, seeking, in the presenter's view or in print, and it offers one setting that mutes all component sounds. Video export renders the same events into the audio track at their times, so the output stays a function of *(i, k, t)*. When the viewer extends the step (`ctx.extend`), the live player re-times the step's events by the extension; video uses the author's times. Sounds MUST NOT be the only carrier of information (a timer that rings also shows the time). The rule that audio starts only after a user gesture (Player P3) applies; the presenter's step key is such a gesture.
 
 **Presentation variants.** A component MAY offer several ways of showing the same content (variants: how things appear within a step and where the eye is led), each with a name declared on the component (`variants`, Declarations in the component, above); the first is its default. A component carries the variant it shows as `variant="<name>"`; without it, or with a name it does not offer, it shows its default. Variants are chosen by name only: there is no seed and no computed choice. A variant MUST NOT change `steps`, `duration(k)`, `cues(k)`, the content of the final state (text, numbers, positions, the meaning of colors) or the colors, and MUST NOT move more than the default; narration, captions, video timing, print and the presenter's view are therefore the same for every variant. Producers MAY write variant names into the source when a lesson is made (so that lessons do not all look alike, and so that the same component looks the same throughout one lesson); editors preserve them.
+
+### 8.5 Emphasis marks (`{mark}`)
+
+A mark points at part of the slide while the narration names it. Marks are part of the position: at *(i, k, t)* the visible marks are a function of the step's marks and *t*.
+
+- **Syntax.** `{mark:ID}`, `{mark:ID|effect}`, `{mark:ID|effect|hold=s}`, and `{mark:clear}` (from that point, removes the step's marks).
+- **Effects.** `underline` (default), `circle`, `box`, `spot` (everything except the target dimmed), `laser` (a point of light that stays briefly). The effect names are the vocabulary; how each is drawn is the player's, in `--emph` over `--bg`.
+- **Targets.** An element of the slide with `id="ID"` or `data-mark="ID"` (use `data-mark` when the same target name occurs on several slides), or a part of math marked with `\htmlId{ID}{…}` or `\htmlData{mark=ID}{…}`.
+- **Timing.** A mark starts at its boundary's cue time plus `lead` (§5.5) when the step's audio is synchronised (§5.3); otherwise the marks start one after another every `gap` = 0.9 s from the end of the step's motion. A mark takes `draw` = 0.5 s to appear, lasts until the end of the step or for `hold` seconds (`laser`: 1.5 s by default), and fades over 0.3 s. At most one `spot` and one `laser` are shown at a time. At *(i, k, ∞)* only the marks still shown at the step's end are visible; each step's marks are its own.
+- Marks are not printed. In a step without audio, `max(hold, marksEnd + pad_after)` replaces `hold` in §5.5.
+- In the runtime layer, `deck-marks` (§4) lists each step's boundaries.
+
+### 8.6 Morphs (`data-morph`)
+
+A morph moves elements that two consecutive slides share from their place on the earlier slide to their place on the later one, instead of a cross-fade.
+
+- `data-morph` on a slide asks for a morph when it is entered from the previous slide; `data-morph="<slide key>"`, when it is entered from that slide.
+- Elements are paired by equal `data-id` on the two slides (in math, `\morph{ID}{…}`); an id is used once per slide (later ones are ignored; when nested, only the outer one moves). Only elements visible at step 0 of the later slide move; elements inside SVG are not paired.
+- The morph happens at step 0 when the slide is entered from its source, lasts 0.9 s, and does not happen when going back, jumping, printing or under `prefers-reduced-motion` (the slide is then shown at its final state). Unpaired elements of the earlier slide disappear during the first 45 % of the morph and unpaired elements of the later slide appear during the last 55 %.
+- Positions are measured on the stage (1280×720) from the earlier slide's final state and the later slide's step 0, so the result does not depend on the order of calls.
 
 ## 9. Playing a lesson
 
@@ -725,7 +798,7 @@ A host MAY supply its own controls and restrict navigation (§1.2), and MAY rest
 ## Appendix A. Open issues
 
 1A. **Blocker for 1.0: component host interface.** In the current draft, components register and draw through globals of the bundled player (`DECK.define`, the base class `DECK.MotionElement`, helpers such as `DECK.el`, `DECK.lerp`, `DECK.svgMath` (which renders math with KaTeX at run time), and a few reads of player state: `DECK.seek`, `DECK.slides`, `DECK.mode`, `DECK.componentErrors`). Before 1.0 the interface a player must provide, and what travels with the components, must be defined so that §4.1 holds for lessons with components. Direction under study: the base class and helpers ship as a versioned, hashed module of the component release, archived in the file like any component; the host only discovers the custom elements, calls `mount`, `duration`, `cues`, `events` and `render`, and passes the context above, with navigation and error reporting as context members instead of player globals.
-1. **Blocker for 1.0:** normative text of §8 (import and freeze `docs/contract.md`), component/theme dependency manifests and hash scope, schemas for every runtime block, archive↔runtime consistency rules.
+1. **Blocker for 1.0:** §8 is now normative (2026-10-26); still open: component/theme dependency manifests and hash scope, schemas for every runtime block, archive↔runtime consistency rules.
 2. Public component registry: direction — releases of a dedicated repository (`egatari/components`), each publishing a manifest of component names, versions and code hashes; proposals collected as issues. To settle: whether a Core document may use a component only from a published release, how old releases stay available so that earlier lessons remain editable (tier B) (withdrawn releases: §6), and naming rules for contributed components.
 3. Whether a lesson may embed a custom reference voice (size, privacy).
 4. Tolerances for loudness and cue timing across browsers.
