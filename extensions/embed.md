@@ -16,7 +16,7 @@ In the slide source, an embed is an element with a placeholder the lesson carrie
 </figure>
 ```
 
-Producers fold these into `extensions.embed` at export (`{v:1, items:{<element id>: {src, title}}}`), and copy it into `deck-extensions` for play-only derivatives.
+Producers fold these into `extensions.embed` at export (`{v:1, items:{<element id>: {src, title}}}`), and copy it into `deck-extensions` in every file (the file's network policy is checked against it, spec §4.2).
 
 - `src` MUST be `https:` and its origin MUST be on the allowed list (§3). Producers reject others; players ignore them.
 - The placeholder (`img` inside the element, part of the lesson) and the link are REQUIRED: they are what video export, print, the presenter's view, previews and players without this extension show.
