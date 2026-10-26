@@ -359,7 +359,7 @@ The authoring source is `deck.html` (the slides), `narration.md` (the script) an
 
 **Structure.** `deck.html` is an HTML document whose slides are `<section class="slide">` elements, in lesson order, inside the element with `id="stage"`. A slide is a stage of 1280×720 CSS pixels. Within a slide:
 
-- the heading is the first `<h2>` (`<h1>` on cover and divider slides); producers write its plain text into `data-title` on the heading, and players use `data-title` (else the heading's text) for slide lists, captions of navigation and the information panel;
+- the heading is the first `<h2>` (`<h1>` on cover and divider slides); producers write its plain text into `data-title` on the heading unless the author wrote one (a shorter title for lists), and players use `data-title` (else the heading's text) for slide lists, captions of navigation and the information panel;
 - the body is `<div class="body">`;
 - the conclusion line is `<div class="concl"><span>…</span></div>`: one sentence that states what the slide shows; it is always the slide's last step (step key `concl`).
 
