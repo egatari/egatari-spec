@@ -33,9 +33,16 @@
         "viewBox",
         "preserveAspectRatio",
         "role",
-        "aria-label"
+        "aria-label",
+        "fill",
+        "stroke",
+        "stroke-width"
       ],
-      "g": [],
+      "g": [
+        "fill",
+        "stroke",
+        "stroke-width"
+      ],
       "path": [
         "d",
         "fill",
@@ -104,7 +111,8 @@
         "font-size",
         "font-style",
         "font-weight",
-        "fill"
+        "fill",
+        "stroke"
       ],
       "tspan": [
         "x",
@@ -115,7 +123,8 @@
         "font-style",
         "font-weight",
         "baseline-shift",
-        "fill"
+        "fill",
+        "stroke"
       ],
       "title": []
     },
