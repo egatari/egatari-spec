@@ -1,0 +1,78 @@
+{
+  "$comment": "Egatari 1.0 §6.2: the elements and attributes a part's reader admits from build-time rendered output (katex, abcjs). Normative. Anything not listed is dropped with its subtree and reported (ctx.report \"data\"). Attribute names are exact unless they end in \"*\" (a prefix). Additions are made here, in a new version of the spec, never in a reader.",
+  "version": 1,
+  "global": {
+    "html": ["class", "aria-hidden", "id", "data-*", "style"],
+    "svg": ["class", "aria-hidden", "id", "data-*", "style", "transform"],
+    "mathml": ["class"]
+  },
+  "elements": {
+    "html": {
+      "span": []
+    },
+    "svg": {
+      "svg": ["width", "height", "viewBox", "preserveAspectRatio", "role", "aria-label"],
+      "g": [],
+      "path": ["d", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-dasharray"],
+      "line": ["x1", "y1", "x2", "y2", "stroke", "stroke-width", "stroke-dasharray"],
+      "rect": ["x", "y", "width", "height", "rx", "ry", "fill", "stroke", "stroke-width"],
+      "circle": ["cx", "cy", "r", "fill", "stroke", "stroke-width"],
+      "ellipse": ["cx", "cy", "rx", "ry", "fill", "stroke", "stroke-width"],
+      "polygon": ["points", "fill", "stroke", "stroke-width"],
+      "polyline": ["points", "fill", "stroke", "stroke-width"],
+      "text": ["x", "y", "dx", "dy", "text-anchor", "dominant-baseline", "font-size", "font-style", "font-weight", "fill"],
+      "tspan": ["x", "y", "dx", "dy", "font-size", "font-style", "font-weight", "baseline-shift", "fill"],
+      "title": []
+    },
+    "mathml": {
+      "math": ["display"],
+      "semantics": [],
+      "annotation": ["encoding"],
+      "mrow": [],
+      "mi": ["mathvariant"],
+      "mn": ["mathvariant"],
+      "mo": ["fence", "stretchy", "symmetric", "minsize", "maxsize", "separator", "lspace", "rspace", "accent", "movablelimits", "mathvariant"],
+      "ms": [],
+      "mtext": ["mathvariant"],
+      "mspace": ["width", "height", "depth", "linebreak"],
+      "mfrac": ["linethickness"],
+      "msqrt": [],
+      "mroot": [],
+      "msub": [],
+      "msup": [],
+      "msubsup": [],
+      "munder": ["accentunder"],
+      "mover": ["accent"],
+      "munderover": ["accent", "accentunder"],
+      "mtable": ["columnalign", "columnspacing", "rowspacing", "columnlines", "rowlines", "frame", "width"],
+      "mtr": [],
+      "mtd": ["columnalign"],
+      "mstyle": ["displaystyle", "scriptlevel"],
+      "mpadded": ["width", "height", "depth", "lspace", "voffset"],
+      "menclose": ["notation"],
+      "mphantom": []
+    }
+  },
+  "values": {
+    "id": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$",
+    "data-*": { "name": "^data-[a-z][a-z0-9-]{0,63}$", "value": "^[^<>]{0,256}$" },
+    "fill": ["none", "currentColor"],
+    "stroke": ["none", "currentColor"],
+    "length": "^-?(\\d+\\.?\\d*|\\.\\d+)(em|ex|px|%|pt|mu)?$"
+  },
+  "style": {
+    "$comment": "style is admitted only as declarations whose property is listed and whose value is a length (values.length) or one of the listed keywords; each is set one property at a time (element.style.setProperty). Anything else in style is dropped. No color: colours come only from classes and the theme.",
+    "lengths": ["height", "width", "min-width", "max-width", "vertical-align", "top", "bottom", "left", "right", "margin-left", "margin-right", "margin-top", "margin-bottom", "padding-left", "padding-right", "padding-top", "padding-bottom", "border-bottom-width", "border-top-width", "border-right-width", "border-left-width", "font-size", "line-height"],
+    "keywords": {
+      "position": ["relative", "absolute"],
+      "display": ["inline-block", "inline", "block", "none"],
+      "border-bottom-style": ["solid", "dashed"],
+      "border-top-style": ["solid", "dashed"],
+      "border-right-style": ["solid", "dashed"],
+      "border-left-style": ["solid", "dashed"],
+      "vertical-align": ["top", "middle", "bottom", "baseline"],
+      "white-space": ["nowrap"],
+      "overflow": ["hidden", "visible"]
+    }
+  }
+}
