@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- Fixtures: `fixtures/documents/` regenerated in the 1.0 shape from Egatari Studio v0.6.0-rc.1 (f112bb4, player 1.0.0); every `expect.json` unchanged. `legacy-heading-keys` stays a v0.3.1 file as the pre-1.0 draft case; new `idless-source` (ids assigned at export).
 - §6.1–§6.2, §8.4, second round from the components 2.0 host (2026-10-28): `define` meta is a static object literal (identifier or double-quoted keys, double-quoted string or nested object values); `status().failed[]` carries `element` and the reasons `meta`, `factory` (not a function, throws, or no element constructor), `missing`, `dependency`, `duplicate`, `element` (name taken or defining fails); one definition per element name, else the producer refuses to build instead of dropping a required version; subset `data` is only `block:<name>` in 1.0; players MAY call `layout` more often, and a call at an unchanged size MUST be harmless.
 - §5 `recipe` (owner, 2026-10-28; closes open issue 3): a lesson MUST NOT carry the reference recording a voice was cloned from; it carries only the synthesized narration audio.
 - Player P9 (owner, 2026-10-28): the article's read face is part of the `article-v1` feature, not of the core: a conforming player MAY leave it out (it then shows slides and narration, §9C.10) and, if it implements it, follows P2 and §9C. `article-v1` is to be frozen together with 1.0.
