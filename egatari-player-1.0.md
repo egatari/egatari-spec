@@ -128,7 +128,7 @@ The first start of audio SHOULD happen through the player's own start control, b
 A conforming player of Egatari Player 1.0:
 
 - MUST render any *(i, k, t)* of the stage deterministically (format §1.1), including *(i, k, ∞)*;
-- MUST implement the `talk` mode (P1) and, when the lesson has an article, the `read` face (format §9C);
+- MUST implement the `talk` mode (P1); the `read` face of an article (format §9C) belongs to the `article-v1` feature, which a player MAY implement (a player that does not shows the slides and narration, format §9C.10) and, when it does, MUST implement as this document and format §9C describe;
 - SHOULD implement the `learn` mode (P1); what self-study should offer beyond playback rates is still being worked out;
 - MAY implement the `video` mode;
 - MUST provide components the context of format §8.4 and run them as format §6 requires;
