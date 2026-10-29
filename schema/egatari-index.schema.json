@@ -289,9 +289,6 @@
     },
     "article": {
       "type": "object",
-      "required": [
-        "path"
-      ],
       "properties": {
         "path": {
           "type": "string",
@@ -300,9 +297,40 @@
         "references": {
           "type": "string",
           "minLength": 1
+        },
+        "chapters": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^article/[^/]+\\.md$"
+          }
         }
       },
-      "description": "The article (spec §9C.1): archive path of article.md and of its CSL-JSON references."
+      "description": "The article (spec §9C.1): either path (article.md) or chapters (article/<name>.md in reading order), and the archive path of its CSL-JSON references.",
+      "oneOf": [
+        {
+          "required": [
+            "path"
+          ],
+          "not": {
+            "required": [
+              "chapters"
+            ]
+          }
+        },
+        {
+          "required": [
+            "chapters"
+          ],
+          "not": {
+            "required": [
+              "path"
+            ]
+          }
+        }
+      ]
     }
   },
   "$defs": {
