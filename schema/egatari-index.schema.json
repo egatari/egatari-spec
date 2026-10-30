@@ -460,6 +460,15 @@
             "keys": {
               "type": "string"
             },
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
+              "uniqueItems": true,
+              "description": "Names kept by subset entries with match \"name\", in code-point order (spec §6.2)."
+            },
             "sha256": {
               "type": "string",
               "pattern": "^[0-9a-f]{64}$"
