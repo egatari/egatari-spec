@@ -38,6 +38,7 @@ Each fixture is a small `.ega.html` file and a `expect.json` describing what a c
 | `bad-index-hash` | `data-sha256` mismatch | editor refuses; player still plays |
 | `bad-blob-hash` | one blob corrupted | editor refuses |
 | `missing-chunk` | chunk listed but absent | editor refuses |
+| `requires-missing` | a part whose `requires` names a part the file does not carry (§6) | producer refuses to build; a reader warns and plays the rest (the part shows its final-state image) |
 | `path-traversal` | `files` key `../x`, `CON.txt`, case collision | editor refuses before building any workspace |
 | `future-major` | `version.major = 2` | editor refuses with an upgrade message; player plays; source extraction offered |
 | `unknown-required-feature` | `requires: ["something-v9"]` | editor refuses; player plays |

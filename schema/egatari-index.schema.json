@@ -187,6 +187,11 @@
           },
           "path": {
             "$ref": "#/$defs/archivePath"
+          },
+          "extends": {
+            "type": "string",
+            "minLength": 1,
+            "description": "name of the parent theme this theme extends; index.themes must also contain the parent's entry (§6)"
           }
         },
         "allOf": [
