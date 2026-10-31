@@ -14,7 +14,7 @@ FINDINGS.md                   where the parser's tree differs from the node type
 
 ## How the expected trees were made
 
-- Tools: `myst-parser` **1.7.5**, function `mystParse` with its default options plus the proof directive of `myst-ext-proof` **1.0.13** (the extension mystmd uses), then six transforms of `myst-transforms` **1.3.52** in this order: `liftMystDirectivesAndRolesTransform`, `mystTargetsTransform`, `reconstructHtmlTransform`, `htmlTransform`, `containerChildrenTransform`, `captionParagraphTransform` (exact versions pinned in `package.json`). These are the structural steps of §9C.2; numbering and resolution are not run.
+- Tools: `myst-parser` **1.7.5**, function `mystParse` with its default options plus the proof directive of `myst-ext-proof` **1.0.13** and the exercise directives of `myst-ext-exercise` **1.0.10** (the extensions mystmd uses), then six transforms of `myst-transforms` **1.3.52** in this order: `liftMystDirectivesAndRolesTransform`, `mystTargetsTransform`, `reconstructHtmlTransform`, `htmlTransform`, `containerChildrenTransform`, `captionParagraphTransform` (exact versions pinned in `package.json`). These are the structural steps of §9C.2; numbering and resolution are not run.
 - The YAML front matter block (`---` … `---` at the start of the file) is read off before parsing; only the rest of the file is passed to `mystParse`. (Given the whole file, myst-parser 1.7.5 returns the front matter as a `code` node with `lang: "yaml"`.) The front matter is therefore not part of `expected.json`; its members are checked by validators against §9C.2.
 - Every `position`, `key` and `html_id` key is removed. Nothing else is changed; no tree was written by hand.
 - `npm test` (`tools/test-fixtures.mjs`) re-parses every `valid/*/input.md` the same way and deep-compares the result with `expected.json`. After a deliberate change to an input, regenerate with `node tools/test-fixtures.mjs --update-article-text` and review the diff.
@@ -73,10 +73,18 @@ A conforming parser written without MyST's tools should produce these trees; res
 | `ruby` | two `{ruby}` roles in a sentence |
 | `frontmatter-kind-appendix` | front matter `kind: appendix` with a labelled equation and a cross-reference |
 | `frontmatter-kind-preface` | front matter `kind: preface` |
+| `aside-class` | asides with `:class: inquiry` and `:class: goals` |
+| `exercise-solution` | exercise with title and label, its solution, an exercise with `:nonumber:` |
+| `subfigure` | a figure holding two subfigures, with caption and legend |
+| `cite-narrative` | `@key` in running text |
+| `sub-sup` | `{sub}` and `{sup}` |
+| `definition-list` | a definition list |
+| `glossary-term` | `{term}` in both forms and a glossary |
+| `proof-algorithm` | `prf:algorithm` and `prf:assumption` |
 
 ## Invalid cases
 
-These are for producers' validators (§9C.2: a producer MUST reject a construct outside the subset, or convert it and tell the author). They are listed, not parsed: `npm test` checks only that each folder has `input.md` and a well-formed `expect.json`. Note that myst-parser 1.7.5 with default options does not itself flag them; some (`bare-url-autolink`, `strikethrough`) come out as plain text, and `bare-citation` comes out as a `cite` node, so a validator needs its own checks.
+These are for producers' validators (§9C.2: a producer MUST reject a construct outside the subset, or convert it and tell the author). They are listed, not parsed: `npm test` checks only that each folder has `input.md` and a well-formed `expect.json`. Note that myst-parser 1.7.5 with default options does not itself flag them; some (`bare-url-autolink`, `strikethrough`) come out as plain text, so a validator needs its own checks.
 
 | Case | Reason | Spec |
 |---|---|---|
@@ -87,11 +95,9 @@ These are for producers' validators (§9C.2: a producer MUST reject a construct 
 | `comment` | `%` comment | §9C.2 |
 | `block-break` | `+++` | §9C.2 |
 | `substitution` | `{{ … }}` | §9C.2 |
-| `bare-citation` | `@key` outside brackets | §9C.2 |
 | `bare-url-autolink` | bare URL | §9C.2 |
 | `strikethrough` | `~~…~~` | §9C.2 |
 | `task-list` | `- [ ]` | §9C.2 |
-| `definition-list` | definition list | §9C.2 |
 | `heading-level-1`, `heading-level-5` | heading level outside 2–4 | §9C.2 |
 | `frontmatter-unknown-member` | front matter member `author` | §9C.2 |
 | `figure-label-sec-prefix` | figure label starting with `sec-` | §9C.3 |
@@ -107,3 +113,9 @@ These are for producers' validators (§9C.2: a producer MUST reject a construct 
 | `html-table-math` | `$…$` in an HTML table cell | §9C.2 |
 | `frontmatter-kind-unknown` | `kind: index` | §9C.2 |
 | `frontmatter-appendix-chapter` | `chapter` on an appendix | §9C.1A |
+| `aside-class-pattern` | class `Inquiry_Box` | §9C.2 |
+| `exercise-hidden` | option `:hidden:` | §9C.2 |
+| `subfigure-images-in-paragraph` | two images in one paragraph of a figure (their alt text would become captions) | §9C.2 |
+| `solution-unknown-exercise` | solution for a label that does not exist | §9C.8 |
+| `term-unknown` | `{term}` not in the glossary | §9C.8 |
+| `cite-narrative-locator` | `@key, p. 3` | §9C.4 |
