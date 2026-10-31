@@ -10,3 +10,10 @@ First pass (raw `mystParse` output) against the §9C.2 table, and how each point
 6. **Minor.** Indented code gives `lang: ""`; `cite` nodes carry `kind`; given the whole file, the front matter comes back as a `code` node (`lang: "yaml"`), so it is read off first.
 
 Not flagged by the parser (validators need their own checks): bare URLs and `~~strike~~` come out as plain text, `@key` outside brackets comes out as a `cite` with `kind: "narrative"`, and a key such as `doe..1948` parses as a normal `cite`.
+
+## Book constructs (2026-10-31)
+
+7. **Theorem-like blocks.** myst-parser alone leaves `:::{prf:theorem}` as a `mystDirective`; mystmd reads it with its proof extension. → The fixtures add `proofDirective` from `myst-ext-proof` 1.0.13, which gives `proof` (`kind`, `enumerated`, `label`, `identifier`) with the title as `admonitionTitle`. `enumerated` is `true` for `kind: "proof"` too; §9C.1A leaves proofs unnumbered.
+8. **HTML tables.** Without the HTML transforms, an HTML table in `:::{table}` comes out as an `html` node, and `captionParagraphTransform` then files it under `legend`. → `reconstructHtmlTransform` and `htmlTransform` run before the container transforms; the table then becomes `table` / `tableRow` / `tableCell` with `colspan` and `rowspan`, and the legend is only the paragraphs after it. `thead` and `tbody` leave no trace except `header` on `th` cells, so §9C.2 defines header rows as the leading rows of `th` cells.
+9. **Cells of HTML tables.** `em`, `strong`, `code`, `sub`, `sup` and `br` become `emphasis`, `strong`, `inlineCode`, `subscript`, `superscript` and `break`. Markdown written directly in a cell (`*10*`, `$x$`) stays literal text. With blank lines around a cell's content, CommonMark ends the HTML block and the content is parsed as Markdown, but inline math then becomes a `span` with class `math-inline`, not `inlineMath`. → §9C.2 forbids blank lines in the table and Markdown and math in its cells.
+10. **Asides, footnotes and ruby** parse as expected with default options: `aside` with `admonitionTitle`, `footnoteReference` / `footnoteDefinition`, and `mystRole` `ruby` (myst-parser does not reject unknown roles).

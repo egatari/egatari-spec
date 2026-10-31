@@ -3,7 +3,8 @@
 // `node tools/test-fixtures.mjs --update-article-text` rewrites every valid/*/expected.json.
 import Ajv from 'ajv/dist/2020.js';
 import { mystParse } from 'myst-parser';
-import { liftMystDirectivesAndRolesTransform, mystTargetsTransform, containerChildrenTransform, captionParagraphTransform } from 'myst-transforms';
+import { proofDirective } from 'myst-ext-proof';
+import { liftMystDirectivesAndRolesTransform, mystTargetsTransform, reconstructHtmlTransform, htmlTransform, containerChildrenTransform, captionParagraphTransform } from 'myst-transforms';
 import { VFile } from 'vfile';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -35,17 +36,20 @@ for (const [key, v] of Object.entries(vectors)) {
   console.log(`${pass ? 'ok  ' : 'FAIL'} input-hash ${key}`);
 }
 // Egatari Text: the front matter is read off first (myst-parser would otherwise
-// return it as a `code` node with lang yaml); the rest is parsed with mystParse,
-// then four structural MyST transforms run (lift directives and roles, attach
-// targets, container children, caption and legend), and `position`, `key` and
-// `html_id` are dropped. The tree is before resolution (spec §9C.2).
+// return it as a `code` node with lang yaml); the rest is parsed with mystParse
+// and the proof directive (mystmd's myst-ext-proof), then the structural MyST
+// transforms run (lift directives and roles, attach targets, HTML tables into
+// table nodes, container children, caption and legend), and `position`, `key`
+// and `html_id` are dropped. The tree is before resolution (spec §9C.2).
 const DROP = new Set(['position', 'key', 'html_id']);
 const FRONT_MATTER = /^---\n[\s\S]*?\n---(?:\n|$)/;
 function parseArticleText(text) {
   const body = text.replace(FRONT_MATTER, '');
-  const tree = mystParse(body);
+  const tree = mystParse(body, { directives: [proofDirective] });
   liftMystDirectivesAndRolesTransform(tree);
   mystTargetsTransform(tree);
+  reconstructHtmlTransform(tree);
+  htmlTransform(tree);
   containerChildrenTransform(tree, new VFile());
   captionParagraphTransform(tree);
   return JSON.parse(JSON.stringify(tree, (k, v) => (DROP.has(k) ? undefined : v)));
