@@ -798,7 +798,7 @@ See §3.8. An article commonly carries its typeset PDF (`pdf`), its TeX or Word 
 
 ### 9C.13 Exports (informative)
 
-- **Print and PDF.** Printing the `pages` layout of the read face produces a PDF of the article (§1.0); it is an output, not a part of the lesson, and SHOULD NOT be attached (§3.8). Step links print as text naming the slide and, unless the link is to step 0, the step, in the words of the lesson language (e.g. "slide 4, step 3", "slide 4"; 「スライド 4・段階 3」). Producers MAY also typeset the article through MyST's LaTeX or Typst export; the result is likewise an output.
+- **Print and PDF.** Printing the `pages` layout of the read face produces a PDF of the article (§1.0); it is an output, not a part of the lesson, and SHOULD NOT be attached (§3.8). Step links print as text naming the slide and, unless the link is to step 0, the step, in the words of the lesson language (e.g. "slide 4, step 3", "slide 4"; 「スライド 4・ステップ 3」). Producers MAY also typeset the article through MyST's LaTeX or Typst export; the result is likewise an output.
 - **JATS.** For archiving and for journals and preprint servers, producers SHOULD offer an export to JATS (NISO Z39.96, version 1.3 or later). The subset maps as follows:
 
 | Egatari Text | JATS |

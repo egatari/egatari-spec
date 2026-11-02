@@ -6,6 +6,8 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §9C.13: the Japanese example of a printed step link uses ステップ, the word players and editors show (「スライド 4・ステップ 3」).
+
 ## WD 2026-11-03
 
 - §9C.5–§9C.6 (from Studio's player read face, 2026-11-03): entering a section shows its slide at step 0, and the stage MAY advance with step links to that same slide as the reader passes them (links to other slides do not move it while reading); upright one- and two-digit numbers in vertical writing include the numbers producers write (headings, captions, cross-references).
