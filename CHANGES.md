@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- Player P6 and SCORM 1.2 binding §2.2 (from Studio's self-study, 2026-11-03): a step the stage reached only by following the text pane is not played on the stage; suspend data MAY carry `stage` and `text` bitsets beside `seen` (their union), so that `played: true` survives a resume, and the 4096-character limit counts all three.
 - §9C.13: the Japanese example of a printed step link uses ステップ, the word players and editors show (「スライド 4・ステップ 3」).
 
 ## WD 2026-11-03
