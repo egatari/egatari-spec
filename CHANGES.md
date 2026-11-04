@@ -2,9 +2,11 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-03
+## Since WD 2026-11-05
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-05
 
 - §9C.6: the table class `row-headers` makes the first cell of each body row a row header (`th scope="row"`), styled like the header row; in vertical writing header cells are centred and other cells start at the top (from the rashomon sample's label column).
 - §4 `deck-meta` and its schema: `creators?` (copied from `metadata.creators`, like `license`, `copyright` and `attribution`), so that a play-only derivative, which has no index, can still show the creators in the information panel (§7.3).
