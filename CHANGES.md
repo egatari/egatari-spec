@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- Font supplements paragraph (from Studio's font-subset work, 2026-11-05): a declared `unicode-range` SHOULD NOT over-claim; a font subset SHOULD depend only on the face and the set of displayable code points (same set, same bytes); informative note that every font stack ends in a generic family, so characters added by tier A edits fall back to a device font.
 ## WD 2026-11-05
 
 - §9C.6: the table class `row-headers` makes the first cell of each body row a row header (`th scope="row"`), styled like the header row; in vertical writing header cells are centred and other cells start at the top (from the rashomon sample's label column).
