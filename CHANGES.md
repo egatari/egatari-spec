@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §9C.6: the table class `row-headers` makes the first cell of each body row a row header (`th scope="row"`), styled like the header row; in vertical writing header cells are centred and other cells start at the top (from the rashomon sample's label column).
 - §4 `deck-meta` and its schema: `creators?` (copied from `metadata.creators`, like `license`, `copyright` and `attribution`), so that a play-only derivative, which has no index, can still show the creators in the information panel (§7.3).
 - §9C.2, §9C.6 (owner, 2026-11-04): in a vertical-writing article, tables are set in vertical writing too (each row a column, the first row on the right); `:::{table}` takes `:class:`, and the class `horizontal` keeps a table in horizontal writing. Figures, display math and code stay horizontal.
 - Player P6 and SCORM 1.2 binding §2.2 (from Studio's self-study, 2026-11-03): a step the stage reached only by following the text pane is not played on the stage; suspend data MAY carry `stage` and `text` bitsets beside `seen` (their union), so that `played: true` survives a resume, and the 4096-character limit counts all three.
