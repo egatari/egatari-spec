@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- Player P1, P2, P5, P9; format §1.2, §8.4, §9C.10 and both schemas (owner, 2026-11-05): the `learn` mode is removed. Self-study is `talk` with **playback** (start/pause, previous/next and jump keeping the playing state, rates 0.75–2 keeping pitch), which every player MUST offer; presenter tools stay. `offer.modes` and `ctx.mode` are `talk` or `video`; players read a former `learn` as `talk`. The notes pane and the learner's notes (P5) leave the player: P5 keeps per-viewer preferences, and annotations (highlights, comments, kept ink, recall masks, export) move to the informative draft [annotations.md](annotations.md) for applications that open files (Egatari Viewer, learning platforms).
 - Live extension: the key and participant id travel in the first WebSocket message (`{v:1,t:"join",key,pid}`), not in the address, so that they stay out of proxy and server logs; close codes 4400/4403 and a 10 s join deadline; servers MAY keep accepting the earlier query form for older files (from the privacy review, 2026-11-05).
 - Font supplements paragraph (from Studio's font-subset work, 2026-11-05): a declared `unicode-range` SHOULD NOT over-claim; a font subset SHOULD depend only on the face and the set of displayable code points (same set, same bytes); informative note that every font stack ends in a generic family, so characters added by tier A edits fall back to a device font.
 ## WD 2026-11-05
