@@ -5,7 +5,7 @@
   "description": "Egatari specification: schemas and conformance fixtures",
   "license": "MIT",
   "scripts": {
-    "test": "node tools/test-fixtures.mjs"
+    "test": "node --import ./tools/mdit14-register.mjs tools/test-fixtures.mjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",
@@ -19,6 +19,7 @@
     "linkify-it": "5.0.2",
     "katex": "0.19.1",
     "csv-parse": "7.0.3",
-    "fast-uri": "4.2.3"
+    "fast-uri": "4.2.3",
+    "markdown-it": "14.3.3"
   }
 }
