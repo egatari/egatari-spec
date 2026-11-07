@@ -1,6 +1,6 @@
 # Egatari 1.0 — Editor's Draft
 
-**Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-11-05).
+**Status:** Editor's Draft. Not stable. Anything may change before 1.0 is frozen. Dated snapshots: [CHANGES.md](CHANGES.md) (latest: WD 2026-11-07).
 **Editors:** Gendo Kumoi (Nagaoka University of Technology).
 **Companion:** [Egatari Player 1.0](egatari-player-1.0.md) — how players show a lesson (modes, layouts, playback, links, embedding), versioned separately.
 **Reference implementation:** [Egatari Studio](https://github.com/egatari/egatari-studio) (producer and editor, https://studio.egatari.org/), which bundles Egatari Player.

@@ -2,10 +2,13 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-05
+## Since WD 2026-11-07
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+## WD 2026-11-07
+
+- §9.1B: learner annotations point to the informative draft [annotations.md](annotations.md); Player P5 keeps only per-viewer preferences.
 - Player P2 (owner, 2026-11-06, from the iPad mini test of Studio's 台本で読む): stages placed in a text pane without an article show their slide's final state and scroll with the text; scrolling no longer plays steps (the former "a step plays once as its block enters the viewport" is removed); players SHOULD let the viewer open a placed stage on a stage pane to play it, and SHOULD NOT keep it fixed over the text; during playback only the playing slide's stage is live. Synchronization no longer mentions the notes pane.
 - Player P1, P2, P5, P9; format §1.2, §8.4, §9C.10 and both schemas (owner, 2026-11-05): the `learn` mode is removed. Self-study is `talk` with **playback** (start/pause, previous/next and jump keeping the playing state, rates 0.75–2 keeping pitch), which every player MUST offer; presenter tools stay. `offer.modes` and `ctx.mode` are `talk` or `video`; players read a former `learn` as `talk`. The notes pane and the learner's notes (P5) leave the player: P5 keeps per-viewer preferences, and annotations (highlights, comments, kept ink, recall masks, export) move to the informative draft [annotations.md](annotations.md) for applications that open files (Egatari Viewer, learning platforms).
 - Live extension: the key and participant id travel in the first WebSocket message (`{v:1,t:"join",key,pid}`), not in the address, so that they stay out of proxy and server logs; close codes 4400/4403 and a 10 s join deadline; servers MAY keep accepting the earlier query form for older files (from the privacy review, 2026-11-05).
