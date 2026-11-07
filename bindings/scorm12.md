@@ -79,7 +79,7 @@ Steps are numbered by zero-based **ordinal** in timeline order (Egatari 1.0 §5.
 - `seen` holds the steps visited in any way; `stage` and `text` (optional, written by players that implement Player P6 `via`) hold the steps played on a stage and read in a text pane, so that `metadata.completion.played` survives a resume. `seen` is their union when both are present. Readers that do not know `stage` and `text` ignore them.
 - Bit *j* of each bitset corresponds to ordinal *j*: byte ⌊*j*/8⌋, bit *j* mod 8, least significant bit first; the bitset has ⌈*n*/8⌉ bytes, unused high bits are 0; base64url without padding.
 - On resume (`entry` is `resume`), if `v`, `n` and `h` all match the current lesson, the player restores the visited steps and the position. Otherwise the lesson changed: it ignores both and starts at the beginning.
-- A packager MUST refuse a lesson whose suspend data, with all three bitsets, could exceed 4096 characters (more than about 3000 steps). Players never drop `stage` or `text` to save space.
+- A packager MUST refuse a lesson whose suspend data, with all three bitsets, could exceed 4096 characters (more than about 8,000 steps). Players never drop `stage` or `text` to save space.
 
 ## 3. Completion
 
