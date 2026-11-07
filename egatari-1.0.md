@@ -544,7 +544,7 @@ How players play a lesson — playback, following links, learner data, tracking 
 
 Notes, ink, bookmarks, highlights and other data a learner creates MUST NOT be written into the Egatari file. Players MAY keep them in local storage keyed by `docId` (hosts MAY keep them per learner).
 
-Anchors, kinds and export of learner data: Player P5.
+Per-viewer preferences: Player P5. Anchors, kinds and exchange of learner annotations (for applications that open files): [annotations.md](annotations.md) (draft, informative).
 
 ### 9.2 Completion
 
