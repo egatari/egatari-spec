@@ -55,6 +55,8 @@ The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to
 | load | `LMSInitialize("")` once. Read `cmi.core.lesson_mode`, `cmi.core.lesson_status`, `cmi.core.entry`, `cmi.core.lesson_location`, `cmi.suspend_data` |
 | start (first user gesture) | if `lesson_mode` is `review`: write nothing except at termination. Otherwise, if `lesson_status` is `not attempted`, set `incomplete` |
 | step reached | update `cmi.core.lesson_location` and `cmi.suspend_data` (§2.2); `LMSCommit("")` at most once every 30 s and on every change of slide |
+| every `LMSCommit` | before committing, also set `cmi.core.session_time` (time since `LMSInitialize`) and `cmi.core.exit` (`suspend` unless completed, then `""`), so that progress, resume and time survive when a later commit is lost |
+| `beforeunload` | `LMSCommit("")` (no finish) |
 | completed (§3) | set `cmi.core.lesson_status` to `completed`; `LMSCommit("")` |
 | `visibilitychange` to hidden | pause playback; `LMSCommit("")`. Do **not** finish |
 | `pagehide` | set `cmi.core.session_time`; set `cmi.core.exit` to `suspend` unless completed (then `""`); `LMSCommit("")`; `LMSFinish("")`. Called at most once per page lifetime |
@@ -63,6 +65,7 @@ The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to
 - `cmi.core.session_time` uses the SCORM 1.2 format `HHHH:MM:SS.SS`.
 - Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Egatari lesson has no assessment in 1.0.
 - On any error the player keeps playing.
+- (Informative) Some LMSs store with synchronous requests and drop what is sent while the page closes (observed: ILIAS, whose runtime switches to `sendBeacon` only in Chrome and only for `unload`/`beforeunload`/click). That is why exit and session time travel with every commit and a commit happens at `beforeunload`; `pagehide` still finishes. On such an LMS in Safari, nothing sent while the page closes arrives, so resume returns to the last committed position.
 
 ### 2.2 Location and suspend data
 
