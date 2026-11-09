@@ -106,13 +106,13 @@ Commands (host → player):
 | `{egatari:"play", id?}` / `{egatari:"pause", id?}` | start / pause timeline playback with audio. If the browser refuses to start audio, reply `playBlocked` |
 | `{egatari:"rate", id?, value}` | playback rate (P1) |
 | `{egatari:"mode", id?, mode}` / `{egatari:"layout", id?, layout}` / `{egatari:"preview", id?, on}` / `{egatari:"controls", id?, visible}` | display mode, preview of later steps, the player's own controls |
-| `{egatari:"snapshot", id, slide, step, t, maxWidth?}` | reply `{egatari:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position |
+| `{egatari:"snapshot", id, slide, step, t, maxWidth?}` | OPTIONAL: reply `{egatari:"snapshot", id, png}` with a `data:image/png` of that position (`t` `null` = ∞), without changing the visible position. A player that does not implement it replies `{egatari:"error", id, code:"unsupported"}` |
 
 Events (player → host; target origin `*`; payloads contain no private data):
 
 | Message | When |
 |---|---|
-| `{egatari:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | after loading |
+| `{egatari:"ready", version, docId, sourceSha256?, timeline:[{slideIndex, slideKey, stepKey, slideTitle, dur}]}` | once per loaded document, after the parts have mounted and the opening position is settled, before the first `position`; commands sent in reply take effect. `version` is the player's own version (as in `deck-meta.player`); `docId` is `null` when the file has none; `slideTitle` is the slide's title as in the readable layer (format §2.1); `dur` is the step's duration in seconds at rate 1 |
 | `{egatari:"seeked", id?, slideKey, stepKey, t}` | after a seek has been applied |
 | `{egatari:"position", slideKey, stepKey, t, cause}` | MUST on every step change (`cause`: `play`, `seek`, `control`, `link`); during playback a player MAY also send it between step changes, at most 4 times per second, driven by a clock it already has (e.g. the audio element's `timeupdate`); it need not add a timer for this. Scrolling or turning pages in a text pane is a `seek` |
 | `{egatari:"stepEnded", slideKey, stepKey}` | when a step has played to its end during playback (not when skipped; moving to another step by scrolling or turning pages in a text pane is a skip) |
