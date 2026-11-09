@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §8.4 theme colours: **object colours** `--obj-white` … `--obj-gray` (the eleven basic colour terms) for colours that are the content (balls, litmus paper, signals). The hue family is fixed by the name; never the only carrier (name or initial shown, outline when close to the background); components give a fallback, which may be a literal colour of that name.
 ## WD 2026-11-09
 
 - Player P8: `ready` is sent once per document after parts mount and the opening position settles, before the first `position`; `version` is the player's version, `docId` is `null` when absent, `slideTitle` follows the readable layer, `dur` is at rate 1 (from Studio's implementation, 2026-11-09). `snapshot` becomes OPTIONAL; a player without it replies `error` with code `unsupported`.
