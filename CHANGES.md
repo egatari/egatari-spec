@@ -2,9 +2,11 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-07
+## Since WD 2026-11-09
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-09
 
 - Player P8: `ready` is sent once per document after parts mount and the opening position settles, before the first `position`; `version` is the player's version, `docId` is `null` when absent, `slideTitle` follows the readable layer, `dur` is at rate 1 (from Studio's implementation, 2026-11-09). `snapshot` becomes OPTIONAL; a player without it replies `error` with code `unsupported`.
 - §8.4 theme colours: new role `--lit` (light and what it lights; a fill colour drawn with an outline; components give a fallback). A colour derived by changing a role's hue (relative colour syntax) is reported as outside the vocabulary; `color-mix()` of roles stays allowed.
