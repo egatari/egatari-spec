@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §8.4 theme colours: new role `--lit` (light and what it lights; a fill colour drawn with an outline; components give a fallback). A colour derived by changing a role's hue (relative colour syntax) is reported as outside the vocabulary; `color-mix()` of roles stays allowed.
 - SCORM 1.2 binding §2.1 (from Studio's test on the owner's ILIAS, 2026-11-08): every commit also sets `cmi.core.session_time` and `cmi.core.exit`, and the player commits at `beforeunload`; an informative note explains LMSs that drop commits sent while the page closes.
 - Player P1 (from Studio's Player 1.4.0, 2026-11-08): playback controls that jump (previous/next, page number, slide list) keep the playing state, while the presenter's step keys pause it; a lesson opened in `video` for a viewer shows one start control (P3) and then advances. SCORM 1.2 binding §2.2: the 4096-character suspend-data limit is reached at about 8,000 steps (exact computation by Studio), not about 3000.
 ## WD 2026-11-07
