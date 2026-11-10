@@ -2,9 +2,11 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-09
+## Since WD 2026-11-10
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-10
 
 - §8.4 theme colours: **colour ramps** `--ramp-1` … `--ramp-5` (owner, 2026-11-10, from the showcase experiment): five stops from low to high for magnitudes (heat maps, densities, speeds), monotone in lightness, interpolated with `color-mix()` in oklab; never for categories or meanings; the magnitude is also readable without colour; fallbacks from `--bg` and one role (a component keeps the role it used before ramps).
 - §8.0 **kicker** `<p class="kicker">` (owner, 2026-11-10, from a comparison with editorial slide designs): an optional short label directly before a slide's heading; not part of the title, no step of its own, styled by the theme.
