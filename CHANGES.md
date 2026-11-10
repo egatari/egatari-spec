@@ -6,6 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- Player P8: details settled from Studio's player 1.5.0 (2026-11-10): seek arguments (0-based slide index, integer step read as key, defaults), `position` before `seeked`, `t: null` while playing or paused, `controls` = what `controls=0` hides, `preview` errors in `video`, `stepEnded` only when a step plays to its end and `ended` after the final state, error codes (command name; `unsupported` for unknown commands).
 - §8.4 theme colours: **object colours** `--obj-white` … `--obj-gray` (the eleven basic colour terms) for colours that are the content (balls, litmus paper, signals). The hue family is fixed by the name; never the only carrier (name or initial shown, outline when close to the background); components give a fallback, which may be a literal colour of that name.
 ## WD 2026-11-09
 
