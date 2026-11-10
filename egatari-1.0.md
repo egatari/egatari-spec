@@ -386,6 +386,7 @@ The authoring source is `deck.html` (the slides), `narration.md` (the script) an
 **Structure.** `deck.html` is an HTML document whose slides are `<section class="slide">` elements, in lesson order, inside the element with `id="stage"`. A slide is a stage of 1280×720 CSS pixels. Within a slide:
 
 - the heading is the first `<h2>` (`<h1>` on cover and divider slides); producers write its plain text into `data-title` on the heading unless the author wrote one (a shorter title for lists), and players use `data-title` (else the heading's text) for slide lists, captions of navigation and the information panel;
+- the **kicker** (OPTIONAL) is `<p class="kicker">` immediately before the heading: a short label above it (e.g. the chapter or topic, 「第 2 章・損失」). At most one per slide, not on cover, divider or `layout-tate` slides. It is not part of the title (`data-title`, slide lists and the readable layer's heading keep the heading alone), it has no step of its own (it is visible with the heading at step 0) and its look is the theme's; producers SHOULD report a kicker that is not directly before the heading, a second one, or one longer than about 24 full-width characters (about 40 in Latin script);
 - the body is `<div class="body">`;
 - the conclusion line is `<div class="concl"><span>…</span></div>`: one sentence that states what the slide shows; it is always the slide's last step (step key `concl`).
 
