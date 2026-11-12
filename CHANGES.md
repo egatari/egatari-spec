@@ -7,6 +7,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
 - §8.4 colour ramps, clarified from the components' implementation (2026-11-11): a component that coloured magnitudes before ramps keeps the colours it drew then as its fallback, even when mixed from more than one role; a role the author names for a magnitude (e.g. `tone="emph"`) is used instead of the ramp; ramps run one way, and a diverging scale keeps its roles.
+- Publishing (2026-11-13): egatari.org is now built and served from [egatari/egatari.org](https://github.com/egatari/egatari.org); this repository no longer serves Pages. All URLs are unchanged and byte-identical, except that the specification's front page moved from `/` to `/spec/`. No change to the text.
 - Annotations: a ruby segment is one unit for highlights; a highlight is widened to whole ruby segments when it is created and when it is re-attached, and rewriting it keeps its id, colour and creation time (from the Viewer, 2026-11-11).
 
 ## WD 2026-11-10

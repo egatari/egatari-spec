@@ -21,6 +21,8 @@ Egatari (絵語り, "narrating with pictures") is a file format for narrated, an
 
 The format is named separately from its reference implementation, [Egatari Studio](https://github.com/egatari/egatari-studio) (authoring and quality check, at [studio.egatari.org](https://studio.egatari.org/)), which bundles Egatari Player in the files it writes. The name is written *Egatari* (絵語り). Files use the extension `.ega.html`.
 
+The published text is served at <https://egatari.org/> from the [egatari/egatari.org](https://github.com/egatari/egatari.org) repository (since 2026-11-13), which builds it from a pinned tag of this repository. Every URL stays as it was, except the front page of the specification, which is now at <https://egatari.org/spec/>.
+
 Status: **Editor's Draft** (a working draft by the specification's editors, as in W3C usage) — anything may change before 1.0. Feedback is welcome in [Issues](https://github.com/egatari/egatari-spec/issues).
 
 Check the schemas against the fixtures with `npm ci && npm test`.
