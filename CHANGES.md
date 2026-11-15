@@ -7,6 +7,8 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
 - §2.1 **readable content of components** (d5, 2026-11-15, from m-code 2.2.0's moving window): elements a component marks `data-readable` are copied, from an allowed-elements list and without attributes, into the slide's entry in the readable layer as visible content.
+- §9C.2 **unnumbered asides** (d5, 2026-11-16, backlog #173, from the book sample's learning goals): `:::{aside}` takes `:nonumber:` like an exercise; such an aside is not counted, its heading shows the title only, and an empty-text reference to it shows its title. myst-parser keeps the option only on the directive node; producers carry it to the aside as `enumerated: false` (`tools/egatari-aside.mjs`, fixture `article-text/valid/aside-nonumber`).
+- Player P2 **small copy of the playing stage** (d5, 2026-11-16, backlog #181, from the owner's iPad mini trial): during playback, when the playing stage and the line being read cannot both be in view, a player MAY show a small, closable copy of the playing stage in a corner; scrolling both into view comes first.
 
 ## WD 2026-11-15
 

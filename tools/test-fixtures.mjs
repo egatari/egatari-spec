@@ -5,6 +5,7 @@ import Ajv from 'ajv/dist/2020.js';
 import { mystParse } from 'myst-parser';
 import { proofDirective } from 'myst-ext-proof';
 import { exerciseDirectives } from 'myst-ext-exercise';
+import { egatariAsideTransform } from './egatari-aside.mjs';
 import { liftMystDirectivesAndRolesTransform, mystTargetsTransform, reconstructHtmlTransform, htmlTransform, containerChildrenTransform, captionParagraphTransform } from 'myst-transforms';
 import { VFile } from 'vfile';
 import assert from 'node:assert/strict';
@@ -39,7 +40,7 @@ for (const [key, v] of Object.entries(vectors)) {
 // Egatari Text: the front matter is read off first (myst-parser would otherwise
 // return it as a `code` node with lang yaml); the rest is parsed with mystParse
 // and the proof and exercise directives (mystmd's myst-ext-proof and
-// myst-ext-exercise), then the structural MyST
+// myst-ext-exercise) then Egatari's `:nonumber:` on asides (tools/egatari-aside.mjs), then the structural MyST
 // transforms run (lift directives and roles, attach targets, HTML tables into
 // table nodes, container children, caption and legend), and `position`, `key`
 // and `html_id` are dropped. The tree is before resolution (spec §9C.2).
@@ -48,6 +49,7 @@ const FRONT_MATTER = /^---\n[\s\S]*?\n---(?:\n|$)/;
 function parseArticleText(text) {
   const body = text.replace(FRONT_MATTER, '');
   const tree = mystParse(body, { directives: [proofDirective, ...exerciseDirectives] });
+  egatariAsideTransform(tree);
   liftMystDirectivesAndRolesTransform(tree);
   mystTargetsTransform(tree);
   reconstructHtmlTransform(tree);
