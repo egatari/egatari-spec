@@ -6,6 +6,8 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §2.1 **readable content of components** (d5, 2026-11-15, from m-code 2.2.0's moving window): elements a component marks `data-readable` are copied, from an allowed-elements list and without attributes, into the slide's entry in the readable layer as visible content.
+
 ## WD 2026-11-15
 
 - §8.0 **caution boxes** `<div class="caution">` and `<div class="caution warn">` (owner, 2026-11-14, from the municipal and medical guides; Studio v0.6.13): the producer adds the label (注意・警告 / Caution・Warning by `<html lang>`) and `role="note"`; colour roles `--caution` and `--warn`.
