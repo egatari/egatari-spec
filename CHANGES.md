@@ -2,9 +2,11 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-10
+## Since WD 2026-11-15
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-15
 
 - §8.0 **caution boxes** `<div class="caution">` and `<div class="caution warn">` (owner, 2026-11-14, from the municipal and medical guides; Studio v0.6.13): the producer adds the label (注意・警告 / Caution・Warning by `<html lang>`) and `role="note"`; colour roles `--caution` and `--warn`.
 - §9C.1A **kind of section** (d5, 2026-11-14, from the Rashomon sample, backlog #209): in a one-file article, a line `+++ {"kind": "preface|chapter|appendix|afterword"}` before a level-2 section gives it and the following sections that kind, up to the next such line, numbered as files of that kind are. Books keep using files of a kind. §9C.2 admits this one block break; §9C.6 adds `data-section-kind`; §9C.8 adds the errors and no longer warns that such sections are linked to no slide; §9C.14 lets the AI write the line. New fixtures `section-kind`, `section-kind-all` and four invalid cases.
