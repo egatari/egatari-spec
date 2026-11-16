@@ -149,7 +149,7 @@ Paths under `audio/` are reserved for narration audio; their blobs MUST have an 
 
 ### 3.6 Metadata
 
-`metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `copyright` (e.g. `© 2026 Gendo Kumoi`), `attribution` (the credit line the rights holder asks reusers to show), `creators` (display names the author chose to publish), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), `completion` (§9.2), `series` (§9C.1A), `citations` (§9C.4), and the members of §3.6.1. Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
+`metadata` MUST contain `title` and `lang` (BCP 47). It MAY contain `license` (SPDX identifier or URL), `copyright` (e.g. `© 2026 Gendo Kumoi`), `attribution` (the credit line the rights holder asks reusers to show), `creators` (display names the author chose to publish), `edits` (§3.6.1), `description`, `accessibility` (schema.org terms such as `accessMode`, `accessibilityFeature`, `accessibilityHazard`), `curriculum` (array of curriculum codes, e.g. Japanese 学習指導要領 codes from the MEXT education data standard), `completion` (§9.2), `series` (§9C.1A), `citations` (§9C.4), and the members of §3.6.1. Producers MUST NOT add timestamps, device identifiers, account e-mail addresses, or file-system locations.
 
 #### 3.6.1 Derivation, authorship and audience
 
@@ -158,6 +158,7 @@ These OPTIONAL members support lessons made for one learner, by learners, or by 
 - `derivedFrom`: `{docId, sourceSha256, anchor?}` — the lesson this one was derived from (e.g. a version adapted for one learner, or a short branch answering a question, where `anchor` is the step key it branches from). An editor that changes the original can then find derived lessons and offer to carry a fix over, step by step, using slide ids.
 - `importedFrom`: `[{mime, sha256, title?, attachment?}]` — non-Egatari material the lesson was made from (e.g. a PDF, a slide file, scans or photos of printed pages with handwritten comments, a separate errata sheet). `sha256` identifies the original bytes; `attachment` is its path when the original is carried as an attachment with role `source` (§3.8). Steps produced by conversion (e.g. by an AI reading the scans) SHOULD be marked in `authorship` as `by: "ai"`, `reviewed: false` until a person has checked them against the original.
 - `authorship`: `{<stepKey or slideKey>: {by, reviewed}}` with `by` one of `human`, `ai`, `mixed` and `reviewed` a boolean (a person responsible for the lesson has checked it). Keys without an entry are unknown. Names of reviewers are not recorded (§3.6).
+- `edits`: `[{by?, note?}]` — changes made to the lesson by people other than its `creators`, oldest first, one entry per person or group. `by` is the display name the editing person chose to publish (e.g. a school and subject, `"○○高校 情報科"`); it is absent when that person chose not to publish a name. `note` is a short description of what was changed, written by that person. Entries carry no timestamps (§3.6); a person MAY write a date into `note`. `edits` credits the editing; it does not change who the rights holder is, and players and hosts MUST NOT present the edited parts as the work of the `creators`. It also serves licenses that require changes to be indicated (e.g. every Creative Commons 4.0 license).
 - `audience`: `"public"` (default) or `"individual"`. An individual lesson is made for a specific learner or group and SHOULD NOT be redistributed; hosts MUST NOT show it to other learners. It still MUST NOT contain learner records (§9.1B): it may be tailored to a learner, but grades, answers or personal data are not part of it.
 
 ### 3.7 Play-only derivative
@@ -372,12 +373,13 @@ Re-export MUST copy untouched blobs byte-for-byte and MUST preserve `docId` (unl
 
 Egatari cannot prevent anyone from modifying a file (§11). It carries the rights holder's terms so that conforming software states them and keeps credit intact:
 
-- Producers SHOULD copy `license`, `copyright` and `attribution` (and `offer`, §1.2) from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
-- Players SHOULD show title, creators, copyright, license and attribution in an information panel.
+- Producers SHOULD copy `license`, `copyright`, `attribution` and `edits` (and `offer`, §1.2) from the metadata into `deck-meta`, so that play-only derivatives (§3.7) keep them.
+- Players SHOULD show title, creators, copyright, license and attribution in an information panel. When `edits` is present, players SHOULD show it after the creators under a label that says the lesson was edited (e.g. 作成：… ／ 編集：…, or Created by … / Edited by …), with each `by` and `note`; for an entry without `by`, they say that the lesson was edited from the original without naming anyone.
 - When any step's audio is synthesized (`kind: "tts"`, in `deck-audio` or the audio record), players SHOULD say so in the information panel and near the playback controls (e.g. "This narration is AI-synthesized"), so that learners know a voice is not a recording of a person. A step recorded by a person (`recorded`) carries no such notice; `imported` audio of unknown origin is described as such. The declared `kind` is a claim (§11): hosts SHOULD check uploaded audio with the watermark detectors available to them, and when a detector finds a synthetic-speech watermark in audio declared `recorded` or `imported`, SHOULD treat it as synthesized and tell the uploader about the mismatch. The absence of a detected watermark MUST NOT be presented as evidence that a voice is human, since many synthesizers add none and processing can weaken one. Producers that synthesize speech SHOULD apply post-processing (loudness, encoding) before embedding a watermark of their own, so that it survives.
 - Each time a document is opened for editing, before the first change, an editor MUST show its license. If the license does not permit derivatives (e.g. any Creative Commons `-ND` license, or no license with a copyright notice), the editor MUST warn that modifying or redistributing the lesson may infringe the rights holder's copyright and MUST require explicit confirmation.
 - An editor that saves a document under a new `docId` (e.g. "save as a new lesson") MUST keep the original `copyright`, `attribution` and `creators`, MUST set `derivedFrom` (§3.6.1), and MAY add the new editor's name to `creators`. An editor that keeps the `docId` MUST NOT set or change `derivedFrom`.
-- Editors MUST NOT remove or alter `copyright` and `attribution` without the user's explicit action.
+- An editor cannot know who is editing, so it asks. The first time a user saves changes to the content of a document (anything beyond the editor's own records), the editor SHOULD ask whether the user is one of the lesson's creators or is editing someone else's lesson, unless the answer is already known. If the user is editing someone else's lesson, the editor SHOULD offer to add an entry to `edits` with a name and an optional note, and when the license requires changes to be indicated, it SHOULD add an entry without `by` if the user gives no name. The editor MAY remember the answer for that `docId` on that device, outside the file; it MUST NOT write who the user is into the file except as the user enters it.
+- Editors MUST NOT remove or alter `copyright`, `attribution` and existing `edits` entries without the user's explicit action.
 
 ## 8. Authoring source (contract version 1)
 
@@ -815,7 +817,7 @@ See §3.8. An article commonly carries its typeset PDF (`pdf`), its TeX or Word 
 | Egatari Text | JATS |
 |---|---|
 | article, front matter `title` / `subtitle`, `metadata.lang` | `<article xml:lang>`; `<front><article-meta><title-group><article-title>` / `<subtitle>` |
-| `metadata.creators`, `license`, `copyright` | `<contrib-group>`; `<permissions><copyright-statement>`, `<license>` |
+| `metadata.creators`, `edits`, `license`, `copyright` | `<contrib-group>` (`edits` as `<contrib contrib-type="editor">`, `note` in `<role>`); `<permissions><copyright-statement>`, `<license>` |
 | level-2 section with id; level-3/4 heading | `<sec id><title>`; nested `<sec>` |
 | `paragraph`, `emphasis`, `strong`, `inlineCode` | `<p>`, `<italic>`, `<bold>`, `<monospace>` |
 | `list` / `listItem` | `<list list-type="bullet\|order">` / `<list-item>` |
