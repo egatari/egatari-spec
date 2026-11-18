@@ -2,9 +2,11 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-15
+## Since WD 2026-11-18
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-18
 
 - §2.1 **readable content of components** (d5, 2026-11-15, from m-code 2.2.0's moving window): elements a component marks `data-readable` are copied, from an allowed-elements list and without attributes, into the slide's entry in the readable layer as visible content.
 - §9C.2 **unnumbered asides** (d5, 2026-11-16, backlog #173, from the book sample's learning goals): `:::{aside}` takes `:nonumber:` like an exercise; such an aside is not counted, its heading shows the title only, and an empty-text reference to it shows its title. myst-parser keeps the option only on the directive node; producers carry it to the aside as `enumerated: false` (`tools/egatari-aside.mjs`, fixture `article-text/valid/aside-nonumber`).
