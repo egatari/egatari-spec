@@ -62,11 +62,15 @@ const textDir = path.join(root, 'fixtures', 'article-text');
 const update = process.argv.includes('--update-article-text');
 for (const c of fs.readdirSync(path.join(textDir, 'valid')).sort()) {
   const dir = path.join(textDir, 'valid', c);
-  const tree = parseArticleText(fs.readFileSync(path.join(dir, 'input.md'), 'utf8'));
+  const input = fs.readFileSync(path.join(dir, 'input.md'), 'utf8');
+  const tree = parseArticleText(input);
   const file = path.join(dir, 'expected.json');
   if (update) fs.writeFileSync(file, JSON.stringify(tree, null, 2) + '\n');
   let pass = true, why = '';
   try { assert.deepStrictEqual(tree, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch (e) { pass = false; why = ' ' + e.message.split('\n').slice(0, 6).join(' '); }
+  // §9C.1: a section target is `sec-` and 6 base32 characters; a valid fixture must not break it.
+  const badIds = [...input.matchAll(/^\((sec-[^)]*)\)=\s*$/gm)].map((m) => m[1]).filter((id) => !/^sec-[a-z2-7]{6}$/.test(id));
+  if (pass && badIds.length) { pass = false; why = ` section id not sec- + 6 base32 (§9C.1): ${badIds.join(', ')}`; }
   total++;
   if (!pass) failed++;
   console.log(`${pass ? 'ok  ' : 'FAIL'} article-text/valid/${c}${why}`);
