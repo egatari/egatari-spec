@@ -2,10 +2,14 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-18b
+## Since WD 2026-11-18c
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+## WD 2026-11-18c
+
+- Annotations (informative): how Egatari Viewer keeps ink — on a slide and the notes area under it as one surface, on the device only, in a fixed set of pen colours (d5, 2026-11-18, handoff #27).
+- Tests: valid Egatari Text fixtures are checked for section ids of the form `sec-` and 6 base32 characters.
 - §7.3 **edits in a file with an older player** (d5, 2026-11-18, from evaluating Studio 0.6.15-rc.1, handoff #53): a tier A save keeps the bundled player, which may not show `edits`; the editor should say so and offer to save with its current player.
 - §8.4 **marks for geometry checks** (owner and d5, 2026-11-18, from parts 2.1x and Studio's R-geometry, handoff #45 and #46): the `data-part` marks that parts already draw (`box`, `mark`, `label`, `edge`, with `data-part-id`, `-of`, `-at`, `-from`, `-to`, `-line`) are written down; a `<circle>`, `<ellipse>` or `<path>` can be a box and is measured by its shape; an edge may end at a mark, and is not reported against a box that contains the mark at its end; `data-overlap="ok"` marks intended overlap; new `data-within` and `data-frame` ask checks to keep a shape inside a frame at the end of every step. Checks warn; players ignore all of these.
 - §8.4 **strokes cut off at the edge of an SVG** (d5, 2026-11-18, from the owner's symposium slides, handoff #52): checks should also report a shape that is almost wholly inside an inline SVG but whose stroke is cut off at its edge.
