@@ -7,6 +7,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
 - §8.4 **marks for geometry checks** (owner and d5, 2026-11-18, from parts 2.1x and Studio's R-geometry, handoff #45 and #46): the `data-part` marks that parts already draw (`box`, `mark`, `label`, `edge`, with `data-part-id`, `-of`, `-at`, `-from`, `-to`, `-line`) are written down; a `<circle>`, `<ellipse>` or `<path>` can be a box and is measured by its shape; an edge may end at a mark, and is not reported against a box that contains the mark at its end; `data-overlap="ok"` marks intended overlap; new `data-within` and `data-frame` ask checks to keep a shape inside a frame at the end of every step. Checks warn; players ignore all of these.
+- §8.4 **strokes cut off at the edge of an SVG** (d5, 2026-11-18, from the owner's symposium slides, handoff #52): checks should also report a shape that is almost wholly inside an inline SVG but whose stroke is cut off at its edge.
 ## WD 2026-11-18b
 
 - Fixture `article-text/valid/aside-nonumber`: its section id is now `sec-k3n7p2`; the old `sec-k3n8p2` had an `8`, outside base32 (§9C.1 requires `[a-z2-7]`), so a conforming checker reported it (found by Studio on syncing WD 2026-11-18). No change to the text.
