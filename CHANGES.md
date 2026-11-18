@@ -2,9 +2,13 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and lessons can name the draft they were built against.
 
-## Since WD 2026-11-18
+## Since WD 2026-11-18b
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-18b
+
+- Fixture `article-text/valid/aside-nonumber`: its section id is now `sec-k3n7p2`; the old `sec-k3n8p2` had an `8`, outside base32 (§9C.1 requires `[a-z2-7]`), so a conforming checker reported it (found by Studio on syncing WD 2026-11-18). No change to the text.
 
 ## WD 2026-11-18
 
