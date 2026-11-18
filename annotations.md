@@ -9,6 +9,7 @@ Annotations are learner data: they never enter the file (format §9.1B).
 - **Anchors in the file.** Annotations point at a lesson by `docId` and the version they were made on; a text range is given by a section id and a quote, so that it can be re-attached after the lesson is revised.
 - **Export.** Applications SHOULD let the learner export annotations: as PDF (each slide's final state or each page of the text, with the learner's annotations drawn over or beside it), and as Markdown with the anchors. An exchange file that can be imported again on another device (working name `.ega-notes`) is to be defined here.
 
+- **Ink (as Egatari Viewer draws it, 2026-11-18).** Ink is written only on a slide and in the notes area under it, never over the text of an article (text reflows and strokes would move off what they marked). Strokes are kept on the device, per `docId` and slide key, in stage coordinates for the slide and in the notes area's own coordinates below it; they are not written into the file. Pen colours are a fixed set (black, red, blue), drawn lighter on a dark slide, and each stroke keeps the name of its colour. On a shared device nothing is kept. Writing ink into a file or an exchange file is a later decision.
 
 ## Highlight record (as Egatari Viewer stores it)
 
