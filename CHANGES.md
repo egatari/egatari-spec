@@ -2,9 +2,11 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and files can name the draft they were built against.
 
-## Since WD 2026-11-18c
+## Since WD 2026-11-19
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
+
+## WD 2026-11-19
 
 - Editorial: the prose of the format, Player, SCORM binding, extensions and annotations documents no longer says "lesson"; it says "file", "Egatari file" where the thing must be named or "file" alone would be ambiguous (archives, attachments, data files), and "document" where the text already used document (e.g. `docId`, the document language). §9 is now "Playing an Egatari file" and Player P4.2 "Links that leave the file"; the README and site description use the product sentence (slides, script, audio and a book in one HTML file). Normative content is unchanged: no requirement, keyword, schema, fixture or identifier changed; SCORM `cmi.core.lesson_*` and the schemas' description strings are untouched (handoff #36, owner 2026-11-19).
 
