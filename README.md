@@ -7,15 +7,15 @@
 
 # Egatari specification
 
-Egatari (絵語り, "narrating with pictures") is a file format for narrated, animated lessons: one HTML file that plays offline as a self-narrating lesson and carries its own source so it can be reopened, edited one step at a time, and saved again.
+Egatari (絵語り, "narrating with pictures") is a file format that bundles slides, script, audio and a book into a single HTML file. The file plays offline, narrating itself, and carries its own source so it can be reopened, edited one step at a time, and saved again.
 
 | File | Content |
 |---|---|
-| [egatari-1.0.md](egatari-1.0.md) | The format: what a lesson is and how it is stored in one file (Editor's Draft) |
+| [egatari-1.0.md](egatari-1.0.md) | The format: what a document is and how it is stored in one file (Editor's Draft) |
 | [egatari-player-1.0.md](egatari-player-1.0.md) | Players: display modes, layouts, playback, links, learner data, tracking, embedding (Editor's Draft, versioned separately) |
 | [CHANGES.md](CHANGES.md) | Dated snapshots (`wd-YYYY-MM-DD`) and what changed in each |
 | [schema/](schema/) | JSON Schemas (draft 2020-12) for the index, audio records, metadata and `deck-meta` |
-| [bindings/scorm12.md](bindings/scorm12.md) | Packaging an Egatari lesson as a SCORM 1.2 package |
+| [bindings/scorm12.md](bindings/scorm12.md) | Packaging an Egatari file as a SCORM 1.2 package |
 | [extensions.md](extensions.md) | Registry of extension names (platform-specific data, §9A) |
 | [fixtures/](fixtures/) | Conformance fixtures and test vectors |
 

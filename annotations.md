@@ -4,16 +4,16 @@
 
 Annotations are learner data: they never enter the file (format §9.1B).
 
-- **Anchors.** Each annotation is anchored to a position that survives revisions of the lesson: a slide key and step key, or an article section id, optionally with a point or range inside it. An annotation made on a stage pane carries a point in stage coordinates (1280×720); an annotation made on a text pane carries a text range (a quote of the selected text with a little context before and after, as in the W3C Web Annotation text-quote selector), so that it survives reflow and small edits. Because slide ids are stable (format §8.1), annotations stay attached when the lesson is revised; an annotation whose anchor no longer exists is kept and shown as detached, never discarded silently.
+- **Anchors.** Each annotation is anchored to a position that survives revisions of the file: a slide key and step key, or an article section id, optionally with a point or range inside it. An annotation made on a stage pane carries a point in stage coordinates (1280×720); an annotation made on a text pane carries a text range (a quote of the selected text with a little context before and after, as in the W3C Web Annotation text-quote selector), so that it survives reflow and small edits. Because slide ids are stable (format §8.1), annotations stay attached when the file is revised; an annotation whose anchor no longer exists is kept and shown as detached, never discarded silently.
 - **Kinds.** Highlights (with a colour), comments (typed text), and ink (pen strokes with pressure, in stage or page coordinates). A recall mask is a view of highlights (they are hidden and revealed one by one), not a separate kind.
-- **Anchors in the file.** Annotations point at a lesson by `docId` and the version they were made on; a text range is given by a section id and a quote, so that it can be re-attached after the lesson is revised.
+- **Anchors in the file.** Annotations point at a document by `docId` and the version they were made on; a text range is given by a section id and a quote, so that it can be re-attached after the file is revised.
 - **Export.** Applications SHOULD let the learner export annotations: as PDF (each slide's final state or each page of the text, with the learner's annotations drawn over or beside it), and as Markdown with the anchors. An exchange file that can be imported again on another device (working name `.ega-notes`) is to be defined here.
 
 - **Ink (as Egatari Viewer draws it, 2026-11-18).** Ink is written only on a slide and in the notes area under it, never over the text of an article (text reflows and strokes would move off what they marked). Strokes are kept on the device, per `docId` (or, for a file without one, the file's SHA-256) and slide key; they are not written into the file. The slide and its notes area form one surface in stage units: x 0–1280, y 0–720 is the slide and y 720–1200 the notes area, so that one stroke may cross from the slide into the notes. Pen colours are a fixed set (black, red, blue), drawn lighter on a dark slide, and each stroke keeps the name of its colour. On a shared device nothing is kept. Writing ink into a file or an exchange file is a later decision.
 
 ## Highlight record (as Egatari Viewer stores it)
 
-Egatari Viewer keeps highlights on the learner's device, one record per lesson, keyed by `docId`. Other applications that want to agree with it can use the same shape.
+Egatari Viewer keeps highlights on the learner's device, one record per file, keyed by `docId`. Other applications that want to agree with it can use the same shape.
 
 ```json
 {
@@ -34,7 +34,7 @@ Egatari Viewer keeps highlights on the learner's device, one record per lesson, 
 }
 ```
 
-- `madeOn` names the version the highlights were made on. `sourceSha256` is copied from `deck-meta` when the file is portable; a play-only file has none (format §3.7), so `fileSha256` (SHA-256 of the file's bytes, as for signatures) is always recorded as well. A change in either only tells the application that the lesson was revised; it does not invalidate the highlights.
+- `madeOn` names the version the highlights were made on. `sourceSha256` is copied from `deck-meta` when the file is portable; a play-only file has none (format §3.7), so `fileSha256` (SHA-256 of the file's bytes, as for signatures) is always recorded as well. A change in either only tells the application that the file was revised; it does not invalidate the highlights.
 - `color` is one of `"y"`, `"p"`, `"b"` (yellow, pink, blue). The colour values are the application's; names a learner gives to colours belong to the application's preferences, not to the record.
 - `target.section` is the `data-section-id` of the article section (format §9C.6), or `""` for text outside any section (before the first level-2 heading, the reference list). `quote` follows the W3C Web Annotation `TextQuoteSelector`: `exact` is the selected text, `prefix` and `suffix` at most 32 characters each, all taken from the rendered text content.
 - **Ruby.** A ruby segment (a run of base text and the `rt` that follows it: the whole `<ruby>` when one reading is written over a word, each character when readings are written per character) is one unit. A range never starts or ends inside the base text of a segment: before storing a highlight, the application widens it to the edges of the segments it touches, and paints and hides (暗記) the base and its reading together. A record made before this rule, whose `exact` ends inside a segment, is widened the same way after it is re-attached, and MAY be rewritten with the widened quote, keeping its `id`, `color` and `created`.

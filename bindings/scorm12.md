@@ -13,7 +13,7 @@ A ZIP file containing, at its root:
 | `imsmanifest.xml` | the manifest below |
 | `index.html` | the Egatari file, **byte-for-byte unchanged** |
 
-The package MUST NOT add other launch files or modify the Egatari file: extracting `index.html` from the package gives back the original lesson, still playable and editable. Packagers MAY add the SCORM 1.2 XSD files; LMSs do not require them.
+The package MUST NOT add other launch files or modify the Egatari file: extracting `index.html` from the package gives back the original Egatari file, still playable and editable. Packagers MAY add the SCORM 1.2 XSD files; LMSs do not require them.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -60,10 +60,10 @@ The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to
 | completed (§3) | set `cmi.core.lesson_status` to `completed`; `LMSCommit("")` |
 | `visibilitychange` to hidden | pause playback; `LMSCommit("")`. Do **not** finish |
 | `pagehide` | set `cmi.core.session_time`; set `cmi.core.exit` to `suspend` unless completed (then `""`); `LMSCommit("")`; `LMSFinish("")`. Called at most once per page lifetime |
-| `pageshow` with `persisted` after finishing (back/forward cache) | tracking is over for this page: the player keeps playing and shows a notice that progress is no longer recorded until the lesson is reopened from the LMS |
+| `pageshow` with `persisted` after finishing (back/forward cache) | tracking is over for this page: the player keeps playing and shows a notice that progress is no longer recorded until the file is reopened from the LMS |
 
 - `cmi.core.session_time` uses the SCORM 1.2 format `HHHH:MM:SS.SS`.
-- Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Egatari lesson has no assessment in 1.0.
+- Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Egatari file has no assessment in 1.0.
 - On any error the player keeps playing.
 - (Informative) Some LMSs store with synchronous requests and drop what is sent while the page closes (observed: ILIAS, whose runtime switches to `sendBeacon` only in Chrome and only for `unload`/`beforeunload`/click). That is why exit and session time travel with every commit and a commit happens at `beforeunload`; `pagehide` still finishes. On such an LMS in Safari, nothing sent while the page closes arrives, so resume returns to the last committed position.
 
@@ -81,8 +81,8 @@ Steps are numbered by zero-based **ordinal** in timeline order (Egatari 1.0 §5.
 - `h` is the first 8 hex digits of SHA-256 over the UTF-8 step keys in timeline order, each followed by LF.
 - `seen` holds the steps visited in any way; `stage` and `text` (optional, written by players that implement Player P6 `via`) hold the steps played on a stage and read in a text pane, so that `metadata.completion.played` survives a resume. `seen` is their union when both are present. Readers that do not know `stage` and `text` ignore them.
 - Bit *j* of each bitset corresponds to ordinal *j*: byte ⌊*j*/8⌋, bit *j* mod 8, least significant bit first; the bitset has ⌈*n*/8⌉ bytes, unused high bits are 0; base64url without padding.
-- On resume (`entry` is `resume`), if `v`, `n` and `h` all match the current lesson, the player restores the visited steps and the position. Otherwise the lesson changed: it ignores both and starts at the beginning.
-- A packager MUST refuse a lesson whose suspend data, with all three bitsets, could exceed 4096 characters (more than about 8,000 steps). Players never drop `stage` or `text` to save space.
+- On resume (`entry` is `resume`), if `v`, `n` and `h` all match the current file, the player restores the visited steps and the position. Otherwise the file changed: it ignores both and starts at the beginning.
+- A packager MUST refuse a file whose suspend data, with all three bitsets, could exceed 4096 characters (more than about 8,000 steps). Players never drop `stage` or `text` to save space.
 
 ## 3. Completion
 
@@ -95,4 +95,4 @@ An LMS Binding (SCORM 1.2) packager MUST produce packages as in §1. A player cl
 1. **Suspend/resume (incomplete):** start, visit some steps (skipping some), close; status is `incomplete`; reopen resumes at the last position with the visited set restored.
 2. **Completion:** visit every step in order; status becomes `completed`.
 3. **Review after completion:** reopen a completed attempt; status stays `completed` and nothing is overwritten.
-4. **Changed lesson:** replace the package with a reordered lesson of the same length; resume data is ignored (`h` differs).
+4. **Changed file:** replace the package with a reordered file of the same length; resume data is ignored (`h` differs).

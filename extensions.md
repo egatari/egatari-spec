@@ -1,27 +1,27 @@
 # Egatari extension registry
 
-Extensions carry platform-specific information without changing Egatari (spec §9A). A player that ignores an extension renders and times the lesson exactly the same; anything a lesson cannot be played without is a feature in `requires` (spec §3.5) and comes with a version of the specification instead.
+Extensions carry platform-specific information without changing Egatari (spec §9A). A player that ignores an extension renders and times the file exactly the same; anything a file cannot be played without is a feature in `requires` (spec §3.5) and comes with a version of the specification instead.
 
 | Name | Status | Owner | Purpose | Definition |
 |---|---|---|---|---|
-| `tutor` | draft | Egatari editors | comprehension checkpoints, AI answer scope, branch lessons generated in answer to questions | [extensions/tutor.md](extensions/tutor.md) |
-| `live` | draft | Egatari Studio | joining a live room (questions, polls) from the distributed lesson within a time window; the only network access in Egatari, opt-in | [extensions/live.md](extensions/live.md) |
+| `tutor` | draft | Egatari editors | comprehension checkpoints, AI answer scope, branch files generated in answer to questions | [extensions/tutor.md](extensions/tutor.md) |
+| `live` | draft | Egatari Studio | joining a live room (questions, polls) from the distributed file within a time window; the only network access in Egatari, opt-in | [extensions/live.md](extensions/live.md) |
 | `embed` | draft | Egatari Studio | third-party video and maps inside a slide, loaded only when the viewer asks, from listed destinations; placeholder and link otherwise | [extensions/embed.md](extensions/embed.md) |
 
 ## Statuses
 
 | Status | Meaning | Who may rely on it |
 |---|---|---|
-| `draft` | Registered; the definition may change without a new `v`. | Experiments. Producers SHOULD tell authors that the extension is a draft when they write it into a lesson. |
+| `draft` | Registered; the definition may change without a new `v`. | Experiments. Producers SHOULD tell authors that the extension is a draft when they write it into a file. |
 | `candidate` | The definition is complete (all sections of the template below), it has a JSON Schema and fixtures, and at least one implementation passes them. Any change after this is a new `v` or an addition allowed within a `v` (spec §9A), recorded in [CHANGES.md](CHANGES.md). | Producers and players that want to ship it. |
 | `stable` | A candidate that has been in a released implementation for at least 60 days with no change other than additions allowed within its `v`, and that the editors have marked stable. | Everyone; the `v` is kept readable for as long as the specification version it was marked under. |
-| `withdrawn` | No longer to be written. Readers keep ignoring and preserving it as for any extension they do not implement (spec §9A). The name is never reused. | Nobody, for new lessons. |
+| `withdrawn` | No longer to be written. Readers keep ignoring and preserving it as for any extension they do not implement (spec §9A). The name is never reused. | Nobody, for new files. |
 
 The editors change a status by a pull request that updates this table and CHANGES.md. An extension MAY skip `candidate` only if it was `candidate`-complete when registered.
 
 ## Proposing an extension
 
-1. Check that it really is an extension: a player that ignores it must still render and time the lesson correctly (spec §9A). If not, open an issue proposing a feature instead.
+1. Check that it really is an extension: a player that ignores it must still render and time the file correctly (spec §9A). If not, open an issue proposing a feature instead.
 2. Open an issue titled `extension: <name>` with a few lines: what it adds, who consumes it (players, editors, hosts), and the answers to **Network** and **Data leaving the device** below. This is where the name is discussed.
 3. Open a pull request that adds `extensions/<name>.md` written from the template below and a row in the table with status `draft`.
 4. Review:
@@ -65,7 +65,7 @@ What a player, editor and host that do not implement it show and do. It must be 
 What is public to anyone who holds the file (spec §3.7), attacks considered, and limits (sizes, counts, string lengths) consumers enforce.
 
 ## 9. Tests
-Fixtures under `fixtures/extensions/<name>/`: valid and invalid data (against the schema), a lesson with the extension and the same lesson without it that an ignoring player renders identically, and behaviour cases (e.g. no request outside the window).
+Fixtures under `fixtures/extensions/<name>/`: valid and invalid data (against the schema), a file with the extension and the same file without it that an ignoring player renders identically, and behaviour cases (e.g. no request outside the window).
 
 ## 10. Changes
 Dated list of changes to this definition.

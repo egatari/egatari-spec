@@ -1,8 +1,8 @@
 # Egatari extension `tutor` — Draft v1
 
-**Status:** draft, 2026-10-17. Registered in [../extensions.md](../extensions.md). Consumed by hosts (Egatari spec §10.1) that hold a dialogue with the learner; players that ignore it render and time the lesson exactly the same.
+**Status:** draft, 2026-10-17. Registered in [../extensions.md](../extensions.md). Consumed by hosts (Egatari spec §10.1) that hold a dialogue with the learner; players that ignore it render and time the file exactly the same.
 
-`tutor` describes *where and how a host may talk with the learner* about a lesson: comprehension checkpoints, the scope an AI may draw on when answering, and lessons generated on the spot in answer to a question. Pausing, asking and branching are done by the host through the embedding interface (§9.4); the lesson itself is never modified.
+`tutor` describes *where and how a host may talk with the learner* about a file: comprehension checkpoints, the scope an AI may draw on when answering, and files generated on the spot in answer to a question. Pausing, asking and branching are done by the host through the embedding interface (§9.4); the file itself is never modified.
 
 ## 1. Data (`extensions.tutor`)
 
@@ -33,15 +33,15 @@
 
 Authoring in `narration.md` (spec §8.2): `@x-tutor-invite <prompt>` and `@x-tutor-recall <prompt>` lines under a step create checkpoints in order with generated ids; `@x-tutor-keypoint <text>` lines attach to the preceding recall. Transitions other than the default (`invite` → following `recall` when understood) require the JSON form.
 
-## 2. Generated answers (branch lessons)
+## 2. Generated answers (branch files)
 
-When a host answers a question with slides, it produces a **branch lesson**: a separate, small Egatari document with
+When a host answers a question with slides, it produces a **branch file**: a separate, small Egatari document with
 
-- `metadata.derivedFrom = {docId, sourceSha256, anchor}` of the lesson and step it answers from;
+- `metadata.derivedFrom = {docId, sourceSha256, anchor}` of the file and step it answers from;
 - `metadata.authorship` marking its steps `by: "ai"`, `reviewed: false` until a teacher checks it;
 - `metadata.audience = "individual"` when made for one learner.
 
-The host plays the branch, then returns to the anchor. A teacher may promote a good branch into the original lesson as an ordinary edit. Branch lessons use the same components as the original (Core profile: registry components only), so they need no new code.
+The host plays the branch, then returns to the anchor. A teacher may promote a good branch into the original file as an ordinary edit. Branch files use the same components as the original (Core profile: registry components only), so they need no new code.
 
 ## 3. Open questions
 
