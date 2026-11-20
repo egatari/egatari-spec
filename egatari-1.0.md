@@ -409,6 +409,8 @@ The authoring source is `deck.html` (the slides), `narration.md` (the script) an
 
 `data-chapter="<name>"` on a slide starts a chapter like a `sec` slide without being a divider.
 
+**Bookmarks.** `data-bookmark="<name>"` on a slide marks it as a place to return to (for example the results to show again in questions after a talk). The name is plain text of at most 20 characters, shown to people as the bookmark's label; any number of slides in a document MAY carry one. A bookmark addresses the slide's final state, like `#<slide id>:concl` (§9.1A). Producers SHOULD report two slides with the same bookmark name and a name longer than 20 characters. How players offer bookmarks: Player P4.3.
+
 **Steps.** Every element of a slide belongs to one step:
 
 - an element with `data-step="k"` (canonical decimal, 1 ≤ k ≤ 999) and its descendants belong to step *k*, unless a descendant carries its own `data-step`;
