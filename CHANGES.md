@@ -2,11 +2,13 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and files can name the draft they were built against.
 
-## Since WD 2026-11-19
+## Since WD 2026-11-20
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
-- Bookmarks: `data-bookmark="<name>"` on a slide marks a place to return to (format §8.0); in `talk` mode players offer one control per bookmark, `q` goes to the next one, "back" returns, and bookmarks never show in `video` mode or print (Player P4.3). The markup came from a lab member's embedded component; it moves the control-bar button from the component into the player (handoff #67, owner 2026-11-20: key `q`, before GA).
+## WD 2026-11-20
+
+- Bookmarks: `data-bookmark="<name>"` on a slide marks a place to return to (format §8.0); in `talk` mode players offer one control per bookmark, `q` goes to the next one, "back" returns, and bookmarks never show in `video` mode or print (Player P4.3). The markup came from a lab member's embedded component; it moves the control-bar button from the component into the player (owner 2026-11-20: key `q`, before 1.0).
 
 ## WD 2026-11-19
 
