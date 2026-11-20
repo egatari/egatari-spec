@@ -8,7 +8,7 @@ Changes on `main` after the snapshot; they will be in the next Working Draft.
 
 ## WD 2026-11-20
 
-- Bookmarks: `data-bookmark="<name>"` on a slide marks a place to return to (format §8.0); in `talk` mode players offer one control per bookmark, `q` goes to the next one, "back" returns, and bookmarks never show in `video` mode or print (Player P4.3). The markup came from a lab member's embedded component; it moves the control-bar button from the component into the player (owner 2026-11-20: key `q`, before 1.0).
+- Bookmarks: `data-bookmark="<name>"` on a slide marks a place to return to (format §8.0); in `talk` mode players offer one control per bookmark, `q` goes to the next one, "back" returns, and bookmarks never show in `video` mode or print (Player P4.3). The markup came from a lab member's embedded component; it moves the control-bar button from the component into the player (owner 2026-11-20: key `q`, in players before the general release of Egatari Studio).
 
 ## WD 2026-11-19
 
