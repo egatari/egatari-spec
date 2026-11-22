@@ -579,7 +579,7 @@ Platforms may need information that Egatari does not define (e.g. questions to a
 - Extension data in a portable file is public to anyone holding the file (§3.7).
 - **Versions of an extension.** Within one `v`, a definition may only add optional members that readers of that version ignore; any other change is a new `v`. A reader that implements an extension up to version *n* and finds a higher `v` MUST treat the extension as not implemented (ignore it and preserve it as above), unless the definition states that version is compatible with *n*.
 - Extension names are registered in [`extensions.md`](extensions.md), which also says how an extension is proposed, reviewed and marked `draft`, `candidate`, `stable` or `withdrawn`. Ordinary names are first-come. An extension that connects to the network (§4.2) or sends data off the device is registered only after the editors have reviewed its definition (§11). A withdrawn name is never reused.
-- Something that is not optional in this sense — information without which a file cannot be played correctly, or a change to the core — is a **feature** listed in `requires` (§3.5, e.g. `article-v1`, `signatures-v1`) and comes only with a version of this specification, not through the registry.
+- Something that is not optional in this sense — information without which a file cannot be played correctly, or a change to the core — is a **feature** listed in `requires` (§3.5) and comes only with a version of this specification, not through the registry. (The features this version defines, `signatures-v1` (§9B) and `article-v1` (§9C), are ignorable and are never listed in `requires`.)
 
 ## 9B. Signatures (feature `signatures-v1`, draft)
 
