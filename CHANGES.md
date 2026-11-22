@@ -6,7 +6,7 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
-- §8.4 **components declare their questions** with a static `questions` array (ids), and §9.2 counts the declared questions of every component element in the file when it is opened, so that `checks` can hold back completion for questions never answered (in WD 2026-11-22 a player learnt of a question only from an answer, so neither `"answered"` nor `"correct"` stopped a viewer who skipped one). An answer to an undeclared id is ignored; an unanswered question counts as one with a right answer, also for the SCORM score (handoff #84, owner 2026-11-22).
+- §8.4 **components declare their questions** with a static `questions` array (ids), and §9.2 counts the declared questions of every component element in the file when it is opened, so that `checks` can hold back completion for questions never answered (in WD 2026-11-22 a player learnt of a question only from an answer, so neither `"answered"` nor `"correct"` stopped a viewer who skipped one). An answer to an undeclared id is ignored; an unanswered question counts as one with a right answer, also for the SCORM score (owner 2026-11-22).
 - Appendix A 14: attachments (§3.8) stay a draft in 1.0 and become normative in 1.1, with a Player P8 `saveAttachment` event for sandboxed players (owner 2026-11-22).
 
 ## WD 2026-11-22
