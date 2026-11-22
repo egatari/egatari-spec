@@ -6,6 +6,8 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- Appendix A 14: attachments (§3.8) stay a draft in 1.0 and become normative in 1.1, with a Player P8 `saveAttachment` event for sandboxed players (owner 2026-11-22).
+
 ## WD 2026-11-22
 
 - §9A, editorial: the examples of features listed in `requires` no longer name `article-v1` and `signatures-v1`, which §9B and §9C say are ignorable and never listed in `requires`.
