@@ -6,6 +6,17 @@ Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+- §9A, editorial: the examples of features listed in `requires` no longer name `article-v1` and `signatures-v1`, which §9B and §9C say are ignorable and never listed in `requires`.
+
+From a review of what users and implementers normally expect before the 1.0 freeze (handoff gap-audit-2026-11-22, owner 2026-11-22):
+- §7.1 **players ignore what they do not know** (members of `deck-meta`, runtime blocks and component data, runtime blocks, slide classes and `data-` attributes), so that a later minor version plays in an earlier player.
+- §8.0 **text alternatives**: `<img>` on a slide MUST have `alt` (empty when decorative); SVG figures and component elements SHOULD have an accessible name.
+- §4 `deck-meta.primary` copies `metadata.primary`, so that a play-only file opens on the same face (the bundled player already read it).
+- §8.4 `ctx.answer(id, correct, value?)` and §9.2 `metadata.completion.checks` (`"answered"` or `"correct"`): questions in components count towards completion and SCORM reports their share as a score. Questions check understanding and do not assess: their answers are in the file.
+- Player P3 **captions** (SHOULD) and **files that cannot be played** (say so, name what is missing). P5 and P8: a player in a sandboxed frame has no storage, so the host keeps preferences and the position (`prefs` command and event; reopen with `seek`). P8 `ready` adds `formats`, `player` and `commands`. P9 **accessibility of the player's own controls** (keyboard, names, focus, single-key shortcuts that can be turned off, announcing revealed content, 400% text), target WCAG 2.2 AA. P4.1: other address forms such as `#3` are not part of the format. P4 sections in order (P4.1, P4.2, P4.3).
+- Appendix A 9A: in 1.0 a player MAY ignore `dir="rtl"` for layout.
+- SCORM 1.2 binding: `cmi.core.score.*` from answered questions; `qa` and `qc` in suspend data; completion with `checks`.
+
 ## WD 2026-11-20
 
 - Bookmarks: `data-bookmark="<name>"` on a slide marks a place to return to (format §8.0); in `talk` mode players offer one control per bookmark, `q` goes to the next one, "back" returns, and bookmarks never show in `video` mode or print (Player P4.3). The markup came from a lab member's embedded component; it moves the control-bar button from the component into the player (owner 2026-11-20: key `q`, in players before the general release of Egatari Studio).

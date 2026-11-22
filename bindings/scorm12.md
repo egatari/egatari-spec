@@ -63,7 +63,7 @@ The player looks for the SCORM 1.2 `API` object by walking `window.parent` up to
 | `pageshow` with `persisted` after finishing (back/forward cache) | tracking is over for this page: the player keeps playing and shows a notice that progress is no longer recorded until the file is reopened from the LMS |
 
 - `cmi.core.session_time` uses the SCORM 1.2 format `HHHH:MM:SS.SS`.
-- Scores (`cmi.core.score.*`) and `passed`/`failed` are not used: an Egatari file has no assessment in 1.0.
+- Questions (Egatari 1.0 §8.4 `answer`): when the file asks any question with a right answer, the player sets `cmi.core.score.min` to `0`, `cmi.core.score.max` to `100` and `cmi.core.score.raw` to the share of such questions answered correctly at least once, rounded to an integer (0–100), on each commit after an answer. `passed`/`failed` are not used: questions check understanding and do not assess (Egatari 1.0 §9.2); the LMS grades with its own quizzes. The answered and correct sets are kept in `cmi.suspend_data` as optional members `qa` and `qc` (question keys `<slideKey>/<index of the component on the slide>/<id>`, comma-separated) and restored on resume like `seen`.
 - On any error the player keeps playing.
 - (Informative) Some LMSs store with synchronous requests and drop what is sent while the page closes (observed: ILIAS, whose runtime switches to `sendBeacon` only in Chrome and only for `unload`/`beforeunload`/click). That is why exit and session time travel with every commit and a commit happens at `beforeunload`; `pagehide` still finishes. On such an LMS in Safari, nothing sent while the page closes arrives, so resume returns to the last committed position.
 
@@ -86,7 +86,7 @@ Steps are numbered by zero-based **ordinal** in timeline order (Egatari 1.0 §5.
 
 ## 3. Completion
 
-Completion follows Egatari 1.0 §9.2 and Egatari Player 1.0 P6: by default every step has been reached at least once in any mode; `metadata.completion.visitedFraction` lowers the threshold; `metadata.completion.reachedEnd` requires only reaching the final step of the last slide. Once completed, the status is never set back to `incomplete`.
+Completion follows Egatari 1.0 §9.2 and Egatari Player 1.0 P6: by default every step has been reached at least once in any mode; `metadata.completion.visitedFraction` lowers the threshold; `metadata.completion.reachedEnd` requires only reaching the final step of the last slide; `metadata.completion.checks` adds that every question has been answered (`"answered"`) or answered correctly (`"correct"`) at least once. Once completed, the status is never set back to `incomplete`.
 
 ## 4. Conformance
 
