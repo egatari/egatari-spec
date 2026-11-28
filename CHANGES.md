@@ -2,13 +2,15 @@
 
 Egatari 1.0 is an Editor's Draft: `main` is the live draft and may change at any time. Dated snapshots are tagged `wd-YYYY-MM-DD` (Working Draft); a second snapshot on the same day adds a letter (`wd-YYYY-MM-DDb`). Implementations say which snapshot they follow (for example, "Egatari Studio 0.4.6 follows Egatari 1.0 WD 2026-10-24"). Nothing is stable before 1.0 is frozen; snapshots exist so that implementations and files can name the draft they were built against.
 
-## Since WD 2026-11-22
+## Since WD 2026-11-28
 
 Changes on `main` after the snapshot; they will be in the next Working Draft.
 
+## WD 2026-11-28
+
 - §8.4 **components declare their questions** with a static `questions` array (ids), and §9.2 counts the declared questions of every component element in the file when it is opened, so that `checks` can hold back completion for questions never answered (in WD 2026-11-22 a player learnt of a question only from an answer, so neither `"answered"` nor `"correct"` stopped a viewer who skipped one). An answer to an undeclared id is ignored; an unanswered question counts as one with a right answer, also for the SCORM score (owner 2026-11-22).
 - Player P8, clarification: the values of the `prefs` members (`layout`, `textSize` as a scale with the nearest offered size used, `textBackground`, `captions`, `captionSize`), the reply to the `prefs` command, and that the `prefs` event follows only the viewer's own changes (found while implementing the host side).
-- annotations.md (draft, informative): a highlight `target` may name a slide (`target.slide`), a **Note record** keeps a learner's typed notes per slide and per section with quotes, and an **exchange file** (`.ega-notes.json`) carries highlights, notes and ink to another device. Notes and ink are never written into the Egatari file (owner 2026-11-25).
+- annotations.md (draft, informative): a highlight `target` may name a slide (`target.slide`), a **Note record** keeps a learner's typed notes per slide and per section with quotes, and an **exchange file** (`.ega-notes.json`) carries highlights, notes and ink to another device. Notes and ink are never written into the Egatari file (owner 2026-11-25). Notes are not passed into a frame of the file, printing included; the exchange file names its `format` and `version`, and two notes for one place are merged without losing blocks (from Egatari Viewer 0.6.22).
 - Appendix A 14: attachments (§3.8) stay a draft in 1.0 and become normative in 1.1, with a Player P8 `saveAttachment` event for sandboxed players (owner 2026-11-22).
 
 ## WD 2026-11-22
