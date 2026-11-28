@@ -43,7 +43,7 @@ Egatari Viewer keeps highlights on the learner's device, one record per file, ke
 
 ## Note record (as Egatari Viewer stores it, 2026-11-25)
 
-A learner's typed notes: one note per slide and one per article section, kept on the device beside the highlights, in the same record (a `notes` member next to `highlights`). Notes are never written into the Egatari file, and an application that opens the file SHOULD NOT pass the text of notes into the file's frame, where the file's own scripts could read it (printing is the exception: a frame made only to print the notes, and removed afterwards).
+A learner's typed notes: one note per slide and one per article section, kept on the device beside the highlights, in the same record (a `notes` member next to `highlights`). Notes are never written into the Egatari file, and an application that opens the file SHOULD NOT pass the text of notes into the file's frame, where the file's own scripts could read it. This holds for printing too: Egatari Viewer draws the notes and the ink in its own page and prints the page; a frame of the file used to lay out the slides for printing never receives them (2026-11-27).
 
 ```json
 {
@@ -69,4 +69,4 @@ A learner's typed notes: one note per slide and one per article section, kept on
 
 ## Exchange file (2026-11-25)
 
-To move annotations to another device, an application exports one file per Egatari file, named with the suffix `.ega-notes.json` (a JSON file, so that it opens on any device). It holds the record above (`docId`, `madeOn`, `highlights`, `notes`) and the ink, as `ink`: an array of `{"slide": key, "strokes": […]}` in the stage units of the Ink paragraph. Importing joins it to the open file by `docId` (or, for a file without one, `fileSha256`) and refuses a file for another document; for an `id` present on both sides the later `modified` wins, and anything whose anchor is not found is kept as detached.
+To move annotations to another device, an application exports one file per Egatari file, named with the suffix `.ega-notes.json` (a JSON file, so that it opens on any device). It holds `"format": "egatari-notes"` and `"version": 1`, the record above (`docId`, `madeOn`, `highlights`, `notes`) and the ink, as `ink`: an array of `{"slide": key, "strokes": […]}` in the stage units of the Ink paragraph. Importing joins it to the open file by `docId` (or, for a file without one, `fileSha256`) and refuses a file for another document; for an `id` present on both sides the later `modified` wins; a note with another `id` for a place that already has a note adds its blocks that are not there yet to the end of the note kept (nothing is lost); and anything whose anchor is not found is kept as detached.
